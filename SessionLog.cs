@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.IO.Compression;
 using System.Text;
@@ -167,7 +167,13 @@ public sealed class SessionLog
         }
     }
 
-    public void Observe(Bitmap frame, string stage)
+    // True while another full-size PNG still fits the session budget; callers can skip purely diagnostic captures.
+    public bool ScreenshotBudgetAvailable =>
+        screenshots && Volatile.Read(ref queued) < maxImages && Interlocked.Read(ref bytes) < maxBytes;
+
+    // retain=false lets the caller keep ownership of the frame and hand it over later via Retain(),
+    // which avoids one 20 MB copy per captured frame.
+    public void Observe(Bitmap frame, string stage, bool retain = true, Rectangle? region = null)
     {
         CurrentFrame = $"frame-{++frameNumber:D6}";
         Write(
@@ -177,13 +183,29 @@ public sealed class SessionLog
                 stage,
                 width = frame.Width,
                 height = frame.Height,
+                region,
             }
         );
         if (!screenshots)
             return;
-        lastSafeFrame?.Dispose();
-        lastSafeFrame = new Bitmap(frame);
+        if (retain)
+        {
+            lastSafeFrame?.Dispose();
+            lastSafeFrame = new Bitmap(frame);
+        }
         Evidence(frame, stage);
+    }
+
+    // Takes ownership of the latest captured frame so it can be saved as last-safe-frame.png on failure.
+    public void Retain(Bitmap? frame)
+    {
+        if (!screenshots || completed)
+        {
+            frame?.Dispose();
+            return;
+        }
+        lastSafeFrame?.Dispose();
+        lastSafeFrame = frame;
     }
 
     public void Evidence(Bitmap image, string label)

@@ -88,6 +88,9 @@ public sealed class Profile
     public int MaxRolls { get; set; } = 500;
     public int FocusReadAttempts { get; set; } = 12;
     public int FocusRetryMs { get; set; } = 75;
+
+    // When the game loses focus, pause input and wait this long for it to return. 0 stops immediately.
+    public int FocusLostWaitSeconds { get; set; } = 120;
     public bool DiagnosticsEnabled { get; set; } = true;
     public bool DiagnosticScreenshots { get; set; } = true;
     public int DiagnosticMaxImages { get; set; } = 400;
@@ -192,12 +195,73 @@ public static class Recognition
 
     public static Affix Name(string text, Catalog catalog)
     {
-        text = Regex.Replace(text, @"^\s*Bende\b", "Bended", RegexOptions.IgnoreCase);
         var clean = Normalize(text);
         var candidates = catalog.Affixes.Where(a => clean.Contains(Normalize(a.Title))).ToList();
-        if (candidates.Count != 1)
-            throw new InvalidOperationException($"Не розпізнано назву перка: {text}");
-        return candidates[0];
+        if (candidates.Count == 1)
+            return candidates[0];
+        if (candidates.Count == 0 && FuzzyName(clean, catalog) is { } fuzzy)
+            return fuzzy;
+        throw new InvalidOperationException($"Не розпізнано назву перка: {text}");
+    }
+
+    // A card starts with its title, so compare catalog titles against the leading text and tolerate
+    // one or two OCR glyph errors (observed: "Bende" for "Bended"). The best match must be unique.
+    public static Affix? FuzzyName(string clean, Catalog catalog)
+    {
+        if (clean.Length < 4)
+            return null;
+        Affix? best = null;
+        int bestDistance = int.MaxValue,
+            secondDistance = int.MaxValue;
+        foreach (var affix in catalog.Affixes)
+        {
+            string title = Normalize(affix.Title);
+            int allowed = Allowed(title);
+            int distance = int.MaxValue;
+            for (int start = 0; start <= 3 && start < clean.Length; start++)
+            for (int length = Math.Max(1, title.Length - allowed); length <= title.Length + allowed; length++)
+            {
+                if (start + length > clean.Length)
+                    break;
+                // Skipping leading characters costs one edit each, so a title at the very start wins over
+                // a title hiding inside another word ("RICK" in "TRICK" must not compete with "Tricky").
+                distance = Math.Min(distance, Levenshtein(clean.AsSpan(start, length), title) + start);
+            }
+            if (distance < bestDistance)
+            {
+                secondDistance = bestDistance;
+                bestDistance = distance;
+                best = affix;
+            }
+            else
+                secondDistance = Math.Min(secondDistance, distance);
+        }
+        return best != null && bestDistance <= Allowed(Normalize(best.Title)) && secondDistance > bestDistance
+            ? best
+            : null;
+    }
+
+    static int Allowed(string normalizedTitle) => normalizedTitle.Length <= 5 ? 1 : 2;
+
+    public static int Levenshtein(ReadOnlySpan<char> a, ReadOnlySpan<char> b)
+    {
+        Span<int> previous = stackalloc int[b.Length + 1];
+        Span<int> current = stackalloc int[b.Length + 1];
+        for (int j = 0; j <= b.Length; j++)
+            previous[j] = j;
+        for (int i = 1; i <= a.Length; i++)
+        {
+            current[0] = i;
+            for (int j = 1; j <= b.Length; j++)
+            {
+                int cost = a[i - 1] == b[j - 1] ? 0 : 1;
+                current[j] = Math.Min(Math.Min(current[j - 1] + 1, previous[j] + 1), previous[j - 1] + cost);
+            }
+            var swap = previous;
+            previous = current;
+            current = swap;
+        }
+        return previous[b.Length];
     }
 
     public static string[] Targets(Reading[] values, string first, string second) =>

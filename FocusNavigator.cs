@@ -1,4 +1,4 @@
-namespace TunerFest;
+﻿namespace TunerFest;
 
 public sealed class FocusReadException(string message, int lastFocus) : InvalidOperationException(message)
 {
@@ -9,7 +9,7 @@ public static class FocusNavigator
 {
     public static async Task Ensure(
         int desired,
-        Func<int> observe,
+        Func<Task<int>> observe,
         Func<string, CancellationToken, Task> press,
         int readAttempts,
         int retryMs,
@@ -25,7 +25,7 @@ public static class FocusNavigator
             for (int attempt = 1; attempt <= readAttempts; attempt++)
             {
                 ct.ThrowIfCancellationRequested();
-                last = observe();
+                last = await observe();
                 if (last >= 0 && last != previous)
                     return last;
                 retry?.Invoke(

@@ -110,6 +110,9 @@ public sealed class ZonePicker : Form
 
 public sealed class MainForm : Form
 {
+    // Single source of truth for the version is SetBuilder.csproj; the title and logs derive from the assembly.
+    public static string AppVersion =>
+        (typeof(MainForm).Assembly.GetName().Version ?? new Version(0, 0, 0)).ToString(3);
     static readonly Color Bg = Fluent.Background,
         Card = Fluent.Surface,
         Accent = Fluent.Accent,
@@ -212,6 +215,12 @@ public sealed class MainForm : Form
                 Maximum = 1000,
                 Increment = 10,
             };
+    readonly FluentNumber focusWait = new()
+    {
+        Minimum = 0,
+        Maximum = 600,
+        Increment = 10,
+    };
     readonly FluentNumber logMb = new()
     {
         Minimum = 1,
@@ -230,9 +239,9 @@ public sealed class MainForm : Form
         {
             profile = new();
         }
-        Text = "TunerFest · Set Builder 1.4.6";
-        ClientSize = new(1180, 900);
-        MinimumSize = new(1080, 820);
+        Text = "TunerFest · Set Builder " + AppVersion;
+        ClientSize = new(1180, 940);
+        MinimumSize = new(1080, 860);
         StartPosition = FormStartPosition.CenterScreen;
         BackColor = Bg;
         ForeColor = Color.White;
@@ -566,12 +575,11 @@ public sealed class MainForm : Form
     void AddLabel(Control c, string text, bool muted = false)
     {
         c.Controls.Add(
-            new Label
+            new FluentText
             {
                 Text = text,
-                AutoSize = true,
-                MaximumSize = new(405, 0),
-                Margin = new(3, 9, 3, 3),
+                Width = 405,
+                Margin = new(3, 8, 3, 3),
                 ForeColor = muted ? Muted : Color.White,
             }
         );
@@ -925,6 +933,13 @@ public sealed class MainForm : Form
         Numeric(stack, focusAttempts, profile.FocusReadAttempts);
         AddLabel(stack, "Пауза між повторними зчитуваннями, мс");
         Numeric(stack, focusRetry, profile.FocusRetryMs);
+        AddLabel(stack, "Очікування повернення фокусу гри, с");
+        Numeric(stack, focusWait, profile.FocusLostWaitSeconds);
+        AddLabel(
+            stack,
+            "Якщо гра втратила фокус, натискання зупиняються, а запуск чекає повернення й продовжує з перевіркою екрана. 0 — зупиняти одразу, як раніше.",
+            true
+        );
         AddLabel(stack, "Xbox: відкриття CRAFTING");
         Combo(
             stack,
@@ -1113,8 +1128,8 @@ public sealed class MainForm : Form
             "Записуються: версія і налаштування, кадри з часовими мітками, сирий OCR і повторні спроби, розпізнані відсотки, вибір варіанта, натискання та причина зупинки. Текст зберігається одразу; PNG — у фоні.",
             true
         );
-        foreach (var label in stack.Controls.OfType<Label>())
-            label.MaximumSize = new(920, 0);
+        foreach (var label in stack.Controls.OfType<FluentText>())
+            label.Width = 920;
     }
 
     void OpenLogs()
@@ -1401,6 +1416,7 @@ public sealed class MainForm : Form
         profile.MaxRolls = (int)limit.Value;
         profile.FocusReadAttempts = (int)focusAttempts.Value;
         profile.FocusRetryMs = (int)focusRetry.Value;
+        profile.FocusLostWaitSeconds = (int)focusWait.Value;
         profile.Xbox = backend.SelectedIndex == 1;
         profile.XboxRecalibrate = (xboxCrafting.SelectedItem as PadChoice)?.Code ?? "KeyboardF9";
         profile.DiagnosticsEnabled = logEnabled.Checked;

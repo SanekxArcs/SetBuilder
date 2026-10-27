@@ -328,6 +328,86 @@ public sealed class FluentNumber : Control
     }
 }
 
+// Fixed-width, word-wrapped text. GDI's DT_WORDBREAK splits Cyrillic words mid-word with some fonts,
+// so lines are built here from whole words and drawn one by one; height follows the wrapped text.
+public sealed class FluentText : Control
+{
+    const TextFormatFlags Flags = TextFormatFlags.SingleLine | TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix;
+    readonly List<string> lines = [];
+
+    public FluentText()
+    {
+        SetStyle(
+            ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer,
+            true
+        );
+        SetStyle(ControlStyles.Selectable, false);
+        TabStop = false;
+        Width = 405;
+    }
+
+    int Measure(string s) => TextRenderer.MeasureText(s, Font, new Size(int.MaxValue, int.MaxValue), Flags).Width;
+
+    void Fit()
+    {
+        lines.Clear();
+        if (Width <= 0)
+            return;
+        foreach (string paragraph in Text.Replace("\r", "").Split('\n'))
+        {
+            var line = new System.Text.StringBuilder();
+            foreach (string word in paragraph.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            {
+                string candidate = line.Length == 0 ? word : line + " " + word;
+                if (line.Length > 0 && Measure(candidate) > Width)
+                {
+                    lines.Add(line.ToString());
+                    line.Clear().Append(word);
+                }
+                else
+                    line.Clear().Append(candidate);
+            }
+            lines.Add(line.ToString());
+        }
+        int height = Math.Max(Font.Height, lines.Count * Font.Height);
+        if (Height != height)
+            Height = height;
+        Invalidate();
+    }
+
+    protected override void OnTextChanged(EventArgs e)
+    {
+        base.OnTextChanged(e);
+        Fit();
+    }
+
+    protected override void OnFontChanged(EventArgs e)
+    {
+        base.OnFontChanged(e);
+        Fit();
+    }
+
+    protected override void OnResize(EventArgs e)
+    {
+        base.OnResize(e);
+        Fit();
+    }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        e.Graphics.Clear(Parent?.BackColor ?? Fluent.Surface);
+        for (int i = 0; i < lines.Count; i++)
+            TextRenderer.DrawText(
+                e.Graphics,
+                lines[i],
+                Font,
+                new Rectangle(0, i * Font.Height, Width, Font.Height),
+                ForeColor,
+                Flags
+            );
+    }
+}
+
 public sealed class FluentKeyField : Control
 {
     public FluentKeyField()

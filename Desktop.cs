@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text;
 using Nefarius.ViGEm.Client;
 using Nefarius.ViGEm.Client.Targets;
@@ -109,16 +109,20 @@ public static class Desktop
             throw new InvalidOperationException("Зупинено: гра втратила фокус.");
     }
 
-    public static Bitmap Capture(IntPtr h)
+    // The bitmap always has the full client size so zone coordinates stay valid.
+    // With a region, only those pixels are copied from the screen; the rest stays black.
+    public static Bitmap Capture(IntPtr h, Rectangle? region = null)
     {
-        Check(h);
         var r = Bounds(h);
+        var full = new Rectangle(Point.Empty, r.Size);
+        var area = region.HasValue ? Rectangle.Intersect(region.Value, full) : full;
+        if (area.Width <= 0 || area.Height <= 0)
+            area = full;
         var b = new Bitmap(r.Width, r.Height);
         try
         {
             using var g = Graphics.FromImage(b);
-            g.CopyFromScreen(r.Location, Point.Empty, r.Size);
-            Check(h);
+            g.CopyFromScreen(r.X + area.X, r.Y + area.Y, area.X, area.Y, area.Size);
             return b;
         }
         catch
@@ -285,7 +289,7 @@ public sealed class Input : IDisposable
             }
         }
         await Task.Delay(delayMs, ct);
-        Desktop.Check(window);
+        // Focus after the press is verified by the caller, which can pause instead of aborting.
         trace?.Write(
             "input_completed",
             new

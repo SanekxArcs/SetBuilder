@@ -607,7 +607,22 @@ public sealed class Vision
             string zone = side == 0 ? "topLeft" : "topRight";
             if (TryName(f, zone, out _))
                 return side;
-            if (profile.FastRecognition && !LooksLikeCard(f, zone))
+            bool card = LooksLikeCard(f, zone);
+            // Structural check: a yellow frame on the top or middle row exists only in the roll menu,
+            // so the menu is recognized even when the new perk's name is unreadable.
+            if (card)
+            {
+                int focus = Focus(
+                    f,
+                    side == 0 ? ["topLeft", "middleLeft", "left"] : ["topRight", "middleRight", "right"]
+                );
+                if (focus is 0 or 1)
+                {
+                    trace?.Write("popup_structure", new { side, focus });
+                    return side;
+                }
+            }
+            if (profile.FastRecognition && !card)
                 continue;
             try
             {
@@ -660,6 +675,8 @@ public sealed class Runner : IBuildGame
     PartView? lastPart;
     bool autoResolved;
     readonly Action<Build>? autoApplied;
+    Bitmap? lastFrame;
+    long pausedMs;
 
     public Runner(
         Catalog c,
@@ -681,39 +698,123 @@ public sealed class Runner : IBuildGame
         originalBounds = Desktop.Bounds(w);
     }
 
-    Bitmap Frame([System.Runtime.CompilerServices.CallerMemberName] string stage = "")
+    // The runner owns the frames: each capture disposes the previous one, and the last frame is handed
+    // to the session log when the run ends so it can be saved on failure without copying every frame.
+    async Task<Bitmap> Frame(
+        CancellationToken ct,
+        string[]? zones = null,
+        [System.Runtime.CompilerServices.CallerMemberName] string stage = ""
+    )
     {
-        Desktop.Check(window);
+        await EnsureFocus(ct);
         if (Desktop.Bounds(window) != originalBounds)
             throw new InvalidOperationException("Змінилися розмір або положення гри.");
-        var frame = Desktop.Capture(window);
-        trace?.Observe(frame, stage);
+        Rectangle? region = zones == null ? null : Region(zones);
+        var frame = Desktop.Capture(window, region);
+        lastFrame?.Dispose();
+        lastFrame = frame;
+        trace?.Observe(frame, stage, retain: false, region: region);
         return frame;
+    }
+
+    // Union of the requested zones with a margin that covers the focus-edge scan and OCR fallback crops.
+    Rectangle Region(string[] zones)
+    {
+        var full = new Rectangle(Point.Empty, originalBounds.Size);
+        Rectangle? union = null;
+        foreach (string name in zones)
+        {
+            if (!p.Zones.TryGetValue(name, out var zone))
+                continue;
+            var r = zone.Pixels(full.Size);
+            union = union == null ? r : Rectangle.Union(union.Value, r);
+        }
+        if (union == null)
+            return full;
+        var area = union.Value;
+        area.Inflate(24, 24);
+        return Rectangle.Intersect(area, full);
+    }
+
+    bool GameFocused => Desktop.GetForegroundWindow() == window;
+
+    // Pause instead of abort: no key is sent while the game is in the background, and the run continues
+    // once focus returns. State is re-verified by the next screen read, so a stale frame is never trusted.
+    async Task EnsureFocus(CancellationToken ct)
+    {
+        if (!Desktop.IsGame(window))
+            throw new InvalidOperationException("Обране вікно не належить The Crew Motorfest.");
+        if (GameFocused)
+            return;
+        int waitSeconds = p.FocusLostWaitSeconds;
+        if (waitSeconds <= 0)
+            throw new InvalidOperationException("Зупинено: гра втратила фокус.");
+        var wait = System.Diagnostics.Stopwatch.StartNew();
+        trace?.Write("focus_lost", new { waitSeconds });
+        log($"Гра втратила фокус. Натискання зупинено; чекаю повернення до {waitSeconds} с · F10 — скасувати");
+        try
+        {
+            while (!GameFocused)
+            {
+                if (wait.Elapsed.TotalSeconds >= waitSeconds)
+                {
+                    trace?.Write("focus_wait_timeout", new { waitSeconds });
+                    throw new InvalidOperationException($"Зупинено: гра не повернула фокус за {waitSeconds} с.");
+                }
+                await Task.Delay(250, ct);
+            }
+            // Let the game redraw after regaining focus before any frame is trusted.
+            await Task.Delay(400, ct);
+        }
+        finally
+        {
+            pausedMs += wait.ElapsedMilliseconds;
+        }
+        trace?.Write("focus_resumed", new { pausedMs = wait.ElapsedMilliseconds });
+        log("Фокус повернувся. Перевіряю екран і продовжую.");
     }
 
     async Task<T> Until<T>(
         Func<Bitmap, Task<T>> read,
         Func<T, T, bool> same,
         CancellationToken ct,
+        string[]? zones = null,
         [System.Runtime.CompilerServices.CallerMemberName] string stage = "",
         int timeoutMs = 9000
     )
     {
         int attempt = 0;
-        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        long pausedBefore = pausedMs;
         T? previous = default;
         bool have = false;
         Exception? last = null;
         trace?.Write("state_wait", new { stage });
-        while (DateTime.UtcNow < deadline)
+        // Time spent paused for lost focus does not count against the timeout.
+        while (clock.ElapsedMilliseconds - (pausedMs - pausedBefore) < timeoutMs)
         {
             ct.ThrowIfCancellationRequested();
             try
             {
-                using var frame = Frame(stage + "-attempt-" + (++attempt));
+                var frame = await Frame(ct, zones, stage + "-attempt-" + (++attempt));
                 var value = await read(frame);
-                Desktop.Check(window);
                 ct.ThrowIfCancellationRequested();
+                if (!GameFocused)
+                {
+                    // Another window may have covered the capture; discard it and wait for focus.
+                    have = false;
+                    trace?.Write(
+                        "state_retry",
+                        new
+                        {
+                            stage,
+                            attempt,
+                            error = "focus lost during read",
+                        }
+                    );
+                    await EnsureFocus(ct);
+                    continue;
+                }
                 if (have && same(previous!, value))
                 {
                     trace?.Write("state_confirmed", new { stage, attempt });
@@ -724,7 +825,6 @@ public sealed class Runner : IBuildGame
             }
             catch (InvalidOperationException e)
             {
-                Desktop.Check(window);
                 last = e;
                 have = false;
                 trace?.Write(
@@ -776,6 +876,11 @@ public sealed class Runner : IBuildGame
         }
         finally
         {
+            if (trace != null)
+                trace.Retain(lastFrame);
+            else
+                lastFrame?.Dispose();
+            lastFrame = null;
             log(ledger.Text());
         }
     }
@@ -847,7 +952,8 @@ public sealed class Runner : IBuildGame
                     return await vision.SetName(frame);
                 },
                 (a, b) => a == b,
-                ct
+                ct,
+                ["part", "set"]
             );
             var choice = AutoSetResolver.Resolve(catalog, detected);
             p.Set = detected;
@@ -892,7 +998,8 @@ public sealed class Runner : IBuildGame
             },
             (a, b) =>
                 a.Id == b.Id && a.Focus == b.Focus && a.Cards.Zip(b.Cards).All(v => PerkCard.Same(v.First, v.Second)),
-            ct
+            ct,
+            ["part", "set", "left", "right", "topLeft", "topRight"]
         );
     }
 
@@ -929,7 +1036,7 @@ public sealed class Runner : IBuildGame
         while (DateTime.UtcNow < paidDeadline)
         {
             ct.ThrowIfCancellationRequested();
-            using var paidFrame = Frame("paid-roll-observation");
+            var paidFrame = await Frame(ct, ["topLeft", "topRight"], "paid-roll-observation");
             if (await vision.PopupSide(paidFrame) == slot)
             {
                 ledger.Confirm(rollId);
@@ -987,7 +1094,8 @@ public sealed class Runner : IBuildGame
         Until(
             f => vision.Select(f, rows, current, phase, targets),
             (a, b) => a.Index == b.Index && PerkCard.Same(a.Expected, b.Expected),
-            ct
+            ct,
+            rows
         );
 
     static string[] Rows(int slot) =>
@@ -1116,7 +1224,6 @@ public sealed class Runner : IBuildGame
             },
             error =>
             {
-                Desktop.Check(window);
                 trace?.Write("navigation_fallback", new { expected, error = error.Message });
                 log("Швидкий перехід не підтверджено. Повертаюся до класичного маршруту: " + error.Message);
             },
@@ -1152,7 +1259,7 @@ public sealed class Runner : IBuildGame
             target,
             async () =>
             {
-                using var frame = Frame("grid-navigation-read");
+                var frame = await Frame(ct, null, "grid-navigation-read");
                 if (await vision.ScreenState(frame) != GameScreen.Parts)
                     return -1;
                 return vision.GridFocus(frame);
@@ -1212,19 +1319,19 @@ public sealed class Runner : IBuildGame
 
     async Task Press(string action, CancellationToken ct)
     {
+        await EnsureFocus(ct);
         trace?.Write("input_context", new { action, rolls });
         await input!.Press(action, ct);
-        if (trace != null)
-        {
-            using var after = Frame("after-" + action);
-        }
+        await EnsureFocus(ct);
+        // The after-press frame is purely diagnostic; skip the capture once the PNG budget is spent.
+        if (trace?.ScreenshotBudgetAvailable == true)
+            await Frame(ct, null, "after-" + action);
     }
 
     async Task FocusMain(int desired, CancellationToken ct)
     {
-        int focus;
-        using (var current = Frame())
-            focus = vision.Focus(current, ["left", "right"]);
+        var current = await Frame(ct, ["left", "right"]);
+        int focus = vision.Focus(current, ["left", "right"]);
         if (focus < 0)
             focus = await Until(
                 frame =>
@@ -1235,7 +1342,8 @@ public sealed class Runner : IBuildGame
                     return Task.FromResult(value);
                 },
                 (a, b) => a == b,
-                ct
+                ct,
+                ["left", "right"]
             );
         if (focus == desired)
             return;
@@ -1249,7 +1357,8 @@ public sealed class Runner : IBuildGame
                 return Task.FromResult(value);
             },
             (a, b) => a == b,
-            ct
+            ct,
+            ["left", "right"]
         );
     }
 
@@ -1257,9 +1366,9 @@ public sealed class Runner : IBuildGame
     {
         await FocusNavigator.Ensure(
             desired,
-            () =>
+            async () =>
             {
-                using var frame = Frame("FocusRows-read");
+                var frame = await Frame(ct, rows, "FocusRows-read");
                 return vision.Focus(frame, rows);
             },
             Press,

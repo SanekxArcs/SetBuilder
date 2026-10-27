@@ -1,4 +1,4 @@
-namespace TunerFest;
+﻿namespace TunerFest;
 
 public static class FocusVerification
 {
@@ -19,7 +19,7 @@ public static class FocusVerification
             var keys = new List<string>();
             await FocusNavigator.Ensure(
                 0,
-                () => queue.Count > 0 ? last = queue.Dequeue() : last,
+                () => Task.FromResult(queue.Count > 0 ? last = queue.Dequeue() : last),
                 (key, _) =>
                 {
                     keys.Add(key);
@@ -51,7 +51,7 @@ public static class FocusVerification
                 () =>
                 {
                     reads++;
-                    return -1;
+                    return Task.FromResult(-1);
                 },
                 (_, _) =>
                 {
@@ -74,7 +74,15 @@ public static class FocusVerification
         stopped = false;
         try
         {
-            await FocusNavigator.Ensure(0, () => 1, (_, _) => Task.CompletedTask, 4, 10, null, cancelled.Token);
+            await FocusNavigator.Ensure(
+                0,
+                () => Task.FromResult(1),
+                (_, _) => Task.CompletedTask,
+                4,
+                10,
+                null,
+                cancelled.Token
+            );
         }
         catch (OperationCanceledException)
         {
@@ -100,7 +108,7 @@ public static class FocusVerification
         var keys = new List<string>();
         await FocusNavigator.Ensure(
             0,
-            () => queue.Count > 0 ? last = queue.Dequeue() : last,
+            () => Task.FromResult(queue.Count > 0 ? last = queue.Dequeue() : last),
             (key, _) =>
             {
                 keys.Add(key);

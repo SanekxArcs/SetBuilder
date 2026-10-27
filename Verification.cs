@@ -411,6 +411,52 @@ public static class Verification
             mismatch = true;
         }
         Assert(mismatch, "reject unexpected reroll identity");
+        // Fuzzy titles: one or two wrong glyphs at the start of a card still resolve to a unique perk.
+        Assert(
+            Recognition.Name("Bende Increase the player's lean bonus by 4.6% [3%-8%] for BIKES", c).Title == "Bended",
+            "fuzzy: observed Bende OCR resolves to Bended without an alias"
+        );
+        Assert(
+            Recognition.Name("Treasure Hurt Increase RADAR range by 6% [5%-10%]", c).Title == "Treasure Hunt",
+            "fuzzy: one wrong glyph in a long title"
+        );
+        Assert(
+            Recognition.Name("TrawIer Increase SPEED in WATER by 1.3% [1.2%-2%]", c).Title == "Trawler",
+            "fuzzy: l read as I still picks Trawler over Trailer"
+        );
+        foreach (var affix in c.Affixes)
+        {
+            Assert(
+                Recognition.Name(affix.Title + " Increase X by 1% [1%-3%]", c).Title == affix.Title,
+                "exact title: " + affix.Title
+            );
+            string damaged = affix.Title[..^1] + "#";
+            Assert(
+                Recognition.Name(damaged + " Increase X by 1% [1%-3%]", c).Title == affix.Title,
+                "fuzzy last glyph: " + affix.Title
+            );
+        }
+        foreach (
+            var text in new[]
+            {
+                "Zzzzzzz Increase X by 1% [1%-3%]",
+                "Rich Pure 1% [1%-3%]",
+                "Tra 1% [1%-3%]",
+                "Increase X by 1% [1%-3%]",
+            }
+        )
+        {
+            bool rejected = false;
+            try
+            {
+                Recognition.Name(text, c);
+            }
+            catch (InvalidOperationException)
+            {
+                rejected = true;
+            }
+            Assert(rejected, "fuzzy rejects unknown or ambiguous: " + text);
+        }
         Assert(
             c.Builds.All(b =>
                 b.Affixes.Length == 2
