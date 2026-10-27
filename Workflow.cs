@@ -173,7 +173,7 @@ public static class PartTransition
         {
             await fast();
         }
-        catch (InvalidOperationException e)
+        catch (InvalidOperationException e) when (e is not FocusLostException)
         {
             ct.ThrowIfCancellationRequested();
             report(e);

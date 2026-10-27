@@ -748,7 +748,7 @@ public sealed class Runner : IBuildGame
             return;
         int waitSeconds = p.FocusLostWaitSeconds;
         if (waitSeconds <= 0)
-            throw new InvalidOperationException("Зупинено: гра втратила фокус.");
+            throw new FocusLostException("Зупинено: гра втратила фокус.");
         var wait = System.Diagnostics.Stopwatch.StartNew();
         trace?.Write("focus_lost", new { waitSeconds });
         log($"Гра втратила фокус. Натискання зупинено; чекаю повернення до {waitSeconds} с · F10 — скасувати");
@@ -759,7 +759,7 @@ public sealed class Runner : IBuildGame
                 if (wait.Elapsed.TotalSeconds >= waitSeconds)
                 {
                     trace?.Write("focus_wait_timeout", new { waitSeconds });
-                    throw new InvalidOperationException($"Зупинено: гра не повернула фокус за {waitSeconds} с.");
+                    throw new FocusLostException($"Зупинено: гра не повернула фокус за {waitSeconds} с.");
                 }
                 await Task.Delay(250, ct);
             }
@@ -823,7 +823,7 @@ public sealed class Runner : IBuildGame
                 previous = value;
                 have = true;
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException e) when (e is not FocusLostException)
             {
                 last = e;
                 have = false;
@@ -1031,9 +1031,11 @@ public sealed class Runner : IBuildGame
                 ledger.NotSent(rollId);
             throw;
         }
-        var paidDeadline = DateTime.UtcNow.AddSeconds(9);
+        // Pause-aware like Until: time spent waiting for focus does not count against the 9 s limit.
+        var paidClock = System.Diagnostics.Stopwatch.StartNew();
+        long paidPausedBefore = pausedMs;
         bool paid = false;
-        while (DateTime.UtcNow < paidDeadline)
+        while (paidClock.ElapsedMilliseconds - (pausedMs - paidPausedBefore) < 9000)
         {
             ct.ThrowIfCancellationRequested();
             var paidFrame = await Frame(ct, ["topLeft", "topRight"], "paid-roll-observation");

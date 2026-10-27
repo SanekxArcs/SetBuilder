@@ -340,6 +340,26 @@ public static class WorkflowVerification
             focusStopped = true;
         }
         Check(focusStopped && routeActions.Count == 0, "lost-focus guard stops recovery before any further input");
+        bool focusTimeoutPropagated = false;
+        try
+        {
+            await PartTransition.Run(
+                true,
+                () => throw new FocusLostException("focus wait timed out"),
+                () => RouteAction("classic"),
+                () => RouteAction("fallback"),
+                _ => routeActions.Add("report"),
+                CancellationToken.None
+            );
+        }
+        catch (FocusLostException)
+        {
+            focusTimeoutPropagated = true;
+        }
+        Check(
+            focusTimeoutPropagated && routeActions.Count == 0,
+            "focus-wait timeout is never retried as a quick-route failure"
+        );
         var ledger = new RunLedger();
         for (int i = 0; i < 49; i++)
         {

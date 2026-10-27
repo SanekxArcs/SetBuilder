@@ -11,6 +11,9 @@ public record GameWindow(IntPtr Handle, string Title, string ProcessName)
     public override string ToString() => Title;
 }
 
+// Distinct type so screen-wait loops never treat a focus timeout as a retryable read error.
+public sealed class FocusLostException(string message) : InvalidOperationException(message);
+
 public static class Desktop
 {
     [DllImport("user32.dll")]
@@ -106,7 +109,7 @@ public static class Desktop
         if (!IsGame(h))
             throw new InvalidOperationException("Обране вікно не належить The Crew Motorfest.");
         if (GetForegroundWindow() != h)
-            throw new InvalidOperationException("Зупинено: гра втратила фокус.");
+            throw new FocusLostException("Зупинено: гра втратила фокус.");
     }
 
     // The bitmap always has the full client size so zone coordinates stay valid.
