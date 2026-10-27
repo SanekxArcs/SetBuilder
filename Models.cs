@@ -75,16 +75,24 @@ public sealed class Profile
     public bool FirstOptional { get; set; }
     public bool SecondOptional { get; set; }
 
-    public bool IsRequired(string name) =>
-        name == First ? !FirstOptional
-        : name == Second ? !SecondOptional
-        : false;
+    // Alternatives: a goal is satisfied by its main name or its alternative, whichever appears first.
+    public string FirstAlternative { get; set; } = "";
+    public string SecondAlternative { get; set; } = "";
 
-    public string[] RequiredNames() =>
-        new[] { (First, FirstOptional), (Second, SecondOptional) }
-            .Where(p => !p.Item2 && p.Item1 != "")
-            .Select(p => p.Item1)
-            .ToArray();
+    // The two slot goals. Each is a set of acceptable names plus whether the goal may be skipped.
+    public PerkGoal[] Goals() =>
+        [new(Names(First, FirstAlternative), FirstOptional), new(Names(Second, SecondAlternative), SecondOptional)];
+
+    static string[] Names(string main, string alternative) =>
+        new[] { main, alternative }.Where(n => n != "").Distinct().ToArray();
+
+    public string[] WantedNames() => Goals().SelectMany(g => g.Names).Distinct().ToArray();
+
+    public int GoalIndex(string name) => Array.FindIndex(Goals(), g => g.Names.Contains(name));
+
+    public bool IsRequired(string name) => Goals().Any(g => !g.Optional && g.Names.Contains(name));
+
+    public string[] RequiredNames() => Goals().Where(g => !g.Optional).SelectMany(g => g.Names).ToArray();
 
     public bool Xbox { get; set; } = false;
     public int Parts { get; set; } = 7;
@@ -161,6 +169,11 @@ public sealed class Profile
         Directory.CreateDirectory(Folder);
         File.WriteAllText(PathName, JsonSerializer.Serialize(this, Catalog.JsonOptions));
     }
+}
+
+public record PerkGoal(string[] Names, bool Optional)
+{
+    public string Label => string.Join(" або ", Names) + (Optional ? " (необов'язковий)" : "");
 }
 
 public record Reading(Affix Affix, double Value, double Minimum, double Maximum)

@@ -1188,12 +1188,14 @@ public sealed class Runner : IBuildGame
     {
         var part = await Part(ct, true);
         var current = part.Cards[side];
-        string[] wanted = [p.First, p.Second];
+        string[] wanted = p.WantedNames();
         PopupSelection choice;
         if (wanted.Contains(current.Name))
         {
             bool both =
-                part.Cards.Select(c => c.Name).Distinct().Count() == 2 && part.Cards.All(c => wanted.Contains(c.Name));
+                p.GoalIndex(part.Cards[0].Name) >= 0
+                && p.GoalIndex(part.Cards[1].Name) >= 0
+                && p.GoalIndex(part.Cards[0].Name) != p.GoalIndex(part.Cards[1].Name);
             choice =
                 both && !current.Maxed && p.IsRequired(current.Name)
                     ? await Selection(Rows(side), current, RollPhase.Maximize, [current.Name], ct)

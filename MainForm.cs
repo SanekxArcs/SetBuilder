@@ -168,6 +168,10 @@ public sealed class MainForm : Form
     readonly FluentCheck toastEnabled = new();
     readonly FluentCheck firstOptional = new(),
         secondOptional = new();
+    FlowLayoutPanel? settingsStack;
+    readonly DarkSelect firstAlt = new(),
+        secondAlt = new();
+    static readonly Affix NoAlternative = new() { Title = "— без альтернативи —" };
     readonly Label status = new()
     {
         Text = "Готовий до налаштування · F8 запуск · F7 зчитати · F10 стоп",
@@ -347,6 +351,7 @@ public sealed class MainForm : Form
             );
         };
         var left = Stack();
+        settingsStack = left;
         layout.Controls.Add(left, 0, 0);
         var right = Stack();
         layout.Controls.Add(right, 1, 0);
@@ -368,8 +373,14 @@ public sealed class MainForm : Form
         GoalRow(left, sets, catalog.Sets.Cast<object>(), iconSet);
         AddLabel(left, "Перший перк");
         GoalRow(left, first, catalog.Affixes.Cast<object>(), iconFirst, firstOptional);
+        AlternativeRow(left, firstAlt);
         AddLabel(left, "Другий перк");
         GoalRow(left, second, catalog.Affixes.Cast<object>(), iconSecond, secondOptional);
+        AlternativeRow(left, secondAlt);
+        firstAlt.SelectedItem =
+            catalog.Affixes.FirstOrDefault(a => a.Title == profile.FirstAlternative) ?? NoAlternative;
+        secondAlt.SelectedItem =
+            catalog.Affixes.FirstOrDefault(a => a.Title == profile.SecondAlternative) ?? NoAlternative;
         firstOptional.Checked = profile.FirstOptional;
         secondOptional.Checked = profile.SecondOptional;
         firstOptional.CheckedChanged += (_, _) =>
@@ -386,7 +397,7 @@ public sealed class MainForm : Form
         };
         AddLabel(
             left,
-            "Будь-який порядок слотів. Необов'язковий перк не шукається й не покращується; якщо випав під час пошуку — залишається.",
+            "Будь-який порядок слотів. «або» — беремо той із двох, що випав першим, і доводимо до максимуму. Необов'язковий не шукається й не покращується.",
             true
         );
         AddLabel(right, "ВІКНО ГРИ", true);
@@ -551,6 +562,8 @@ public sealed class MainForm : Form
                 {
                     first.SelectedItem = catalog.Affixes.FirstOrDefault(a => a.Title == b.Affixes[0]);
                     second.SelectedItem = catalog.Affixes.FirstOrDefault(a => a.Title == b.Affixes[1]);
+                    firstAlt.SelectedItem = NoAlternative;
+                    secondAlt.SelectedItem = NoAlternative;
                 }
             }
         };
@@ -753,6 +766,31 @@ public sealed class MainForm : Form
         if (text != "Зупинити · F10")
             settingsControls.Add(b);
         return b;
+    }
+
+    void AlternativeRow(Control c, DarkSelect alternative)
+    {
+        var row = new FlowLayoutPanel
+        {
+            Width = 560,
+            Height = 36,
+            WrapContents = false,
+        };
+        c.Controls.Add(row);
+        row.Controls.Add(
+            new Label
+            {
+                Text = "або",
+                AutoSize = true,
+                ForeColor = Muted,
+                Margin = new(10, 9, 6, 0),
+                Width = 30,
+            }
+        );
+        Combo(row, alternative, new object[] { NoAlternative }.Concat(catalog.Affixes.Cast<object>()));
+        alternative.Width = 300;
+        alternative.Height = 32;
+        alternative.Margin = new(8, 1, 3, 3);
     }
 
     void GoalRow(Control c, DarkSelect combo, IEnumerable<object> data, PictureBox box, FluentCheck? optional = null)
@@ -1367,9 +1405,11 @@ public sealed class MainForm : Form
     {
         restoringLogLayout = true;
         int available = mainSplit.ClientSize.Height - mainSplit.SplitterWidth;
+        // The settings column gets the height its content needs; the log takes what remains.
+        int needed = settingsStack == null ? 0 : settingsStack.GetPreferredSize(Size.Empty).Height + 40;
         if (available >= mainSplit.Panel1MinSize + mainSplit.Panel2MinSize)
             mainSplit.SplitterDistance = Math.Clamp(
-                available - profile.LogPanelHeight,
+                Math.Max(available - profile.LogPanelHeight, Math.Min(needed, available - mainSplit.Panel2MinSize)),
                 mainSplit.Panel1MinSize,
                 available - mainSplit.Panel2MinSize
             );
@@ -1397,7 +1437,7 @@ public sealed class MainForm : Form
 
     void SyncTargetControls()
     {
-        foreach (var c in new Control[] { sets, first, second, builds })
+        foreach (var c in new Control[] { sets, first, second, builds, firstAlt, secondAlt })
             c.Enabled = !busy && !autoSet.Checked;
     }
 
@@ -1408,6 +1448,9 @@ public sealed class MainForm : Form
         );
         first.SelectedItem = catalog.Affixes.FirstOrDefault(a => a.Title == choice.Affixes[0]);
         second.SelectedItem = catalog.Affixes.FirstOrDefault(a => a.Title == choice.Affixes[1]);
+        firstAlt.SelectedItem = NoAlternative;
+        secondAlt.SelectedItem = NoAlternative;
+        profile.FirstAlternative = profile.SecondAlternative = "";
         builds.SelectedItem = choice;
         SyncTargetControls();
         if (!smoke)
@@ -1540,6 +1583,29 @@ public sealed class MainForm : Form
             )
                 throw new InvalidOperationException("Optional perk toggle did not update the profile");
             firstOptional.Checked = false;
+            secondAlt.SelectedItem = catalog.Affixes.First(a => a.Title == "Rich");
+            SaveSelection();
+            if (
+                !profile.Goals()[1].Names.SequenceEqual(new[] { "Extra Pump", "Rich" })
+                || profile.GoalIndex("Rich") != 1
+            )
+                throw new InvalidOperationException("Alternative perk did not form a two-name goal");
+            secondAlt.SelectedItem = catalog.Affixes.First(a => a.Title == "Pure");
+            bool duplicateRejected = false;
+            try
+            {
+                SaveSelection();
+            }
+            catch (InvalidOperationException)
+            {
+                duplicateRejected = true;
+            }
+            if (!duplicateRejected)
+                throw new InvalidOperationException("Duplicate alternative was not rejected");
+            secondAlt.SelectedItem = NoAlternative;
+            SaveSelection();
+            if (profile.SecondAlternative != "")
+                throw new InvalidOperationException("Alternative did not clear");
             OnProgress(new RunProgress("running", 3, 7, 41, 61500, 6150));
             if (runStatus.Current != StatusCard.Mode.Running || lastProgress?.Rolls != 41)
                 throw new InvalidOperationException("Status card did not enter running state");
@@ -1562,7 +1628,7 @@ public sealed class MainForm : Form
             OnProgress(new RunProgress("running", 3, 7, 41, 61500, 6150));
             File.AppendAllText(
                 Path.Combine(AppContext.BaseDirectory, "ui-controls-test.txt"),
-                "PASS status card: running, paused, resumed, done, failed, cancelled\nPASS app icon, dark scrollbars and toast toggle constructed\n"
+                "PASS status card: running, paused, resumed, done, failed, cancelled\nPASS app icon, dark scrollbars and toast toggle constructed\nPASS optional toggle and alternative perk goals save, duplicates rejected\n"
             );
             AppendLog("Шукаю пару: Rich + Legend. Порядок слотів довільний.");
             AppendLog("Знайдено Rich у слоті 2. У слоті 1 шукаю тільки Legend.");
@@ -1587,8 +1653,15 @@ public sealed class MainForm : Form
         profile.Second = second.SelectedItem?.ToString() ?? "";
         profile.FirstOptional = firstOptional.Checked;
         profile.SecondOptional = secondOptional.Checked;
+        profile.FirstAlternative = firstAlt.SelectedIndex > 0 ? firstAlt.SelectedItem?.ToString() ?? "" : "";
+        profile.SecondAlternative = secondAlt.SelectedIndex > 0 ? secondAlt.SelectedItem?.ToString() ?? "" : "";
         if (profile.FirstOptional && profile.SecondOptional)
             throw new InvalidOperationException("Принаймні один перк має бути обов'язковим.");
+        var names = new[] { profile.First, profile.FirstAlternative, profile.Second, profile.SecondAlternative }
+            .Where(n => n != "")
+            .ToArray();
+        if (!profile.AutoSet && names.Distinct().Count() != names.Length)
+            throw new InvalidOperationException("Перки та альтернативи мають бути різними.");
         profile.Parts = selectedPartCount;
         profile.FastRecognition = fastRecognition.Checked;
         profile.Delay = (int)delay.Value;

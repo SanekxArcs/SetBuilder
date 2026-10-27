@@ -92,6 +92,8 @@ public static class WorkflowVerification
         var legendMax = Card("Legend", 4, 2, 4);
         var rich = Card("Rich", 1, 1, 3);
         var richMax = Card("Rich", 3, 1, 3);
+        var pure = Card("Pure", 3, 3, 5);
+        var pureMax = Card("Pure", 5, 3, 5);
         var parts = Enumerable.Range(0, 7).Select(i => new PartView("PART" + i, [iron, bulldozer], 0)).ToArray();
         var steps = new Queue<Step>();
         for (int i = 0; i < 7; i++)
@@ -209,6 +211,72 @@ public static class WorkflowVerification
             rejected = true;
         }
         Check(rejected, "two optional perks are rejected before any roll");
+        // Alternatives: the second goal is "Legend or Pure"; whichever appears first is taken and maximized.
+        var altProfile = new Profile
+        {
+            First = "Rich",
+            Second = "Legend",
+            SecondAlternative = "Pure",
+            Parts = 1,
+        };
+        var altParts = new[] { new PartView("ALT", [iron, bulldozer], 0) };
+        var altSteps = new Queue<Step>([
+            new(0, RollPhase.Search, pure, ["Rich", "Legend", "Pure"]),
+            new(1, RollPhase.Search, rich, ["Rich"]),
+            new(1, RollPhase.Maximize, richMax, ["Rich"]),
+            new(0, RollPhase.Maximize, pureMax, ["Pure"]),
+        ]);
+        await new BuildWorkflow(new FakeGame(altParts, altSteps), altProfile, _ => { }).Run(CancellationToken.None);
+        Check(
+            altSteps.Count == 0 && altParts[0].Cards[0] == pureMax && altParts[0].Cards[1] == richMax,
+            "alternative found first is kept and maximized; main perk searched in the other slot"
+        );
+        var altMainParts = new[] { new PartView("ALTMAIN", [rich, bulldozer], 0) };
+        var altMainSteps = new Queue<Step>([
+            new(1, RollPhase.Search, legend, ["Legend", "Pure"]),
+            new(1, RollPhase.Maximize, legendMax, ["Legend"]),
+            new(0, RollPhase.Maximize, richMax, ["Rich"]),
+        ]);
+        await new BuildWorkflow(new FakeGame(altMainParts, altMainSteps), altProfile, _ => { }).Run(
+            CancellationToken.None
+        );
+        Check(
+            altMainSteps.Count == 0 && altMainParts[0].Cards[1] == legendMax,
+            "main perk present: the other slot accepts either alternative name"
+        );
+        var sameGoalParts = new[] { new PartView("SAMEGOAL", [legend, pure], 0) };
+        var sameGoalSteps = new Queue<Step>([
+            new(1, RollPhase.Search, rich, ["Rich"]),
+            new(1, RollPhase.Maximize, richMax, ["Rich"]),
+            new(0, RollPhase.Maximize, legendMax, ["Legend"]),
+        ]);
+        await new BuildWorkflow(new FakeGame(sameGoalParts, sameGoalSteps), altProfile, _ => { }).Run(
+            CancellationToken.None
+        );
+        Check(
+            sameGoalSteps.Count == 0 && sameGoalParts[0].Cards[0] == legendMax && sameGoalParts[0].Cards[1] == richMax,
+            "two cards from one goal: the first is kept, the other slot is rolled for the main perk"
+        );
+        bool duplicateGoal = false;
+        try
+        {
+            await new BuildWorkflow(
+                new FakeGame([new("DUP", [iron, bulldozer], 0)], new()),
+                new Profile
+                {
+                    First = "Rich",
+                    Second = "Legend",
+                    SecondAlternative = "Rich",
+                    Parts = 1,
+                },
+                _ => { }
+            ).Run(CancellationToken.None);
+        }
+        catch (InvalidOperationException)
+        {
+            duplicateGoal = true;
+        }
+        Check(duplicateGoal, "a name shared by both goals is rejected before any roll");
         Check(
             messages.Any(m => m.Contains("Rich знайдено у слоті 2"))
                 && messages.Any(m => m.Contains("Шукаю лише Legend у слоті 1"))
