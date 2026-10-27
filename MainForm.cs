@@ -162,6 +162,10 @@ public sealed class MainForm : Form
     readonly DarkSelect completionTone = new(),
         stopTone = new(),
         partRoute = new();
+    readonly StatusCard runStatus = new();
+    NotifyIcon? tray;
+    RunProgress? lastProgress;
+    readonly FluentCheck toastEnabled = new();
     readonly Label status = new()
     {
         Text = "Готовий до налаштування · F8 запуск · F7 зчитати · F10 стоп",
@@ -239,13 +243,17 @@ public sealed class MainForm : Form
         {
             profile = new();
         }
-        Text = "TunerFest · Set Builder " + AppVersion;
+        Text = Shell.WindowTitlePrefix + " " + AppVersion;
+        if (Shell.AppIcon != null)
+            Icon = Shell.AppIcon;
+        if (smoke)
+            Toasts.Enabled = false;
         ClientSize = new(1180, 940);
-        MinimumSize = new(1080, 860);
+        MinimumSize = new(960, 700);
         StartPosition = FormStartPosition.CenterScreen;
         BackColor = Bg;
         ForeColor = Color.White;
-        Font = new("Segoe UI Variable Text", 10);
+        Font = new(Shell.Family("Segoe UI Variable Text", "Segoe UI"), 10);
         AutoScaleMode = AutoScaleMode.Dpi;
         var root = new TableLayoutPanel
         {
@@ -260,11 +268,15 @@ public sealed class MainForm : Form
         root.RowStyles.Add(new(SizeType.Absolute, 30));
         Controls.Add(root);
         var header = new Panel { Dock = DockStyle.Fill };
+        runStatus.Dock = DockStyle.Right;
+        runStatus.Width = 560;
+        runStatus.Font = Font;
+        header.Controls.Add(runStatus);
         header.Controls.Add(
             new Label
             {
                 Text = "Set Builder",
-                Font = new("Segoe UI Variable Display", 27, FontStyle.Bold),
+                Font = new(Shell.Family("Segoe UI Variable Display", "Segoe UI"), 27, FontStyle.Bold),
                 ForeColor = Color.White,
                 AutoSize = true,
                 Location = new(0, 0),
@@ -531,9 +543,15 @@ public sealed class MainForm : Form
             ) ?? builds.Items[0];
         SyncTargetControls();
         RefreshWindows();
+        Shell.DarkScrollbars(this);
         Shown += (_, _) =>
         {
             Fluent.Window(this);
+            if (!smoke)
+            {
+                RestoreWindowBounds();
+                CreateTray();
+            }
             RestoreLogLayout();
             if (!smoke)
             {
@@ -555,8 +573,95 @@ public sealed class MainForm : Form
                 Cancel();
                 e.Cancel = true;
                 Log("Зупиняю дію. Закрийте вікно ще раз після зупинки.");
+                return;
             }
+            SaveWindowBounds();
         };
+    }
+
+    void RestoreWindowBounds()
+    {
+        var saved = profile.WindowBounds;
+        if (saved is { Length: 4 })
+        {
+            var bounds = new Rectangle(saved[0], saved[1], saved[2], saved[3]);
+            // Only reuse a placement that is still visible on a connected screen.
+            bool visible = Screen.AllScreens.Any(s =>
+                Rectangle.Intersect(s.WorkingArea, bounds) is { Width: > 200, Height: > 120 }
+            );
+            if (visible && bounds.Width >= MinimumSize.Width && bounds.Height >= MinimumSize.Height)
+            {
+                StartPosition = FormStartPosition.Manual;
+                Bounds = bounds;
+            }
+        }
+        if (profile.WindowMaximized)
+            WindowState = FormWindowState.Maximized;
+    }
+
+    void SaveWindowBounds()
+    {
+        if (smoke)
+            return;
+        var bounds = WindowState == FormWindowState.Normal ? Bounds : RestoreBounds;
+        profile.WindowBounds = [bounds.X, bounds.Y, bounds.Width, bounds.Height];
+        profile.WindowMaximized = WindowState == FormWindowState.Maximized;
+        try
+        {
+            profile.Save();
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+    }
+
+    void CreateTray()
+    {
+        var menu = new ContextMenuStrip
+        {
+            BackColor = Fluent.Surface,
+            ForeColor = Color.White,
+            ShowImageMargin = false,
+        };
+        menu.Items.Add("Показати вікно", null, (_, _) => Shell.Activate(Handle));
+        menu.Items.Add("Зупинити · F10", null, (_, _) => Cancel());
+        menu.Items.Add(new ToolStripSeparator());
+        menu.Items.Add("Вийти", null, (_, _) => Close());
+        tray = new NotifyIcon
+        {
+            Icon = Shell.AppIcon ?? Icon,
+            Text = Shell.WindowTitlePrefix,
+            Visible = true,
+            ContextMenuStrip = menu,
+        };
+        tray.DoubleClick += (_, _) => Shell.Activate(Handle);
+    }
+
+    void SetTrayText(string text)
+    {
+        if (tray == null)
+            return;
+        string value = "Set Builder · " + text;
+        tray.Text = value.Length > 63 ? value[..62] + "…" : value;
+    }
+
+    static string ProgressText(RunProgress r) =>
+        $"Деталь {Math.Max(1, r.Part)}/{r.Parts} · Кидків {r.Rolls} · {r.Bucks:N0} Bucks · {r.SpareParts:N0} запчастин";
+
+    void OnProgress(RunProgress r)
+    {
+        bool wasPaused = lastProgress?.State == "paused";
+        lastProgress = r;
+        string detail = ProgressText(r);
+        if (r.State == "paused")
+        {
+            runStatus.Set(StatusCard.Mode.Paused, "Пауза: гра без фокусу", detail + " · поверни фокус у гру");
+            SetTrayText("пауза, гра без фокусу");
+            Toasts.Show("Set Builder на паузі", "Гра втратила фокус. Поверни фокус у гру, щоб продовжити.", "state");
+            return;
+        }
+        if (wasPaused)
+            Toasts.Remove("state");
+        runStatus.Set(StatusCard.Mode.Running, "Виконується", detail);
+        SetTrayText($"деталь {Math.Max(1, r.Part)}/{r.Parts}, кидків {r.Rolls}");
     }
 
     FlowLayoutPanel Stack() =>
@@ -1018,8 +1123,8 @@ public sealed class MainForm : Form
         var stack = Stack();
         stack.Padding = new(24);
         tab.Controls.Add(stack);
-        AddLabel(stack, "ЗВУКОВІ СПОВІЩЕННЯ", true);
-        AddLabel(stack, "Почуй, коли сет готовий або робота зупинилась.");
+        AddLabel(stack, "СПОВІЩЕННЯ", true);
+        AddLabel(stack, "Дізнайся, коли сет готовий, робота зупинилась або чекає на фокус гри.");
         void SoundRow(FluentCheck toggle, DarkSelect tone, string title, bool enabled, string selected, bool completion)
         {
             toggle.Text = title;
@@ -1056,6 +1161,20 @@ public sealed class MainForm : Form
                 () => PlayNotification(true, (tone.SelectedItem as NotificationAudio.Tone)?.Code ?? "Asterisk", true)
             );
         }
+        toastEnabled.Text = "Сповіщення Windows у кутку екрана: готово, зупинка, пауза";
+        toastEnabled.Checked = profile.ToastEnabled;
+        toastEnabled.AutoSize = true;
+        toastEnabled.ForeColor = Color.White;
+        toastEnabled.Margin = new(3, 20, 3, 8);
+        stack.Controls.Add(toastEnabled);
+        settingsControls.Add(toastEnabled);
+        toastEnabled.CheckedChanged += (_, _) =>
+        {
+            profile.ToastEnabled = toastEnabled.Checked;
+            Toasts.Enabled = profile.ToastEnabled && !smoke;
+            if (!smoke)
+                profile.Save();
+        };
         SoundRow(
             completionAudio,
             completionTone,
@@ -1384,6 +1503,30 @@ public sealed class MainForm : Form
                 Path.Combine(AppContext.BaseDirectory, "ui-controls-test.txt"),
                 "PASS navigation route selector updates settings\nPASS seven count buttons update selection and saved setting\nPASS all four WAV signals load in Windows SoundPlayer\nPASS custom numeric typing, bounds and disabled state\nPASS completion and stop sound toggles\nPASS sound selection and profile round-trip\n"
             );
+            OnProgress(new RunProgress("running", 3, 7, 41, 61500, 6150));
+            if (runStatus.Current != StatusCard.Mode.Running || lastProgress?.Rolls != 41)
+                throw new InvalidOperationException("Status card did not enter running state");
+            OnProgress(new RunProgress("paused", 3, 7, 41, 61500, 6150));
+            if (runStatus.Current != StatusCard.Mode.Paused)
+                throw new InvalidOperationException("Status card did not enter paused state");
+            OnProgress(new RunProgress("running", 4, 7, 50, 75000, 7500));
+            if (runStatus.Current != StatusCard.Mode.Running)
+                throw new InvalidOperationException("Status card did not resume");
+            ShowOutcome("completed", null);
+            if (runStatus.Current != StatusCard.Mode.Done)
+                throw new InvalidOperationException("Status card did not show completion");
+            ShowOutcome("error", new InvalidOperationException("Тестова помилка"));
+            if (runStatus.Current != StatusCard.Mode.Failed)
+                throw new InvalidOperationException("Status card did not show failure");
+            ShowOutcome("cancelled", null);
+            if (runStatus.Current != StatusCard.Mode.Stopped)
+                throw new InvalidOperationException("Status card did not show cancellation");
+            runStatus.Set(StatusCard.Mode.Idle, "Очікування", "Вибери сет, два перки й вікно гри · F8 — запуск");
+            OnProgress(new RunProgress("running", 3, 7, 41, 61500, 6150));
+            File.AppendAllText(
+                Path.Combine(AppContext.BaseDirectory, "ui-controls-test.txt"),
+                "PASS status card: running, paused, resumed, done, failed, cancelled\nPASS app icon, dark scrollbars and toast toggle constructed\n"
+            );
             AppendLog("Шукаю пару: Rich + Legend. Порядок слотів довільний.");
             AppendLog("Знайдено Rich у слоті 2. У слоті 1 шукаю тільки Legend.");
             AppendLog("✓ Деталь 1: Legend 4% / 4% + Rich 3% / 3%");
@@ -1504,18 +1647,33 @@ public sealed class MainForm : Form
         try
         {
             SaveSelection();
+            Toasts.Enabled = profile.ToastEnabled && !smoke;
             StartDiagnostics(run ? "automation" : "read-only", game);
+            if (run)
+            {
+                lastProgress = null;
+                runStatus.Set(StatusCard.Mode.Countdown, "Старт", "Поверни фокус у гру · F10 — скасувати");
+                SetTrayText("старт");
+            }
             if (Desktop.GetForegroundWindow() != game.Handle)
             {
                 for (int i = 5; i > 0; i--)
                 {
                     Log($"Поверни фокус у гру. Старт за {i} с · F10 — скасувати");
+                    if (run)
+                        runStatus.Set(
+                            StatusCard.Mode.Countdown,
+                            $"Старт за {i} с",
+                            "Поверни фокус у гру · F10 — скасувати"
+                        );
                     await Task.Delay(1000, active.Token);
                 }
             }
             Desktop.Check(game.Handle);
             if (run)
-                await new Runner(catalog, profile, game.Handle, Log, recording, AutoSetApplied).Run(active.Token);
+                await new Runner(catalog, profile, game.Handle, Log, recording, AutoSetApplied, OnProgress).Run(
+                    active.Token
+                );
             else
             {
                 using var f = Desktop.Capture(game.Handle);
@@ -1539,10 +1697,13 @@ public sealed class MainForm : Form
         {
             await FinishDiagnostics(outcome, failure);
             if (run)
+            {
                 PlayNotification(
                     outcome == "completed" ? profile.CompletionSoundEnabled : profile.StopSoundEnabled,
                     outcome == "completed" ? profile.CompletionSound : profile.StopSound
                 );
+                ShowOutcome(outcome, failure);
+            }
             active.Dispose();
             active = null;
             busy = false;
@@ -1552,6 +1713,30 @@ public sealed class MainForm : Form
             SyncTimingControls();
             SyncTargetControls();
             SyncAudio();
+        }
+    }
+
+    void ShowOutcome(string outcome, Exception? failure)
+    {
+        string spent = lastProgress == null ? "Кидків 0" : ProgressText(lastProgress);
+        Toasts.Remove("state");
+        switch (outcome)
+        {
+            case "completed":
+                runStatus.Set(StatusCard.Mode.Done, "Готово: обидва перки на максимумі", spent);
+                SetTrayText("готово");
+                Toasts.Show("Сет готовий", $"{profile.Set}: {profile.First} + {profile.Second}. {spent}.", "result");
+                break;
+            case "cancelled":
+                runStatus.Set(StatusCard.Mode.Stopped, "Зупинено вручну", spent);
+                SetTrayText("зупинено");
+                break;
+            default:
+                string reason = failure?.Message ?? "невідома помилка";
+                runStatus.Set(StatusCard.Mode.Failed, "Зупинено з помилкою", reason + " · " + spent);
+                SetTrayText("помилка");
+                Toasts.Show("Set Builder зупинено", reason, "result");
+                break;
         }
     }
 
@@ -1692,6 +1877,7 @@ public sealed class MainForm : Form
     {
         if (disposing)
         {
+            tray?.Dispose();
             if (IsHandleCreated)
                 foreach (int id in new[] { 8, 9, 10 })
                     Desktop.UnregisterHotKey(Handle, id);

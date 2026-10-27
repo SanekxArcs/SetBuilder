@@ -52,7 +52,10 @@ public interface IBuildGame
     }
 }
 
-public sealed class BuildWorkflow(IBuildGame game, Profile profile, Action<string> log)
+// Structured run state for the UI; log text stays the human-readable record.
+public sealed record RunProgress(string State, int Part, int Parts, int Rolls, long Bucks, long SpareParts);
+
+public sealed class BuildWorkflow(IBuildGame game, Profile profile, Action<string> log, Action<int>? onPart = null)
 {
     public async Task Run(CancellationToken ct)
     {
@@ -66,6 +69,7 @@ public sealed class BuildWorkflow(IBuildGame game, Profile profile, Action<strin
             if (!visited.Add(state.Id))
                 throw new InvalidOperationException("Повторно відкрита вже оброблена деталь.");
             log($"Деталь {part + 1}/{profile.Parts}: {state.Id}");
+            onPart?.Invoke(part + 1);
             var cards = state.Cards.ToArray();
             log($"Шукаю пару: {profile.First} + {profile.Second}. Порядок слотів довільний.");
             int firstSlot = Array.FindIndex(cards, c => wanted.Contains(c.Name));

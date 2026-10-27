@@ -56,7 +56,7 @@ public sealed class DarkSelect : Control
             e.Graphics,
             SelectedItem?.ToString() ?? "Оберіть…",
             Font,
-            new Rectangle(12, 0, Width - 40, Height),
+            new Rectangle(Shell.Px(this, 12), 0, Width - Shell.Px(this, 40), Height),
             Enabled ? Color.White : Fluent.Muted,
             TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis
         );
@@ -65,9 +65,9 @@ public sealed class DarkSelect : Control
             arrow,
             new Point[]
             {
-                new(Width - 23, Height / 2 - 2),
-                new(Width - 18, Height / 2 + 3),
-                new(Width - 13, Height / 2 - 2),
+                new(Width - Shell.Px(this, 23), Height / 2 - Shell.Px(this, 2)),
+                new(Width - Shell.Px(this, 18), Height / 2 + Shell.Px(this, 3)),
+                new(Width - Shell.Px(this, 13), Height / 2 - Shell.Px(this, 2)),
             }
         );
     }
@@ -118,10 +118,14 @@ public sealed class DarkSelect : Control
             ForeColor = Color.White,
             Font = Font,
             DrawMode = DrawMode.OwnerDrawFixed,
-            ItemHeight = 30,
-            Size = new(Math.Max(Width, 300), Math.Min(300, Items.Count * 30 + 4)),
+            ItemHeight = Shell.Px(this, 30),
+            Size = new(
+                Math.Max(Width, Shell.Px(this, 300)),
+                Math.Min(Shell.Px(this, 300), Items.Count * Shell.Px(this, 30) + 4)
+            ),
         };
         list.Items.AddRange(Items.ToArray());
+        Shell.DarkScrollbars(list);
         list.SelectedIndex = SelectedIndex;
         list.DrawItem += (_, e) =>
         {

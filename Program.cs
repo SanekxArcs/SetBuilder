@@ -107,6 +107,25 @@ internal static class Program
                 Application.Run(form);
                 return 0;
             }
+            // Normal launch (also when a toast is clicked): one instance only, friendly crash dialog.
+            using var instance = new Mutex(true, @"Local\TunerFestSetBuilder", out bool firstInstance);
+            if (!firstInstance)
+            {
+                Shell.ActivateExisting();
+                return 0;
+            }
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+            Application.ThreadException += (_, e) =>
+            {
+                WriteCrash(e.Exception.ToString());
+                MessageBox.Show(
+                    "Сталася неочікувана помилка. Звіт збережено у папці Logs поруч із програмою.\n\n"
+                        + e.Exception.Message,
+                    "TunerFest Set Builder",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            };
             Application.Run(new MainForm());
             return 0;
         }

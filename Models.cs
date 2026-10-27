@@ -91,6 +91,11 @@ public sealed class Profile
 
     // When the game loses focus, pause input and wait this long for it to return. 0 stops immediately.
     public int FocusLostWaitSeconds { get; set; } = 120;
+    public bool ToastEnabled { get; set; } = true;
+
+    // Last window placement (x, y, width, height) in screen pixels; restored only when still visible.
+    public int[]? WindowBounds { get; set; }
+    public bool WindowMaximized { get; set; }
     public bool DiagnosticsEnabled { get; set; } = true;
     public bool DiagnosticScreenshots { get; set; } = true;
     public int DiagnosticMaxImages { get; set; } = 400;

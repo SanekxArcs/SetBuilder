@@ -677,6 +677,20 @@ public sealed class Runner : IBuildGame
     readonly Action<Build>? autoApplied;
     Bitmap? lastFrame;
     long pausedMs;
+    readonly Action<RunProgress>? progress;
+    int currentPart;
+
+    void Report(string state) =>
+        progress?.Invoke(
+            new(
+                state,
+                currentPart,
+                p.Parts,
+                ledger.Confirmed,
+                (long)ledger.Confirmed * RunLedger.BucksPerRoll,
+                (long)ledger.Confirmed * RunLedger.SparePartsPerRoll
+            )
+        );
 
     public Runner(
         Catalog c,
@@ -684,7 +698,8 @@ public sealed class Runner : IBuildGame
         IntPtr w,
         Action<string> status,
         SessionLog? diagnostics = null,
-        Action<Build>? onAutoSet = null
+        Action<Build>? onAutoSet = null,
+        Action<RunProgress>? onProgress = null
     )
     {
         catalog = c;
@@ -692,6 +707,7 @@ public sealed class Runner : IBuildGame
         window = w;
         trace = diagnostics;
         autoApplied = onAutoSet;
+        progress = onProgress;
         vision = new(c, p, trace);
         ledger = trace?.Ledger ?? new RunLedger();
         log = status;
@@ -752,6 +768,7 @@ public sealed class Runner : IBuildGame
         var wait = System.Diagnostics.Stopwatch.StartNew();
         trace?.Write("focus_lost", new { waitSeconds });
         log($"Гра втратила фокус. Натискання зупинено; чекаю повернення до {waitSeconds} с · F10 — скасувати");
+        Report("paused");
         try
         {
             while (!GameFocused)
@@ -772,6 +789,7 @@ public sealed class Runner : IBuildGame
         }
         trace?.Write("focus_resumed", new { pausedMs = wait.ElapsedMilliseconds });
         log("Фокус повернувся. Перевіряю екран і продовжую.");
+        Report("running");
     }
 
     async Task<T> Until<T>(
@@ -871,7 +889,17 @@ public sealed class Runner : IBuildGame
         {
             using var device = new Input(window, p, trace);
             input = device;
-            await new BuildWorkflow(this, p, log).Run(ct);
+            Report("running");
+            await new BuildWorkflow(
+                this,
+                p,
+                log,
+                part =>
+                {
+                    currentPart = part;
+                    Report("running");
+                }
+            ).Run(ct);
             log($"Кидків за запуск: {rolls}");
         }
         finally
@@ -1052,6 +1080,7 @@ public sealed class Runner : IBuildGame
                 "Новий оплачений кидок не підтверджено. Натискання записано як непідтверджене."
             );
         rolls = ledger.Confirmed;
+        Report("running");
         log(
             $"Кидок {rolls} · слот {slot + 1} · "
                 + (phase == RollPhase.Search ? $"пошук {string.Join(" / ", targets)}" : $"максимум {current.Name}")

@@ -27,16 +27,26 @@ public static class Fluent
     [DllImport("dwmapi.dll")]
     static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
 
+    static int ColorRef(Color c) => c.R | (c.G << 8) | (c.B << 16);
+
+    // Dark immersive title bar, Windows 11 rounded corners, and caption/border colours that match the
+    // app background so the frame reads as one surface.
     public static void Window(Form form)
     {
         try
         {
             int dark = 1,
-                round = 2;
+                round = 2,
+                caption = ColorRef(Background),
+                border = ColorRef(Border),
+                text = ColorRef(Color.White);
             DwmSetWindowAttribute(form.Handle, 20, ref dark, 4);
             DwmSetWindowAttribute(form.Handle, 33, ref round, 4);
+            DwmSetWindowAttribute(form.Handle, 35, ref caption, 4);
+            DwmSetWindowAttribute(form.Handle, 34, ref border, 4);
+            DwmSetWindowAttribute(form.Handle, 36, ref text, 4);
         }
-        catch (DllNotFoundException) { }
+        catch (Exception e) when (e is DllNotFoundException or EntryPointNotFoundException) { }
     }
 }
 
@@ -108,25 +118,36 @@ public sealed class FluentCheck : CheckBox
     }
 
     public override Size GetPreferredSize(Size proposedSize) =>
-        new(TextRenderer.MeasureText(Text, Font).Width + 48, Math.Max(28, Font.Height + 10));
+        new(
+            TextRenderer.MeasureText(Text, Font).Width + Shell.Px(this, 48),
+            Math.Max(Shell.Px(this, 28), Font.Height + 10)
+        );
 
     protected override void OnPaint(PaintEventArgs e)
     {
         e.Graphics.Clear(BackColor);
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        var r = new RectangleF(2, (Height - 20) / 2, 34, 20);
+        int track = Shell.Px(this, 20),
+            knobSize = Shell.Px(this, 14);
+        var r = new RectangleF(2, (Height - track) / 2, Shell.Px(this, 34), track);
         using var path = Fluent.Shape(r, 10);
         using var fill = new SolidBrush(Checked && Enabled ? Fluent.Accent : Fluent.Input);
         e.Graphics.FillPath(fill, path);
         using var pen = new Pen(Focused ? Fluent.Accent : Fluent.Border);
         e.Graphics.DrawPath(pen, path);
         using var knob = new SolidBrush(Checked && Enabled ? Fluent.Background : Fluent.Muted);
-        e.Graphics.FillEllipse(knob, Checked ? 20 : 5, r.Y + 3, 14, 14);
+        e.Graphics.FillEllipse(
+            knob,
+            Checked ? r.Right - knobSize - 3 : r.X + 3,
+            r.Y + (track - knobSize) / 2,
+            knobSize,
+            knobSize
+        );
         TextRenderer.DrawText(
             e.Graphics,
             Text,
             Font,
-            new Rectangle(45, 0, Math.Max(0, Width - 45), Height),
+            new Rectangle(Shell.Px(this, 45), 0, Math.Max(0, Width - Shell.Px(this, 45)), Height),
             Enabled ? ForeColor : Fluent.Muted,
             TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis
         );
@@ -245,7 +266,7 @@ public sealed class FluentNumber : Control
     {
         if (edit == null)
             return;
-        int buttons = Width >= 110 ? 58 : 30;
+        int buttons = Width >= Shell.Px(this, 110) ? Shell.Px(this, 58) : Shell.Px(this, 30);
         edit.SetBounds(
             11,
             Math.Max(6, (Height - edit.PreferredHeight) / 2),
@@ -267,11 +288,11 @@ public sealed class FluentNumber : Control
         if (!Enabled)
             return;
         Commit();
-        if (Width >= 110 && e.X >= Width - 58)
+        if (Width >= Shell.Px(this, 110) && e.X >= Width - Shell.Px(this, 58))
         {
-            Value += e.X < Width - 29 ? -Increment : Increment;
+            Value += e.X < Width - Shell.Px(this, 29) ? -Increment : Increment;
         }
-        else if (Width < 110 && e.X >= Width - 30)
+        else if (Width < Shell.Px(this, 110) && e.X >= Width - Shell.Px(this, 30))
             Value += e.Y < Height / 2 ? Increment : -Increment;
         else
             edit.Focus();
@@ -287,13 +308,13 @@ public sealed class FluentNumber : Control
         using var pen = new Pen(edit.Focused ? Fluent.Accent : Fluent.Border);
         e.Graphics.DrawPath(pen, path);
         var c = Enabled ? Color.White : Fluent.Muted;
-        if (Width >= 110)
+        if (Width >= Shell.Px(this, 110))
         {
             TextRenderer.DrawText(
                 e.Graphics,
                 "−",
                 Font,
-                new Rectangle(Width - 58, 0, 29, Height),
+                new Rectangle(Width - Shell.Px(this, 58), 0, Shell.Px(this, 29), Height),
                 c,
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
             );
@@ -301,7 +322,7 @@ public sealed class FluentNumber : Control
                 e.Graphics,
                 "+",
                 Font,
-                new Rectangle(Width - 29, 0, 29, Height),
+                new Rectangle(Width - Shell.Px(this, 29), 0, Shell.Px(this, 29), Height),
                 c,
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
             );
@@ -312,7 +333,7 @@ public sealed class FluentNumber : Control
                 e.Graphics,
                 "+",
                 Font,
-                new Rectangle(Width - 29, 0, 29, Height / 2),
+                new Rectangle(Width - Shell.Px(this, 29), 0, Shell.Px(this, 29), Height / 2),
                 c,
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
             );
@@ -320,7 +341,7 @@ public sealed class FluentNumber : Control
                 e.Graphics,
                 "−",
                 Font,
-                new Rectangle(Width - 29, Height / 2, 29, Height / 2),
+                new Rectangle(Width - Shell.Px(this, 29), Height / 2, Shell.Px(this, 29), Height / 2),
                 c,
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
             );
@@ -464,7 +485,7 @@ public sealed class FluentKeyField : Control
             e.Graphics,
             Text,
             Font,
-            new Rectangle(12, 0, Width - 24, Height),
+            new Rectangle(Shell.Px(this, 12), 0, Width - Shell.Px(this, 24), Height),
             Enabled ? Color.White : Fluent.Muted,
             TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis
         );
