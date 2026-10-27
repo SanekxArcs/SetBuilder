@@ -166,6 +166,8 @@ public sealed class MainForm : Form
     NotifyIcon? tray;
     RunProgress? lastProgress;
     readonly FluentCheck toastEnabled = new();
+    readonly FluentCheck firstOptional = new(),
+        secondOptional = new();
     readonly Label status = new()
     {
         Text = "Готовий до налаштування · F8 запуск · F7 зчитати · F10 стоп",
@@ -365,10 +367,28 @@ public sealed class MainForm : Form
         AddLabel(left, "Сет деталі");
         GoalRow(left, sets, catalog.Sets.Cast<object>(), iconSet);
         AddLabel(left, "Перший перк");
-        GoalRow(left, first, catalog.Affixes.Cast<object>(), iconFirst);
+        GoalRow(left, first, catalog.Affixes.Cast<object>(), iconFirst, firstOptional);
         AddLabel(left, "Другий перк");
-        GoalRow(left, second, catalog.Affixes.Cast<object>(), iconSecond);
-        AddLabel(left, "Будь-який порядок · спершу два перки, потім максимуми.", true);
+        GoalRow(left, second, catalog.Affixes.Cast<object>(), iconSecond, secondOptional);
+        firstOptional.Checked = profile.FirstOptional;
+        secondOptional.Checked = profile.SecondOptional;
+        firstOptional.CheckedChanged += (_, _) =>
+        {
+            profile.FirstOptional = firstOptional.Checked;
+            if (!smoke)
+                profile.Save();
+        };
+        secondOptional.CheckedChanged += (_, _) =>
+        {
+            profile.SecondOptional = secondOptional.Checked;
+            if (!smoke)
+                profile.Save();
+        };
+        AddLabel(
+            left,
+            "Будь-який порядок слотів. Необов'язковий перк не шукається й не покращується; якщо випав під час пошуку — залишається.",
+            true
+        );
         AddLabel(right, "ВІКНО ГРИ", true);
         var windowRow = new FlowLayoutPanel
         {
@@ -735,18 +755,27 @@ public sealed class MainForm : Form
         return b;
     }
 
-    void GoalRow(Control c, DarkSelect combo, IEnumerable<object> data, PictureBox box)
+    void GoalRow(Control c, DarkSelect combo, IEnumerable<object> data, PictureBox box, FluentCheck? optional = null)
     {
         var row = new FlowLayoutPanel
         {
-            Width = 410,
+            Width = optional == null ? 410 : 560,
             Height = 39,
             WrapContents = false,
         };
         c.Controls.Add(row);
         AddIcon(row, box);
         Combo(row, combo, data);
-        combo.Width = 340;
+        combo.Width = optional == null ? 340 : 300;
+        if (optional == null)
+            return;
+        optional.Text = "Необов'язковий";
+        optional.AutoSize = true;
+        optional.ForeColor = Color.White;
+        optional.Margin = new(10, 4, 0, 0);
+        optional.AccessibleName = "Необов'язковий перк";
+        row.Controls.Add(optional);
+        settingsControls.Add(optional);
     }
 
     void AddIcon(Control c, PictureBox box)
@@ -1503,6 +1532,14 @@ public sealed class MainForm : Form
                 Path.Combine(AppContext.BaseDirectory, "ui-controls-test.txt"),
                 "PASS navigation route selector updates settings\nPASS seven count buttons update selection and saved setting\nPASS all four WAV signals load in Windows SoundPlayer\nPASS custom numeric typing, bounds and disabled state\nPASS completion and stop sound toggles\nPASS sound selection and profile round-trip\n"
             );
+            firstOptional.Checked = true;
+            if (
+                !profile.FirstOptional
+                || profile.RequiredNames().Length != 1
+                || profile.RequiredNames()[0] != profile.Second
+            )
+                throw new InvalidOperationException("Optional perk toggle did not update the profile");
+            firstOptional.Checked = false;
             OnProgress(new RunProgress("running", 3, 7, 41, 61500, 6150));
             if (runStatus.Current != StatusCard.Mode.Running || lastProgress?.Rolls != 41)
                 throw new InvalidOperationException("Status card did not enter running state");
@@ -1548,6 +1585,10 @@ public sealed class MainForm : Form
         profile.Set = sets.SelectedItem?.ToString() ?? "";
         profile.First = first.SelectedItem?.ToString() ?? "";
         profile.Second = second.SelectedItem?.ToString() ?? "";
+        profile.FirstOptional = firstOptional.Checked;
+        profile.SecondOptional = secondOptional.Checked;
+        if (profile.FirstOptional && profile.SecondOptional)
+            throw new InvalidOperationException("Принаймні один перк має бути обов'язковим.");
         profile.Parts = selectedPartCount;
         profile.FastRecognition = fastRecognition.Checked;
         profile.Delay = (int)delay.Value;

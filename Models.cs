@@ -70,6 +70,22 @@ public sealed class Profile
     public string Set { get; set; } = "NITRO CHEMIST";
     public string First { get; set; } = "Pure";
     public string Second { get; set; } = "Extra Pump";
+
+    // An optional perk is never searched for or maximized; it is only kept if it appears while searching.
+    public bool FirstOptional { get; set; }
+    public bool SecondOptional { get; set; }
+
+    public bool IsRequired(string name) =>
+        name == First ? !FirstOptional
+        : name == Second ? !SecondOptional
+        : false;
+
+    public string[] RequiredNames() =>
+        new[] { (First, FirstOptional), (Second, SecondOptional) }
+            .Where(p => !p.Item2 && p.Item1 != "")
+            .Select(p => p.Item1)
+            .ToArray();
+
     public bool Xbox { get; set; } = false;
     public int Parts { get; set; } = 7;
     public int Delay { get; set; } = 450;

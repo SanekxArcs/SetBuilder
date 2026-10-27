@@ -63,6 +63,10 @@ public sealed class BuildWorkflow(IBuildGame game, Profile profile, Action<strin
         await game.Prepare(ct);
         var visited = new HashSet<string>();
         string[] wanted = [profile.First, profile.Second];
+        string[] required = profile.RequiredNames();
+        if (required.Length == 0)
+            throw new InvalidOperationException("Принаймні один перк має бути обов'язковим.");
+        static string Describe(string name, bool optional) => optional ? name + " (необов'язковий)" : name;
         for (int part = 0; part < profile.Parts; part++)
         {
             ct.ThrowIfCancellationRequested();
@@ -72,8 +76,13 @@ public sealed class BuildWorkflow(IBuildGame game, Profile profile, Action<strin
             log($"Деталь {part + 1}/{profile.Parts}: {state.Id}");
             onPart?.Invoke(part + 1);
             var cards = state.Cards.ToArray();
-            log($"Шукаю пару: {profile.First} + {profile.Second}. Порядок слотів довільний.");
-            int firstSlot = Array.FindIndex(cards, c => wanted.Contains(c.Name));
+            log(
+                $"Шукаю: {Describe(profile.First, profile.FirstOptional)} + {Describe(profile.Second, profile.SecondOptional)}. Порядок слотів довільний."
+            );
+            // A required perk already on the part wins over an optional one, which must never be rolled away.
+            int firstSlot = Array.FindIndex(cards, c => required.Contains(c.Name));
+            if (firstSlot < 0)
+                firstSlot = Array.FindIndex(cards, c => wanted.Contains(c.Name));
             if (firstSlot < 0)
             {
                 firstSlot = state.Focus is 0 or 1 ? state.Focus : 0;
@@ -85,16 +94,34 @@ public sealed class BuildWorkflow(IBuildGame game, Profile profile, Action<strin
             int secondSlot = 1 - firstSlot;
             string remaining = wanted.Single(n => n != found);
             log($"{found} знайдено у слоті {firstSlot + 1}. Закріплюю {found} у слоті {firstSlot + 1}.");
-            if (cards[secondSlot].Name != remaining)
-                log($"Шукаю лише {remaining} у слоті {secondSlot + 1}; {found} у слоті {firstSlot + 1} залишаю.");
-            while (cards[secondSlot].Name != remaining)
-                cards[secondSlot] = await game.Roll(secondSlot, cards[secondSlot], RollPhase.Search, [remaining], ct);
-            log(
-                $"{remaining} знайдено у слоті {secondSlot + 1}. Пара зібрана: слот 1 — {cards[0].Name}, слот 2 — {cards[1].Name}."
-            );
-            // First acquire both names, then maximize the second-found slot and finally the first-found slot.
+            bool needRemaining = required.Contains(remaining);
+            if (needRemaining)
+            {
+                if (cards[secondSlot].Name != remaining)
+                    log($"Шукаю лише {remaining} у слоті {secondSlot + 1}; {found} у слоті {firstSlot + 1} залишаю.");
+                while (cards[secondSlot].Name != remaining)
+                    cards[secondSlot] = await game.Roll(
+                        secondSlot,
+                        cards[secondSlot],
+                        RollPhase.Search,
+                        [remaining],
+                        ct
+                    );
+                log(
+                    $"{remaining} знайдено у слоті {secondSlot + 1}. Пара зібрана: слот 1 — {cards[0].Name}, слот 2 — {cards[1].Name}."
+                );
+            }
+            else
+                log(
+                    cards[secondSlot].Name == remaining
+                        ? $"{remaining} необов'язковий і вже у слоті {secondSlot + 1}; залишаю без покращення."
+                        : $"{remaining} необов'язковий: слот {secondSlot + 1} ({cards[secondSlot].Name}) не чіпаю."
+                );
+            // Maximize only required perks: the second-found slot first, then the first-found slot.
             foreach (int slot in new[] { secondSlot, firstSlot })
             {
+                if (!required.Contains(cards[slot].Name))
+                    continue;
                 log(
                     cards[slot].Maxed
                         ? $"Слот {slot + 1}: {cards[slot]} — максимум уже є."
@@ -111,17 +138,21 @@ public sealed class BuildWorkflow(IBuildGame game, Profile profile, Action<strin
             var final = await game.ReadPart(ct);
             if (
                 final.Id != state.Id
-                || final.Cards.Any(c => !c.Maxed)
-                || !final.Cards.Select(c => c.Name).Order().SequenceEqual(wanted.Order())
+                || !required.All(name => final.Cards.Any(c => c.Name == name && c.Maxed))
+                || final.Cards.Count(c => wanted.Contains(c.Name)) < required.Length
             )
-                throw new InvalidOperationException("Підсумкова перевірка двох перків не пройшла.");
+                throw new InvalidOperationException("Підсумкова перевірка перків не пройшла.");
             log($"✓ Деталь {part + 1}: {final.Cards[0]} + {final.Cards[1]}");
             if (part + 1 < profile.Parts)
                 await game.Advance(ct);
             else
                 await game.ExitToParts(ct);
         }
-        log($"✓ Готово: {profile.Set}, {profile.Parts} деталей. Обидва перки на максимумі.");
+        log(
+            required.Length == 2
+                ? $"✓ Готово: {profile.Set}, {profile.Parts} деталей. Обидва перки на максимумі."
+                : $"✓ Готово: {profile.Set}, {profile.Parts} деталей. Обов'язковий перк {required[0]} на максимумі."
+        );
     }
 }
 

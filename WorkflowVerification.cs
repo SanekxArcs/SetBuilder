@@ -152,6 +152,63 @@ public static class WorkflowVerification
             messages.Add
         ).Run(CancellationToken.None);
         Check(oneSteps.Count == 0, "preserve desired right slot; search and maximize the other slot first");
+        // Optional perks: never searched for or maximized, kept when they appear.
+        var optionalProfile = new Profile
+        {
+            First = "Rich",
+            FirstOptional = true,
+            Second = "Legend",
+            Parts = 1,
+        };
+        var optParts = new[] { new PartView("OPT", [iron, bulldozer], 0) };
+        var optSteps = new Queue<Step>([
+            new(0, RollPhase.Search, rich, ["Rich", "Legend"]),
+            new(1, RollPhase.Search, legend, ["Legend"]),
+            new(1, RollPhase.Maximize, legendMax, ["Legend"]),
+        ]);
+        var opt = new FakeGame(optParts, optSteps);
+        await new BuildWorkflow(opt, optionalProfile, _ => { }).Run(CancellationToken.None);
+        Check(
+            optSteps.Count == 0 && opt.Rolls == 3 && optParts[0].Cards[0] == rich && optParts[0].Cards[1] == legendMax,
+            "optional perk found first is kept unmaxed; required perk searched and maxed in the other slot"
+        );
+        var skipParts = new[] { new PartView("SKIP", [iron, legend], 0) };
+        var skipSteps = new Queue<Step>([new(1, RollPhase.Maximize, legendMax, ["Legend"])]);
+        var skip = new FakeGame(skipParts, skipSteps);
+        await new BuildWorkflow(skip, optionalProfile, _ => { }).Run(CancellationToken.None);
+        Check(
+            skipSteps.Count == 0 && skip.Rolls == 1 && skipParts[0].Cards[0] == iron,
+            "required perk present: optional perk is skipped entirely and the other slot stays untouched"
+        );
+        var bothParts = new[] { new PartView("BOTH", [rich, legend], 0) };
+        var bothSteps = new Queue<Step>([new(1, RollPhase.Maximize, legendMax, ["Legend"])]);
+        var bothPresent = new FakeGame(bothParts, bothSteps);
+        await new BuildWorkflow(bothPresent, optionalProfile, _ => { }).Run(CancellationToken.None);
+        Check(
+            bothSteps.Count == 0 && bothParts[0].Cards[0] == rich,
+            "optional perk already present is left at its value while the required perk is maximized"
+        );
+        bool rejected = false;
+        try
+        {
+            await new BuildWorkflow(
+                new FakeGame([new("NONE", [iron, bulldozer], 0)], new()),
+                new Profile
+                {
+                    First = "Rich",
+                    FirstOptional = true,
+                    Second = "Legend",
+                    SecondOptional = true,
+                    Parts = 1,
+                },
+                _ => { }
+            ).Run(CancellationToken.None);
+        }
+        catch (InvalidOperationException)
+        {
+            rejected = true;
+        }
+        Check(rejected, "two optional perks are rejected before any roll");
         Check(
             messages.Any(m => m.Contains("Rich знайдено у слоті 2"))
                 && messages.Any(m => m.Contains("Шукаю лише Legend у слоті 1"))

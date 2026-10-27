@@ -1195,7 +1195,7 @@ public sealed class Runner : IBuildGame
             bool both =
                 part.Cards.Select(c => c.Name).Distinct().Count() == 2 && part.Cards.All(c => wanted.Contains(c.Name));
             choice =
-                both && !current.Maxed
+                both && !current.Maxed && p.IsRequired(current.Name)
                     ? await Selection(Rows(side), current, RollPhase.Maximize, [current.Name], ct)
                     : new(2, current, RollPhase.Search);
         }
