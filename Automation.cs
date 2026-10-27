@@ -343,6 +343,11 @@ public sealed class Vision
                                 }
                             }
                         }
+                        // Last resort: the value is the only yellow text in the description, so isolate it by
+                        // colour and read it alone; the gray range is usually read correctly even when the value is lost.
+                        var byColour = await ValueByColour(crop, raw);
+                        if (byColour != null)
+                            return byColour;
                         throw new InvalidOperationException(
                             first.Message + " Додаткове зчитування також не підтвердило значення."
                         );
@@ -350,6 +355,127 @@ public sealed class Vision
                 }
             }
         }
+    }
+
+    // Reads the yellow value of a card crop on its own and combines it with the bracketed range from the
+    // full text. Returns null when there is no yellow text, no range, or the numbers do not form a reading.
+    public async Task<Reading?> ValueByColour(Bitmap crop, string raw)
+    {
+        Affix affix;
+        try
+        {
+            affix = Recognition.Name(raw, catalog);
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
+        string fixedRaw = System.Text.RegularExpressions.Regex.Replace(raw, @"(?<=\d)0\s*/\s*0", "%");
+        var bracket = System.Text.RegularExpressions.Regex.Match(fixedRaw, @"\[[^\]]*\]");
+        if (!bracket.Success)
+            return null;
+        using var isolated = YellowText(crop, crop.Height * 55 / 100);
+        if (isolated == null)
+            return null;
+        trace?.Evidence(isolated, "yellow-value");
+        string digits = await Text(isolated);
+        var number = System.Text.RegularExpressions.Regex.Match(
+            System.Text.RegularExpressions.Regex.Replace(digits, @"(?<=\d)0\s*/\s*0", "%"),
+            @"(\d+(?:[.,]\d+)?)"
+        );
+        if (!number.Success)
+            return null;
+        try
+        {
+            var reading = Parsed(affix.Title + " " + number.Groups[1].Value + "% " + bracket.Value, catalog);
+            // Values come in exactly ten tiers (truncated to one decimal); anything else is a misread.
+            if (!Recognition.OnTierGrid(reading))
+            {
+                trace?.Write("value_by_colour_rejected", new { digits, reading = reading.ToString() });
+                return null;
+            }
+            trace?.Write(
+                "value_by_colour",
+                new
+                {
+                    affix = affix.Title,
+                    digits,
+                    bracket = bracket.Value,
+                    reading = reading.ToString(),
+                }
+            );
+            return reading;
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
+    }
+
+    // Black text on white built from the yellow pixels below `top`; null when fewer than a few dozen are found.
+    static Bitmap? YellowText(Bitmap crop, int top)
+    {
+        var data = crop.LockBits(
+            new Rectangle(Point.Empty, crop.Size),
+            ImageLockMode.ReadOnly,
+            PixelFormat.Format32bppArgb
+        );
+        int stride = Math.Abs(data.Stride);
+        byte[] bytes = new byte[stride * crop.Height];
+        try
+        {
+            System.Runtime.InteropServices.Marshal.Copy(data.Scan0, bytes, 0, bytes.Length);
+        }
+        finally
+        {
+            crop.UnlockBits(data);
+        }
+        var mask = new bool[crop.Width * crop.Height];
+        int left = crop.Width,
+            right = -1,
+            bottom = -1,
+            count = 0,
+            first = crop.Height;
+        // The focused card carries a yellow border, so a margin around the crop edges is ignored.
+        int marginX = Math.Max(8, crop.Width * 3 / 100),
+            marginY = Math.Max(8, crop.Height * 3 / 100);
+        for (int y = Math.Max(0, top); y < crop.Height - marginY; y++)
+        for (int x = marginX; x < crop.Width - marginX; x++)
+        {
+            int i = y * stride + x * 4;
+            int b = bytes[i],
+                g = bytes[i + 1],
+                r = bytes[i + 2];
+            // Yellowness keeps antialiased glyph edges; gray description text scores below 30 on this measure.
+            if (r + g - 2 * b > 100 && r > 90)
+            {
+                mask[y * crop.Width + x] = true;
+                count++;
+                left = Math.Min(left, x);
+                right = Math.Max(right, x);
+                first = Math.Min(first, y);
+                bottom = Math.Max(bottom, y);
+            }
+        }
+        if (count < 30 || right - left < 4 || bottom - first < 4)
+            return null;
+        // Upscale the few glyphs so the OCR engine sees text of a comfortable size, with generous padding.
+        const int scale = 4,
+            pad = 20;
+        var box = new Rectangle(left, first, right - left + 1, bottom - first + 1);
+        var result = new Bitmap(box.Width * scale + pad * 2, box.Height * scale + pad * 2, PixelFormat.Format32bppArgb);
+        using (var g = Graphics.FromImage(result))
+            g.Clear(Color.White);
+        for (int y = 0; y < box.Height; y++)
+        for (int x = 0; x < box.Width; x++)
+        {
+            if (!mask[(box.Y + y) * crop.Width + box.X + x])
+                continue;
+            for (int dy = 0; dy < scale; dy++)
+            for (int dx = 0; dx < scale; dx++)
+                result.SetPixel(pad + x * scale + dx, pad + y * scale + dy, Color.Black);
+        }
+        return result;
     }
 
     public async Task<Affix> ReadName(Bitmap frame, string zone)

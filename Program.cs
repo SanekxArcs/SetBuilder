@@ -50,6 +50,8 @@ internal static class Program
                 return WorkflowVerification.Screens(args[1], args[2], args[3], args[4]).GetAwaiter().GetResult();
             if (args.Length == 2 && args[0] == "--verify-diagnostics")
                 return Verification.Diagnostics(args[1]).GetAwaiter().GetResult();
+            if (args.Length == 3 && args[0] == "--verify-value-crop")
+                return Verification.ValueCrop(args[1], args[2]).GetAwaiter().GetResult();
             if (args.Length == 2 && args[0] == "--verify-stuck")
                 return Verification.Stuck(args[1]).GetAwaiter().GetResult();
             if (args.Length == 2 && args[0] == "--inspect-screen")
@@ -58,6 +60,19 @@ internal static class Program
                 return Verification.Tests();
             if (args.Length > 1 && args[0] == "--verify-screens")
                 return Verification.Screens(args.Skip(1).ToArray()).GetAwaiter().GetResult();
+            if (
+                args.Length > 0
+                && !args.Contains("--ui-smoke")
+                && !args[0].StartsWith("-ToastActivated", StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                // Unknown verification arguments must never fall through to the interactive window.
+                File.WriteAllText(
+                    Path.Combine(AppContext.BaseDirectory, "error.txt"),
+                    "Unknown arguments: " + string.Join(" ", args)
+                );
+                return 2;
+            }
             if (args.Contains("--ui-smoke"))
             {
                 using var form = new MainForm(true);

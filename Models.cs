@@ -342,6 +342,21 @@ public static class Recognition
         return fresh.Affix.Title == wanted ? 0 : 2;
     }
 
+    // The game draws perk values from ten evenly spaced tiers between min and max, truncated to one decimal
+    // (observed across 7 678 logged rolls: Rich 1.0, 1.2, 1.4, 1.6, 1.8, 2.1, 2.3, 2.5, 2.7, 3.0).
+    public static bool OnTierGrid(Reading r)
+    {
+        if (r.Maximum <= r.Minimum)
+            return false;
+        for (int k = 0; k < 10; k++)
+        {
+            double tier = Math.Floor((r.Minimum + k * (r.Maximum - r.Minimum) / 9) * 10 + 1e-6) / 10;
+            if (Math.Abs(tier - r.Value) < .051)
+                return true;
+        }
+        return false;
+    }
+
     public static bool Equal(Reading a, Reading b) =>
         a.Affix.Title == b.Affix.Title
         && Math.Abs(a.Value - b.Value) < .0001

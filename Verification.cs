@@ -1,4 +1,6 @@
-﻿namespace TunerFest;
+﻿using System.Drawing.Imaging;
+
+namespace TunerFest;
 
 public static class Verification
 {
@@ -267,6 +269,40 @@ public static class Verification
         return 0;
     }
 
+    // Reads one saved card crop as if it were the "left" zone and compares the result to the expected text.
+    public static async Task<int> ValueCrop(string path, string expected)
+    {
+        var p = new Profile();
+        p.Zones["left"] = new(0, 0, 1, 1);
+        var session = new SessionLog(p, "offline-value-crop", new { simulated = true, noGameInput = true });
+        var v = new Vision(Catalog.Load(), p, session);
+        using var crop = new Bitmap(path);
+        using var frame = new Bitmap(crop.Width, crop.Height, PixelFormat.Format32bppArgb);
+        using (var g = Graphics.FromImage(frame))
+            g.DrawImageUnscaled(crop, 0, 0);
+        string actual;
+        try
+        {
+            actual = (await v.Read(frame, "left")).ToString();
+        }
+        catch (InvalidOperationException e)
+        {
+            actual = "ERROR: " + e.Message;
+        }
+        await session.Finish(actual == expected ? "completed" : "error");
+        File.WriteAllText(
+            Path.Combine(AppContext.BaseDirectory, "value-crop-test.txt"),
+            (actual == expected ? "PASS " : "FAIL ")
+                + Path.GetFileName(path)
+                + " -> "
+                + actual
+                + " (expected "
+                + expected
+                + ")\n"
+        );
+        return actual == expected ? 0 : 1;
+    }
+
     public static async Task<int> Stuck(string path)
     {
         var c = Catalog.Load();
@@ -411,6 +447,21 @@ public static class Verification
             mismatch = true;
         }
         Assert(mismatch, "reject unexpected reroll identity");
+        foreach (double v in new[] { 1.0, 1.2, 1.4, 1.6, 1.8, 2.1, 2.3, 2.5, 2.7, 3.0 })
+            Assert(
+                Recognition.OnTierGrid(Parse($"Rich Increase BUCKS gains by {v}% [1%-3%]")),
+                "tier grid accepts Rich " + v
+            );
+        foreach (double v in new[] { 5, 5.5, 6.1, 6.6, 7.2, 7.7, 8.3, 8.8, 9.4, 10 })
+            Assert(
+                Recognition.OnTierGrid(Parse($"Skilled Increase scoring by {v}% [5%-10%]")),
+                "tier grid accepts Skilled " + v
+            );
+        foreach (double v in new[] { 1.1, 1.5, 2.0, 2.9 })
+            Assert(
+                !Recognition.OnTierGrid(Parse($"Rich Increase BUCKS gains by {v}% [1%-3%]")),
+                "tier grid rejects Rich " + v
+            );
         // Fuzzy titles: one or two wrong glyphs at the start of a card still resolve to a unique perk.
         Assert(
             Recognition.Name("Bende Increase the player's lean bonus by 4.6% [3%-8%] for BIKES", c).Title == "Bended",
