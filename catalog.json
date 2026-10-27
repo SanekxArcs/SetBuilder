@@ -1,0 +1,412 @@
+{
+  "affixes": [
+    {
+      "bonusPercentageRangeFrom": 3,
+      "bonusPercentageRangeTo": 6,
+      "description": "Increase SLIPSTREAM distance",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/561a65bf0a63057a190ffce6c3af05e9ac2d9807-179x179.svg",
+      "title": "Air Intake"
+    },
+    {
+      "bonusPercentageRangeFrom": 3,
+      "bonusPercentageRangeTo": 6,
+      "description": "Increase distance detection of Drag Bump",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/a161fd18f87ba4a6fe0588d273c1fafd2ebe6ff0-181x182.svg",
+      "title": "Air Outtake"
+    },
+    {
+      "bonusPercentageRangeFrom": 3,
+      "bonusPercentageRangeTo": 8,
+      "description": "Increase the player's lean bonus for BIKES",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/792d5f7ca9dd76093e5ab7be7d4949b0a4af3391-263x204.svg",
+      "title": "Bended"
+    },
+    {
+      "bonusPercentageRangeFrom": 6,
+      "bonusPercentageRangeTo": 12,
+      "description": "Increase collision impact force",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/628e2495b007e24dc6a0ccc19f88a7f5fe76eaef-156x200.svg",
+      "title": "Bulldozer"
+    },
+    {
+      "bonusPercentageRangeFrom": 1,
+      "bonusPercentageRangeTo": 3,
+      "description": "Decrease BUCKS loss with CLEAN DRIVING modifier",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/c734d7a04f98766630c81bacb2b86a40313c3ee5-191x180.svg",
+      "title": "Clean Driver"
+    },
+    {
+      "bonusPercentageRangeFrom": 1.2,
+      "bonusPercentageRangeTo": 2,
+      "description": "Increase GEARSHIFTING BOOST EFFECT in DRAG RACE events",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/908cb2543c5c85ceb5346be1eb9e2a7497af1231-223x215.svg",
+      "title": "Cluster"
+    },
+    {
+      "bonusPercentageRangeFrom": 3,
+      "bonusPercentageRangeTo": 8,
+      "description": "Increase TREASURE frequency apparition",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/7ce37821422ae739a8cab29142b3e7fbc88cf138-119x191.svg",
+      "title": "Collector"
+    },
+    {
+      "bonusPercentageRangeFrom": 0.8,
+      "bonusPercentageRangeTo": 2,
+      "description": "NITRO refills while Drifting",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/12e313e3ecb077ca4cf35621062e063f28e3a0a2-203x215.svg",
+      "title": "Drifty"
+    },
+    {
+      "bonusPercentageRangeFrom": 2,
+      "bonusPercentageRangeTo": 4,
+      "description": "Increase POINTS in CHASE",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/7d5efe02b9fca041ecb26b3bffeeef12994b6a35-207x185.svg",
+      "title": "Extra Impact"
+    },
+    {
+      "bonusPercentageRangeFrom": 2.5,
+      "bonusPercentageRangeTo": 5,
+      "description": "Increase NITRO refills speed",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/b7e5e95a2815a1b6bbc8d495cc5da981875171de-177x215.svg",
+      "title": "Extra Pump"
+    },
+    {
+      "bonusPercentageRangeFrom": 1.5,
+      "bonusPercentageRangeTo": 4,
+      "description": "Increase EXTREME mode efficiency for PLANES",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/093cf7a3043e52d5e1e20e78afd28fd80efa6522-227x212.svg",
+      "title": "Extreme"
+    },
+    {
+      "bonusPercentageRangeFrom": 1,
+      "bonusPercentageRangeTo": 3,
+      "description": "NITRO power increases %/sec while in use",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/e4f452dab80817a7dfcdac51bcc5e9962c2d3135-172x234.svg",
+      "title": "Frenetic"
+    },
+    {
+      "bonusPercentageRangeFrom": 1.7,
+      "bonusPercentageRangeTo": 4,
+      "description": "NITRO refills when passing Perfect Gate in AIR RACE Events",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/235e8c968c86b0e400efdb464efe8a38e5e82509-203x217.svg",
+      "title": "Gateway"
+    },
+    {
+      "bonusPercentageRangeFrom": 2,
+      "bonusPercentageRangeTo": 6,
+      "description": "Increase the LOOT earned\n\n",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/0765219a66cc6e23f08d834e47379f1374a8b56b-199x195.svg",
+      "title": "Goldfinger"
+    },
+    {
+      "bonusPercentageRangeFrom": 3,
+      "bonusPercentageRangeTo": 8,
+      "description": "Increase the speed multiplier in DRIFT Event",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/692c28105b2e4db0e033ac694c55a1472db8900f-237x202.svg",
+      "title": "Hothead"
+    },
+    {
+      "bonusPercentageRangeFrom": 4,
+      "bonusPercentageRangeTo": 6,
+      "description": "Decrease GRIP loss with Grip loss modifier",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/934cf62776bf3043c3a2a237fe087abd0b3c48f9-341x333.svg",
+      "title": "Iron Grip"
+    },
+    {
+      "bonusPercentageRangeFrom": 2,
+      "bonusPercentageRangeTo": 4,
+      "description": "Increase XP gains",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/68430fbfd059a17273d8923af1a7eddebf12db8f-214x204.svg",
+      "title": "Legend"
+    },
+    {
+      "bonusPercentageRangeFrom": 14,
+      "bonusPercentageRangeTo": 25.5,
+      "description": "Increase LOOT quality",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/6b627a89f10b1a9edcd587623c7e58e588d5e454-195x201.svg",
+      "title": "Lucky"
+    },
+    {
+      "bonusPercentageRangeFrom": 2,
+      "bonusPercentageRangeTo": 6,
+      "description": "Increase gate allowance in AIR RACE Events",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/339374f40a2529c2d80abb0cbe8400e8c5996e24-250x141.svg",
+      "title": "Perfectionist"
+    },
+    {
+      "bonusPercentageRangeFrom": 3,
+      "bonusPercentageRangeTo": 5,
+      "description": "Increases the power of NITRO\n\n",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/612dbec1ef8fe2e30bec3ebb815cf482315985c0-172x215.svg",
+      "title": "Pure"
+    },
+    {
+      "bonusPercentageRangeFrom": 0.8,
+      "bonusPercentageRangeTo": 2,
+      "description": "NITRO refills while braking",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/30296eb9bb277bfe4790630ae9a7e1386a96b232-235x214.svg",
+      "title": "Resourceful"
+    },
+    {
+      "bonusPercentageRangeFrom": 1,
+      "bonusPercentageRangeTo": 3,
+      "description": "Increase BUCKS earnings",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/641b85839165b090fa5f3c3bcf0aa9ebec2fb07c-228x227.svg",
+      "title": "Rich"
+    },
+    {
+      "bonusPercentageRangeFrom": 1.2,
+      "bonusPercentageRangeTo": 2,
+      "description": "Increase AIR-NITRO POWER",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/8aa821738b178dcfae38c8b5be745ff5a3e0e56f-238x234.svg",
+      "title": "Rocket"
+    },
+    {
+      "bonusPercentageRangeFrom": 5,
+      "bonusPercentageRangeTo": 10,
+      "description": "Increase SLIPSTREAM power",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/d7cea65fc57dbb156271d717ef0b2bd5b420ede9-186x221.svg",
+      "title": "Shifty"
+    },
+    {
+      "bonusPercentageRangeFrom": 5,
+      "bonusPercentageRangeTo": 10,
+      "description": "Increase all points for FEATS",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/db022460c55049e9de207f238ec73c0e7e860f83-205x208.svg",
+      "title": "Skilled"
+    },
+    {
+      "bonusPercentageRangeFrom": 7,
+      "bonusPercentageRangeTo": 14,
+      "description": "Increase the maximum multiplier in DRIFT Events",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/0ee496578624c70ab6dda257e86609faee67a8d2-251x163.svg",
+      "title": "Slippery"
+    },
+    {
+      "bonusPercentageRangeFrom": 5,
+      "bonusPercentageRangeTo": 10,
+      "description": "Increase speed while ahead of a vehicle",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/0c686fbc2333560e1c5f91a7d14cd63dd5939b6e-185x204.svg",
+      "title": "Trailer"
+    },
+    {
+      "bonusPercentageRangeFrom": 1.2,
+      "bonusPercentageRangeTo": 2,
+      "description": "Increase SPEED in WATER for ground vahicles",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/313a7f3404a76e0444d4d9778ba2b20bc129a2e6-245x85.svg",
+      "title": "Trawler"
+    },
+    {
+      "bonusPercentageRangeFrom": 5,
+      "bonusPercentageRangeTo": 10,
+      "description": "Increase RADAR range to detect TREASURE",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/3c8c3ab225f9812d05758189db1aa5851bf4d575-210x189.svg",
+      "title": "Treasure Hunt"
+    },
+    {
+      "bonusPercentageRangeFrom": 1.7,
+      "bonusPercentageRangeTo": 4,
+      "description": "NITRO refills when performing figure",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/871f946dd838f615ef4e7feb67eda00761181044-224x214.svg",
+      "title": "Tricky"
+    },
+    {
+      "bonusPercentageRangeFrom": 0.8,
+      "bonusPercentageRangeTo": 2,
+      "description": "NITRO refills during jump",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/0277a64916651121859263608ea1e151635e4779-223x214.svg",
+      "title": "Ventilated"
+    }
+  ],
+  "builds": [
+    {
+      "affixes": [
+        "Rich",
+        "Legend"
+      ],
+      "set": "BUCKS MAGNET",
+      "title": "Bucks Magnet"
+    },
+    {
+      "affixes": [
+        "Bulldozer",
+        "Extra Pump"
+      ],
+      "set": "NITRO CHEMIST",
+      "title": "Demolition monster"
+    },
+    {
+      "affixes": [
+        "Cluster",
+        "Frenetic"
+      ],
+      "set": "NITRO CHEMIST",
+      "title": "Drag Master"
+    },
+    {
+      "affixes": [
+        "Hothead",
+        "Slippery"
+      ],
+      "set": "NITRO CHEMIST",
+      "title": "Drift Kind"
+    },
+    {
+      "affixes": [
+        "Iron Grip",
+        "Shifty"
+      ],
+      "set": "NITRO CHEMIST",
+      "title": "GripShift"
+    },
+    {
+      "affixes": [
+        "Iron Grip",
+        "Trailer"
+      ],
+      "set": "NITRO CHEMIST",
+      "title": "GripTrail"
+    },
+    {
+      "affixes": [
+        "Goldfinger",
+        "Lucky"
+      ],
+      "set": "LOOT Digger",
+      "title": "Loot Digger"
+    },
+    {
+      "affixes": [
+        "Extra Impact",
+        "Pure"
+      ],
+      "set": "TAKEDOWN EXPERT",
+      "title": "Neutralization expert"
+    },
+    {
+      "affixes": [
+        "Pure",
+        "Extra Pump"
+      ],
+      "set": "NITRO CHEMIST",
+      "title": "Nitro Chemist"
+    },
+    {
+      "affixes": [
+        "Pure",
+        "Frenetic"
+      ],
+      "set": "NITRO CHEMIST",
+      "title": "Nitro Push All"
+    },
+    {
+      "affixes": [
+        "Perfectionist",
+        "Gateway"
+      ],
+      "set": "NITRO CHEMIST",
+      "title": "Plane Perfection"
+    },
+    {
+      "affixes": [
+        "Extra Impact",
+        "Bulldozer"
+      ],
+      "set": "TAKEDOWN EXPERT",
+      "title": "Police Maniac"
+    },
+    {
+      "affixes": [
+        "Skilled",
+        "Pure"
+      ],
+      "set": "SCORE BREAKER",
+      "title": "Score Breaker"
+    },
+    {
+      "affixes": [
+        "Air Intake",
+        "Air Outtake"
+      ],
+      "set": "NITRO CHEMIST",
+      "title": "Slipstream distance"
+    },
+    {
+      "affixes": [
+        "Air Intake",
+        "Shifty"
+      ],
+      "set": "NITRO CHEMIST",
+      "title": "Slipstream Partner back"
+    },
+    {
+      "affixes": [
+        "Trailer",
+        "Air Outtake"
+      ],
+      "set": "NITRO CHEMIST",
+      "title": "Slipstream Partner front"
+    },
+    {
+      "affixes": [
+        "Trailer",
+        "Shifty"
+      ],
+      "set": "NITRO CHEMIST",
+      "title": "Slipstream speed"
+    },
+    {
+      "affixes": [
+        "Collector",
+        "Treasure Hunt"
+      ],
+      "set": "TREASURE SNIFFER",
+      "title": "Treasure Sniffer"
+    },
+    {
+      "affixes": [
+        "Legend",
+        "Rich"
+      ],
+      "set": "XP MAGNET",
+      "title": "XP Magnet"
+    }
+  ],
+  "sets": [
+    {
+      "description": "Earn more Bucks",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/641b85839165b090fa5f3c3bcf0aa9ebec2fb07c-228x227.svg",
+      "title": "BUCKS MAGNET"
+    },
+    {
+      "description": "Increase the LOOT earned",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/263f6e6391ac78e91ffd00e9ae9cb0ef8eaf554e-188x186.png",
+      "title": "LOOT Digger"
+    },
+    {
+      "description": "Increase the NITRO Duration",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/ff5daf064adf80a74cf6a3c3bc8d102b735b1244-117x206.svg",
+      "title": "NITRO CHEMIST"
+    },
+    {
+      "description": "Increase POINTS in FEATS",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/f99a885d63af6d13a79332c429d9b8a7fe94aa1f-194x144.svg",
+      "title": "SCORE BREAKER"
+    },
+    {
+      "description": "Increase POINTS in CHASE",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/7d5efe02b9fca041ecb26b3bffeeef12994b6a35-207x185.svg",
+      "title": "TAKEDOWN EXPERT"
+    },
+    {
+      "description": "Increase the TREASURE density",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/2efd932ac97236aa153fb59304dcbf1d11fd63a1-198x197.svg",
+      "title": "TREASURE SNIFFER"
+    },
+    {
+      "description": "Increase XP gains",
+      "icon": "https://cdn.sanity.io/images/2kgev7fd/production/b9c576f795976a3c2641e22a2e30942d46dde841-188x187.svg",
+      "title": "XP MAGNET"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+bin/
+obj/
+dist*/
+test-results/
+Logs/
+.vs/
+*.user
+latest-build.txt
