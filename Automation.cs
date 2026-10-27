@@ -493,7 +493,8 @@ public sealed class Vision
             )
                 throw new InvalidOperationException("Середній кидок не відповідає перку, який покращуємо.");
         }
-        if (Focus(frame, rows) < 0)
+        int focus = Focus(frame, rows);
+        if (focus < 0)
             throw new InvalidOperationException("Не знайдено жовту рамку вибору.");
         trace?.Write(
             "decision",
@@ -506,7 +507,7 @@ public sealed class Vision
                 expected = expected.ToString(),
             }
         );
-        return new(index, expected, phase, fresh, reroll, bottom);
+        return new(index, expected, phase, fresh, reroll, bottom, focus);
     }
 
     public async Task<GameScreen> ScreenState(Bitmap frame)
@@ -798,7 +799,8 @@ public sealed class Runner : IBuildGame
         CancellationToken ct,
         string[]? zones = null,
         [System.Runtime.CompilerServices.CallerMemberName] string stage = "",
-        int timeoutMs = 9000
+        int timeoutMs = 9000,
+        Func<T, bool>? accept = null
     )
     {
         int attempt = 0;
@@ -832,6 +834,20 @@ public sealed class Runner : IBuildGame
                     );
                     await EnsureFocus(ct);
                     continue;
+                }
+                // A value the caller can verify against a known expectation needs no second frame.
+                if (accept != null && accept(value))
+                {
+                    trace?.Write(
+                        "state_confirmed",
+                        new
+                        {
+                            stage,
+                            attempt,
+                            single = true,
+                        }
+                    );
+                    return value;
                 }
                 if (have && same(previous!, value))
                 {
@@ -969,8 +985,27 @@ public sealed class Runner : IBuildGame
         await ReadPart(ct);
     }
 
-    async Task<PartView> Part(CancellationToken ct, bool popup = false)
+    // Polls only the two popup zones (6% of the screen) until the roll menu has closed, so the
+    // closing animation is watched cheaply before the full part read starts.
+    async Task WaitMenuClosed(CancellationToken ct)
     {
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        long pausedBefore = pausedMs;
+        while (clock.ElapsedMilliseconds - (pausedMs - pausedBefore) < 9000)
+        {
+            ct.ThrowIfCancellationRequested();
+            var frame = await Frame(ct, ["topLeft", "topRight"], "menu-closing");
+            if (await vision.PopupSide(frame) < 0)
+                return;
+            await Task.Delay(p.FastRecognition ? 40 : 100, ct);
+        }
+        // The full read reports the precise failure if the menu is still open.
+    }
+
+    async Task<PartView> Part(CancellationToken ct, bool popup = false, int slot = -1, PerkCard? expected = null)
+    {
+        if (!popup)
+            await WaitMenuClosed(ct);
         if (p.AutoSet && !autoResolved)
         {
             string detected = await Until(
@@ -1027,8 +1062,24 @@ public sealed class Runner : IBuildGame
             (a, b) =>
                 a.Id == b.Id && a.Focus == b.Focus && a.Cards.Zip(b.Cards).All(v => PerkCard.Same(v.First, v.Second)),
             ct,
-            ["part", "set", "left", "right", "topLeft", "topRight"]
+            ["part", "set", "left", "right", "topLeft", "topRight"],
+            accept: expected?.Stats == null || slot < 0
+                ? null
+                : view =>
+                    view.Focus >= 0
+                    && view.Cards[slot].Name == expected.Name
+                    && view.Cards[slot].Stats != null
+                    && Recognition.Equal(view.Cards[slot].Stats!, expected.Stats)
         );
+    }
+
+    // After a roll whose chosen card differs from the previous one, the first frame that already shows the
+    // exact chosen name and value proves the save was applied; a second identical frame adds nothing.
+    async Task<PartView> ReadSaved(int slot, PerkCard previous, PerkCard expected, CancellationToken ct)
+    {
+        bool changed = !PerkCard.Same(previous, expected);
+        lastPart = await Part(ct, false, changed ? slot : -1, changed ? expected : null);
+        return lastPart;
     }
 
     public async Task<PartView> ReadPart(CancellationToken ct)
@@ -1047,7 +1098,8 @@ public sealed class Runner : IBuildGame
     {
         if (rolls >= p.MaxRolls)
             throw new InvalidOperationException($"Досягнуто ліміту {p.MaxRolls} кидків. Прогрес залишився в грі.");
-        await FocusMain(slot, ct);
+        if (lastPart?.Focus != slot)
+            await FocusMain(slot, ct);
         int rollId = ledger.Request(lastPart?.Id ?? "unknown", slot, phase);
         try
         {
@@ -1105,9 +1157,9 @@ public sealed class Runner : IBuildGame
             )
         );
         log($"Варіант {choice.Index + 1}: {choice.Expected}");
-        await FocusRows(rows, choice.Index, ct);
+        await FocusRows(rows, choice.Index, ct, choice.Focus);
         await Press("Confirm", ct);
-        var saved = await ReadPart(ct);
+        var saved = await ReadSaved(slot, current, choice.Expected, ct);
         if (!PerkCard.Same(saved.Cards[slot], choice.Expected))
             throw new InvalidOperationException("Гра не підтвердила обраний варіант.");
         ledger.Saved(rollId, saved.Cards[slot]);
@@ -1355,7 +1407,7 @@ public sealed class Runner : IBuildGame
         await input!.Press(action, ct);
         await EnsureFocus(ct);
         // The after-press frame is purely diagnostic; skip the capture once the PNG budget is spent.
-        if (trace?.ScreenshotBudgetAvailable == true)
+        if (action != "Confirm" && trace?.ScreenshotBudgetAvailable == true)
             await Frame(ct, null, "after-" + action);
     }
 
@@ -1393,7 +1445,7 @@ public sealed class Runner : IBuildGame
         );
     }
 
-    async Task FocusRows(string[] rows, int desired, CancellationToken ct)
+    async Task FocusRows(string[] rows, int desired, CancellationToken ct, int known = -1)
     {
         await FocusNavigator.Ensure(
             desired,
@@ -1425,7 +1477,8 @@ public sealed class Runner : IBuildGame
                 else if (attempt == 1 || attempt == p.FocusReadAttempts)
                     log($"Рамка: повторне зчитування {attempt}/{p.FocusReadAttempts}; очікую варіант {desired + 1}.");
             },
-            ct
+            ct,
+            known
         );
     }
 }

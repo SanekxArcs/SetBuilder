@@ -89,6 +89,46 @@ public static class FocusVerification
             stopped = true;
         }
         Check(stopped, "focus retry responds to cancellation");
+        int knownReads = 0,
+            knownPresses = 0;
+        await FocusNavigator.Ensure(
+            1,
+            () =>
+            {
+                knownReads++;
+                return Task.FromResult(1);
+            },
+            (_, _) =>
+            {
+                knownPresses++;
+                return Task.CompletedTask;
+            },
+            4,
+            10,
+            null,
+            CancellationToken.None,
+            known: 1
+        );
+        Check(knownReads == 0 && knownPresses == 0, "known focus on the desired row needs no capture and no key");
+        await FocusNavigator.Ensure(
+            0,
+            () =>
+            {
+                knownReads++;
+                return Task.FromResult(0);
+            },
+            (_, _) =>
+            {
+                knownPresses++;
+                return Task.CompletedTask;
+            },
+            4,
+            10,
+            null,
+            CancellationToken.None,
+            known: 1
+        );
+        Check(knownReads == 1 && knownPresses == 1, "known focus elsewhere presses once and confirms with one read");
         File.WriteAllLines(Path.Combine(AppContext.BaseDirectory, "focus-test.txt"), results);
         return 0;
     }

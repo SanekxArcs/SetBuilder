@@ -14,7 +14,8 @@ public static class FocusNavigator
         int readAttempts,
         int retryMs,
         Action<string, int, int>? retry,
-        CancellationToken ct
+        CancellationToken ct,
+        int known = -1
     )
     {
         if (desired < 0 || desired > 2 || readAttempts < 1 || readAttempts > 100 || retryMs < 10 || retryMs > 1000)
@@ -38,7 +39,8 @@ public static class FocusNavigator
             }
             throw new FocusReadException($"Рамку не підтверджено після {readAttempts} зчитувань.", last);
         }
-        int focus = await Read(null);
+        // A focus index confirmed by the caller's last read skips one capture.
+        int focus = known >= 0 && known <= 2 ? known : await Read(null);
         for (int moves = 0; moves < 4; moves++)
         {
             if (focus == desired)

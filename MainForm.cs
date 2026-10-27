@@ -1669,7 +1669,27 @@ public sealed class MainForm : Form
                     await Task.Delay(1000, active.Token);
                 }
             }
-            Desktop.Check(game.Handle);
+            if (!Desktop.IsGame(game.Handle))
+                throw new InvalidOperationException("Обране вікно не належить The Crew Motorfest.");
+            var focusWait = System.Diagnostics.Stopwatch.StartNew();
+            bool announced = false;
+            while (Desktop.GetForegroundWindow() != game.Handle)
+            {
+                if (profile.FocusLostWaitSeconds <= 0 || focusWait.Elapsed.TotalSeconds >= profile.FocusLostWaitSeconds)
+                    throw new FocusLostException("Зупинено: гра втратила фокус.");
+                if (!announced)
+                {
+                    announced = true;
+                    Log($"Гра ще не у фокусі. Чекаю до {profile.FocusLostWaitSeconds} с · F10 — скасувати");
+                    if (run)
+                        runStatus.Set(
+                            StatusCard.Mode.Paused,
+                            "Чекаю фокус гри",
+                            "Поверни фокус у гру · F10 — скасувати"
+                        );
+                }
+                await Task.Delay(250, active.Token);
+            }
             if (run)
                 await new Runner(catalog, profile, game.Handle, Log, recording, AutoSetApplied, OnProgress).Run(
                     active.Token

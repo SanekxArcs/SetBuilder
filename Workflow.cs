@@ -24,7 +24,8 @@ public record PopupSelection(
     RollPhase Phase,
     PerkCard? Fresh = null,
     PerkCard? Reroll = null,
-    PerkCard? Current = null
+    PerkCard? Current = null,
+    int Focus = -1
 );
 
 public enum GameScreen
