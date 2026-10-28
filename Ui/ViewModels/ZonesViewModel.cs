@@ -133,6 +133,7 @@ public sealed class ZonesViewModel : PageViewModel
     public const string NotSet = "Не задано";
 
     static readonly Dictionary<string, ImageSource?> images = [];
+    bool calibrating;
     string? exampleKey;
     ImageSource? exampleImage;
     double imageWidth = 1376,
@@ -158,6 +159,7 @@ public sealed class ZonesViewModel : PageViewModel
             );
         RestoreDefaultsCommand = new RelayCommand(RestoreDefaults);
         HideExampleCommand = new RelayCommand(HideExample);
+        CalibrateCommand = new AsyncCommand(CalibrateAsync);
         RefreshRows();
         ShowExample("left");
     }
@@ -166,6 +168,96 @@ public sealed class ZonesViewModel : PageViewModel
 
     public ICommand RestoreDefaultsCommand { get; }
     public ICommand HideExampleCommand { get; }
+    public ICommand CalibrateCommand { get; }
+
+    /// <summary>The automatic calibration runs while nothing else runs and only once at a time.</summary>
+    public bool CanCalibrate => CanEdit && !calibrating;
+
+    /// <summary>The last automatic calibration, for the smoke harness and the page.</summary>
+    public CalibrationResult? LastCalibration { get; private set; }
+
+    /// <summary>
+    /// "Підібрати зони автоматично": reads the game window once (no key presses), finds the game's 16:9 UI area,
+    /// projects the shipped zones into it and verifies them by reading the screen. Saves the zones only when every
+    /// read on the recognised screen succeeds; the frame and the report go to Logs\Calibration.
+    /// </summary>
+    public async Task CalibrateAsync()
+    {
+        if (Shell.IsBusy || calibrating)
+            return;
+        if (Shell.Game is not GameWindow game)
+        {
+            Shell.Log("Вибери вікно гри.");
+            return;
+        }
+        calibrating = true;
+        OnPropertyChanged(nameof(CanCalibrate));
+        try
+        {
+            Shell.Log("Підбір зон: читаю екран гри без натискань…");
+            Bitmap frame;
+            try
+            {
+                frame = Desktop.Capture(game.Handle);
+            }
+            catch (Exception e)
+            {
+                Shell.Log("Підбір зон: " + e.Message);
+                return;
+            }
+            using (frame)
+            {
+                var result = await ZoneCalibration.Run(frame, Shell.Catalog, Shell.Profile, Shell.Log);
+                LastCalibration = result;
+                foreach (var line in result.Verified)
+                    Shell.Log("  ✓ " + line);
+                foreach (var line in result.Problems)
+                    Shell.Log("  ✗ " + line);
+                SaveEvidence(frame, result);
+                if (!result.Success)
+                {
+                    Shell.Log("Зони не змінено: не все вдалося прочитати. Виділи зони вручну за «Прикладом» або повтори на іншому екрані.");
+                    return;
+                }
+                foreach (var (key, zone) in result.Zones)
+                    Shell.Profile.Zones[key] = zone;
+                Shell.SaveProfile();
+                RefreshRows();
+                if (exampleKey is { } shown)
+                    ShowExample(shown);
+                Shell.Log($"Зони підібрано й збережено: {result.ScreenTitle}, перевірок {result.Verified.Count}.");
+            }
+        }
+        finally
+        {
+            calibrating = false;
+            OnPropertyChanged(nameof(CanCalibrate));
+        }
+    }
+
+    void SaveEvidence(Bitmap frame, CalibrationResult result)
+    {
+        try
+        {
+            string folder = Path.Combine(SessionLog.Root, "Calibration");
+            Directory.CreateDirectory(folder);
+            string stamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+            frame.Save(Path.Combine(folder, stamp + ".png"), System.Drawing.Imaging.ImageFormat.Png);
+            var lines = new List<string>
+            {
+                $"frame {result.FrameSize.Width}x{result.FrameSize.Height} · ui {result.UiArea} · screen {result.Screen} · success {result.Success}",
+            };
+            lines.AddRange(result.Verified.Select(v => "OK   " + v));
+            lines.AddRange(result.Problems.Select(v => "FAIL " + v));
+            lines.AddRange(result.Zones.Select(z => $"{z.Key} = {Format(z.Value)}"));
+            File.WriteAllLines(Path.Combine(folder, stamp + ".txt"), lines);
+            Shell.Log("Кадр і звіт підбору: " + Path.Combine(folder, stamp + ".png"));
+        }
+        catch (Exception e)
+        {
+            Shell.Log("Не вдалося зберегти кадр підбору: " + e.Message);
+        }
+    }
 
     // The example panel.
     public bool HasExample => exampleKey != null;
@@ -358,6 +450,7 @@ public sealed class ZonesViewModel : PageViewModel
     public override void Refresh()
     {
         base.Refresh();
+        OnPropertyChanged(nameof(CanCalibrate));
         RefreshRows();
     }
 
@@ -424,14 +517,40 @@ public sealed class ZonesViewModel : PageViewModel
         ShowExample("left");
         passed.Add("PASS every zone shows its reference screenshot with the default frame inside the image; a changed zone adds a dashed frame");
 
+        // Automatic calibration: geometry on the reference area and on the shipped example image; no game in preview.
+        var mapped = ZoneCalibration.Map(ZoneCalibration.ReferenceSize, ZoneCalibration.ReferenceUi);
+        if (defaults.Any(d => Math.Abs(d.Value.X - mapped[d.Key].X) > .0006 || Math.Abs(d.Value.W - mapped[d.Key].W) > .0006))
+            throw new InvalidOperationException("Reference UI area does not map the zones onto the defaults");
+        if (ZoneCalibration.UiAreaByAspect(new System.Drawing.Size(1920, 1200)) != new System.Drawing.Rectangle(0, 60, 1920, 1080))
+            throw new InvalidOperationException("16:10 window must be letterboxed to 1920×1080");
+        string sample = Path.Combine(AppContext.BaseDirectory, "Assets", "reference", "ready.jpg");
+        if (!File.Exists(sample))
+            throw new InvalidOperationException("Assets/reference/ready.jpg is missing next to the executable");
+        using (var image = new Bitmap(sample))
+        {
+            var area = ZoneCalibration.UiArea(image, out string note);
+            var expectedArea = new System.Drawing.Rectangle(176, 0, 1024, 576);
+            if (Math.Abs(area.X - expectedArea.X) > 3 || Math.Abs(area.Width - expectedArea.Width) > 6 || area.Y != 0 || area.Height != 576)
+                throw new InvalidOperationException($"Black bands of the example image gave {area}, expected {expectedArea} ({note})");
+            var scaled = ZoneCalibration.Map(image.Size, area);
+            double drift = defaults.Max(d => Math.Abs(d.Value.X - scaled[d.Key].X) + Math.Abs(d.Value.Y - scaled[d.Key].Y));
+            if (drift > .006)
+                throw new InvalidOperationException($"Zones mapped from the example image drift by {drift}");
+        }
+        passed.Add("PASS automatic calibration maps the shipped zones from the detected 16:9 area (reference, example image, 16:10 letterbox)");
+
         var preview = Shell as PreviewShell;
         int before = preview?.Lines.Count ?? 0;
         var game = Shell.Game;
         Shell.Game = null;
         PickAsync("left", "Лівий перк").GetAwaiter().GetResult();
-        Shell.Game = game;
         if (preview != null && (preview.Lines.Count != before + 1 || preview.Lines[^1] != "Вибери вікно гри."))
             throw new InvalidOperationException("Pick without a game window must log 'Вибери вікно гри.'");
+        CalibrateAsync().GetAwaiter().GetResult();
+        if (preview != null && (preview.Lines.Count != before + 2 || preview.Lines[^1] != "Вибери вікно гри." || LastCalibration != null))
+            throw new InvalidOperationException("Calibration without a game window must only log 'Вибери вікно гри.'");
+        Shell.Game = game;
+        before = preview?.Lines.Count ?? 0;
         if (preview != null)
         {
             preview.IsBusy = true;
@@ -443,10 +562,10 @@ public sealed class ZonesViewModel : PageViewModel
             {
                 preview.IsBusy = false;
             }
-            if (preview.Lines.Count != before + 1)
+            if (preview.Lines.Count != before)
                 throw new InvalidOperationException("Pick must do nothing while busy");
         }
-        passed.Add("PASS zone pick without a game window logs 'Вибери вікно гри.' and is ignored while busy");
+        passed.Add("PASS zone pick and calibration without a game window log 'Вибери вікно гри.'; pick is ignored while busy");
     }
 
     public override IReadOnlyList<PreviewVariant> PreviewVariants =>

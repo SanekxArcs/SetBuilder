@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$Configuration = 'Release',
     [switch]$SkipBuild
 )
@@ -15,6 +15,7 @@ try {
     if (-not $exe) { throw 'Executable not found; build first.' }
     $modes = @(
         '--self-test', '--verify-workflow', '--verify-focus', '--verify-recovery', '--verify-analytics', '--ui-smoke',
+        '--verify-calibration "test-results\calibration"',
         '--verify-stuck "test-results\stuck-clean-driver.png"',
         '--verify-value-crop "test-results\extra-impact-2-percent.png" "Extra Impact 2% / 4%"',
         '--verify-value-crop "test-results\extra-impact-2-percent-b.png" "Extra Impact 2% / 4%"',

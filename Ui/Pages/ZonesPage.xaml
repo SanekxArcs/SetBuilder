@@ -13,6 +13,18 @@
       <TextBlock Text="Базові зони відповідають скрінам 3440×1440. Для іншого HUD виділи їх вручну: «Приклад» показує, де зона має бути." Style="{StaticResource CardTitle}" Margin="2,4,0,0" />
       <TextBlock Text="Основний екран: 2 перки, назва сету та заголовок деталі. Меню кидка: верхній і середній блоки для кожного слота. Нижній збігається з основним перком." Style="{StaticResource CardDescription}" Margin="2,2,0,0" />
 
+      <ui:CardControl Icon="{ui:SymbolIcon ScreenSearch24}" Margin="0,8,0,4">
+        <ui:CardControl.Header>
+          <StackPanel>
+            <TextBlock Text="Підібрати зони автоматично" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="Відкрий у грі деталь (RECALIBER), меню кидка або UPGRADE із сімома деталями й натисни. Програма один раз зчитає екран без натискань, знайде область інтерфейсу гри (16:9 між чорними смугами), розставить у ній зони зі скріншотів і перевірить їх читанням: шлях меню, перки, сет, деталь або ряд деталей. Зони зберігаються лише тоді, коли все прочиталося; кадр і звіт — у Logs\Calibration."
+                       Style="{StaticResource CardDescription}" MaxWidth="720" HorizontalAlignment="Left" />
+          </StackPanel>
+        </ui:CardControl.Header>
+        <ui:Button Content="Підібрати зони" Icon="{ui:SymbolIcon ScreenSearch24}" Appearance="Primary" Command="{Binding CalibrateCommand}"
+                   IsEnabled="{Binding CanCalibrate}" MinWidth="150" AutomationProperties.Name="Підібрати зони автоматично" />
+      </ui:CardControl>
+
       <TextBlock Text="Зони" Style="{StaticResource SectionHeader}" />
 
       <ItemsControl ItemsSource="{Binding Zones}" Focusable="False">
