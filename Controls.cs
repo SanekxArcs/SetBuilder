@@ -6,6 +6,9 @@ namespace TunerFest;
 public sealed class DarkSelect : Control
 {
     public List<object> Items { get; } = [];
+
+    // When set, the open list draws this image in front of each item.
+    public Func<object, Image?>? ItemImage { get; set; }
     int selected = -1;
     ToolStripDropDown? activePopup;
     public event EventHandler? SelectedIndexChanged;
@@ -135,11 +138,23 @@ public sealed class DarkSelect : Control
                 (e.State & DrawItemState.Selected) != 0 ? Color.FromArgb(70, 68, 33) : Fluent.Background
             );
             e.Graphics.FillRectangle(b, e.Bounds);
+            int inset = 8;
+            var image = ItemImage?.Invoke(list.Items[e.Index]!);
+            if (image != null)
+            {
+                int side = Shell.Px(this, 22);
+                e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                e.Graphics.DrawImage(
+                    image,
+                    new Rectangle(e.Bounds.X + 8, e.Bounds.Y + (e.Bounds.Height - side) / 2, side, side)
+                );
+                inset += side + 8;
+            }
             TextRenderer.DrawText(
                 e.Graphics,
                 list.Items[e.Index]?.ToString(),
                 Font,
-                new Rectangle(e.Bounds.X + 8, e.Bounds.Y, e.Bounds.Width - 12, e.Bounds.Height),
+                new Rectangle(e.Bounds.X + inset, e.Bounds.Y, e.Bounds.Width - inset - 4, e.Bounds.Height),
                 Color.White,
                 TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis
             );

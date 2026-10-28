@@ -303,6 +303,36 @@ public static class Verification
         return actual == expected ? 0 : 1;
     }
 
+
+    // Experiment: OCR the isolated yellow value under several renderings and report what each one returns.
+    public static async Task<int> ProbeYellow(string[] paths)
+    {
+        var p = new Profile { FastRecognition = false };
+        var v = new Vision(Catalog.Load(), p);
+        var lines = new List<string>();
+        foreach (string path in paths)
+        {
+            using var crop = new Bitmap(path);
+            using var isolated = Vision.YellowText(crop, crop.Height * 55 / 100);
+            if (isolated == null)
+            {
+                lines.Add(path + ": no yellow");
+                continue;
+            }
+            lines.Add(path + ": isolated " + isolated.Width + "x" + isolated.Height);
+            foreach (var (label, image) in Vision.YellowVariants(isolated, "[2%-4%]"))
+            {
+                using (image)
+                {
+                    string text = await v.Text(image);
+                    lines.Add($"  {label,-28} {image.Width}x{image.Height} -> '{text}'");
+                }
+            }
+        }
+        File.WriteAllLines(Path.Combine(AppContext.BaseDirectory, "probe-yellow.txt"), lines);
+        return 0;
+    }
+
     public static async Task<int> Stuck(string path)
     {
         var c = Catalog.Load();

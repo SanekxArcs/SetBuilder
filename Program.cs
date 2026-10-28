@@ -52,6 +52,8 @@ internal static class Program
                 return Verification.Diagnostics(args[1]).GetAwaiter().GetResult();
             if (args.Length == 3 && args[0] == "--verify-value-crop")
                 return Verification.ValueCrop(args[1], args[2]).GetAwaiter().GetResult();
+            if (args.Length > 1 && args[0] == "--probe-yellow")
+                return Verification.ProbeYellow(args.Skip(1).ToArray()).GetAwaiter().GetResult();
             if (args.Length == 2 && args[0] == "--verify-stuck")
                 return Verification.Stuck(args[1]).GetAwaiter().GetResult();
             if (args.Length == 2 && args[0] == "--inspect-screen")

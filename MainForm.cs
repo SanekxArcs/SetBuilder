@@ -179,7 +179,19 @@ public sealed class MainForm : Form
     };
     readonly PictureBox iconSet = new(),
         iconFirst = new(),
-        iconSecond = new();
+        iconSecond = new(),
+        iconBuild = new(),
+        iconFirstAlt = new(),
+        iconSecondAlt = new();
+
+    // One muted line under each selector: what the item does, its numbers and its tag, as on tunerfest.app.
+    readonly FluentText buildInfo = new(),
+        setInfo = new(),
+        firstInfo = new(),
+        secondInfo = new(),
+        firstAltInfo = new(),
+        secondAltInfo = new();
+    readonly Dictionary<string, Image?> iconCache = [];
     readonly List<Control> settingsControls = [];
     readonly Button start,
         stop;
@@ -196,7 +208,8 @@ public sealed class MainForm : Form
         logEnabled = new(),
         logScreenshots = new(),
         randomPause = new(),
-        fastRecognition = new();
+        fastRecognition = new(),
+        fastRolls = new();
     readonly FluentNumber pauseMin =
             new()
             {
@@ -356,11 +369,23 @@ public sealed class MainForm : Form
         var right = Stack();
         layout.Controls.Add(right, 1, 0);
         AddLabel(left, "ПРОФІЛЬ ІЗ TUNERFEST", true);
-        Combo(
+        GoalRow(
             left,
             builds,
-            new object[] { new Build { Title = "Власна збірка" } }.Concat(catalog.Builds.Cast<object>())
+            new object[] { new Build { Title = "Власна збірка" } }.Concat(catalog.Builds.Cast<object>()),
+            iconBuild
         );
+        AddInfo(left, buildInfo);
+        var siteRow = new FlowLayoutPanel
+        {
+            AutoSize = true,
+            FlowDirection = FlowDirection.LeftToRight,
+            Margin = new(0),
+            WrapContents = false,
+        };
+        left.Controls.Add(siteRow);
+        settingsControls.Remove(Button(siteRow, "Сети та інструкції на сайті ↗", () => OpenSite(SetsUrl)));
+        settingsControls.Remove(Button(siteRow, "Підтримка ↗", () => OpenSite(SupportUrl)));
         autoSet.Text = "Автоматично визначати сет і пару перків";
         autoSet.Checked = profile.AutoSet;
         autoSet.AutoSize = true;
@@ -371,12 +396,17 @@ public sealed class MainForm : Form
         autoSet.CheckedChanged += (_, _) => SyncTargetControls();
         AddLabel(left, "Сет деталі");
         GoalRow(left, sets, catalog.Sets.Cast<object>(), iconSet);
+        AddInfo(left, setInfo);
         AddLabel(left, "Перший перк");
         GoalRow(left, first, catalog.Affixes.Cast<object>(), iconFirst, firstOptional);
-        AlternativeRow(left, firstAlt);
+        AddInfo(left, firstInfo);
+        AlternativeRow(left, firstAlt, iconFirstAlt);
+        AddInfo(left, firstAltInfo);
         AddLabel(left, "Другий перк");
         GoalRow(left, second, catalog.Affixes.Cast<object>(), iconSecond, secondOptional);
-        AlternativeRow(left, secondAlt);
+        AddInfo(left, secondInfo);
+        AlternativeRow(left, secondAlt, iconSecondAlt);
+        AddInfo(left, secondAltInfo);
         firstAlt.SelectedItem =
             catalog.Affixes.FirstOrDefault(a => a.Title == profile.FirstAlternative) ?? NoAlternative;
         secondAlt.SelectedItem =
@@ -548,13 +578,20 @@ public sealed class MainForm : Form
         var openLogs = Button(actions, "Відкрити Logs", OpenLogs);
         settingsControls.Remove(openLogs);
         Button(actions, "ZIP останнього запуску", ExportLogs);
+        settingsControls.Remove(Button(actions, "tunerfest.app/sets ↗", () => OpenSite(SetsUrl)));
+        settingsControls.Remove(Button(actions, "Підтримка ↗", () => OpenSite(SupportUrl)));
         root.Controls.Add(status, 0, 3);
         status.ForeColor = Muted;
-        first.SelectedIndexChanged += (_, _) => LoadIcon(iconFirst, first.SelectedItem?.ToString());
-        second.SelectedIndexChanged += (_, _) => LoadIcon(iconSecond, second.SelectedItem?.ToString());
-        sets.SelectedIndexChanged += (_, _) => LoadIcon(iconSet, sets.SelectedItem?.ToString());
+        first.SelectedIndexChanged += (_, _) => ShowGoal(iconFirst, firstInfo, first.SelectedItem);
+        second.SelectedIndexChanged += (_, _) => ShowGoal(iconSecond, secondInfo, second.SelectedItem);
+        sets.SelectedIndexChanged += (_, _) => ShowGoal(iconSet, setInfo, sets.SelectedItem);
+        firstAlt.SelectedIndexChanged += (_, _) => ShowGoal(iconFirstAlt, firstAltInfo, firstAlt.SelectedItem);
+        secondAlt.SelectedIndexChanged += (_, _) => ShowGoal(iconSecondAlt, secondAltInfo, secondAlt.SelectedItem);
+        foreach (var combo in new[] { builds, sets, first, second, firstAlt, secondAlt })
+            combo.ItemImage = item => IconFor(IconTitle(item), Shell.Px(this, 22));
         builds.SelectedIndexChanged += (_, _) =>
         {
+            ShowGoal(iconBuild, buildInfo, builds.SelectedItem);
             if (builds.SelectedItem is Build b && b.Set != "")
             {
                 sets.SelectedItem = catalog.Sets.FirstOrDefault(s => s.Title == b.Set);
@@ -574,6 +611,12 @@ public sealed class MainForm : Form
             catalog.Builds.FirstOrDefault(b =>
                 b.Set == profile.Set && b.Affixes.SequenceEqual(new[] { profile.First, profile.Second })
             ) ?? builds.Items[0];
+        ShowGoal(iconBuild, buildInfo, builds.SelectedItem);
+        ShowGoal(iconSet, setInfo, sets.SelectedItem);
+        ShowGoal(iconFirst, firstInfo, first.SelectedItem);
+        ShowGoal(iconSecond, secondInfo, second.SelectedItem);
+        ShowGoal(iconFirstAlt, firstAltInfo, firstAlt.SelectedItem);
+        ShowGoal(iconSecondAlt, secondAltInfo, secondAlt.SelectedItem);
         SyncTargetControls();
         RefreshWindows();
         Shell.DarkScrollbars(this);
@@ -768,7 +811,16 @@ public sealed class MainForm : Form
         return b;
     }
 
-    void AlternativeRow(Control c, DarkSelect alternative)
+    void AddInfo(Control c, FluentText info)
+    {
+        info.Width = 400;
+        info.Margin = new(45, 0, 3, 4);
+        info.ForeColor = Muted;
+        info.Visible = false;
+        c.Controls.Add(info);
+    }
+
+    void AlternativeRow(Control c, DarkSelect alternative, PictureBox box)
     {
         var row = new FlowLayoutPanel
         {
@@ -787,6 +839,8 @@ public sealed class MainForm : Form
                 Width = 30,
             }
         );
+        AddIcon(row, box);
+        box.Margin = new(0, 3, 0, 0);
         Combo(row, alternative, new object[] { NoAlternative }.Concat(catalog.Affixes.Cast<object>()));
         alternative.Width = 300;
         alternative.Height = 32;
@@ -823,12 +877,69 @@ public sealed class MainForm : Form
         c.Controls.Add(box);
     }
 
-    void LoadIcon(PictureBox box, string? title)
+    void LoadIcon(PictureBox box, string? title) => box.Image = IconFor(title, 32);
+
+    void ShowGoal(PictureBox box, FluentText info, object? item)
     {
-        box.Image?.Dispose();
-        box.Image = null;
-        if (title == null)
-            return;
+        LoadIcon(box, IconTitle(item));
+        info.Text = Describe(item);
+        info.Visible = info.Text != "";
+    }
+
+    // A build has no icon of its own on the site; it shows the icon of its set.
+    static string? IconTitle(object? item) =>
+        item switch
+        {
+            Build { Set: "" } => null,
+            Build b => b.Set,
+            Affix a when ReferenceEquals(a, NoAlternative) => null,
+            null => null,
+            _ => item.ToString(),
+        };
+
+    // One line in the style of tunerfest.app: what the item does, its numbers and its tag.
+    internal static string Describe(object? item)
+    {
+        static string Num(double v) => v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+        static string Clean(string s) =>
+            string.Join(
+                " · ",
+                s.Replace("\r", "").Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(l => l.Trim())
+            );
+        static string Tail(string text, string[]? tags)
+        {
+            string t = string.Join(", ", tags ?? []);
+            return t == "" ? text : text + " · " + t;
+        }
+        return item switch
+        {
+            Build { Set: "" } => "Сет і перки обираються нижче вручну.",
+            Build b => Tail(
+                Clean(b.Description) is "" ? b.Set + ": " + string.Join(" + ", b.Affixes) : Clean(b.Description),
+                b.Tags
+            ),
+            SetBonus s => Tail(
+                $"{Clean(s.Description)} · 3 деталі: +{Num(s.BonusPercentageThreeParts)}% · повний сет: +{Num(s.BonusPercentageFull)}%",
+                s.Tags
+            ),
+            Affix a when ReferenceEquals(a, NoAlternative) || a.Description == "" => "",
+            Affix a => Tail(
+                $"{Clean(a.Description)} · {Num(a.BonusPercentageRangeFrom)}–{Num(a.BonusPercentageRangeTo)}%",
+                a.Tags
+            ),
+            _ => "",
+        };
+    }
+
+    // Icons are rendered once per title and size and shared by the goal rows and the open lists.
+    Image? IconFor(string? title, int size)
+    {
+        if (string.IsNullOrEmpty(title))
+            return null;
+        string key = title + "@" + size;
+        if (iconCache.TryGetValue(key, out var cached))
+            return cached;
+        Image? image = null;
         var name = System.Text.RegularExpressions.Regex.Replace(title, "[^a-zA-Z0-9]", "").ToLowerInvariant();
         var path = Path.Combine(AppContext.BaseDirectory, "Assets", name + ".svg");
         try
@@ -836,8 +947,8 @@ public sealed class MainForm : Form
             if (File.Exists(path))
             {
                 var svg = Svg.SvgDocument.Open(path);
-                svg.Width = 32;
-                svg.Height = 32;
+                svg.Width = size;
+                svg.Height = size;
                 var bitmap = svg.Draw();
                 for (int y = 0; y < bitmap.Height; y++)
                 for (int x = 0; x < bitmap.Width; x++)
@@ -845,19 +956,21 @@ public sealed class MainForm : Form
                     var color = bitmap.GetPixel(x, y);
                     bitmap.SetPixel(x, y, Color.FromArgb(color.A, Accent));
                 }
-                box.Image = bitmap;
+                image = bitmap;
             }
             else
             {
                 path = Path.ChangeExtension(path, ".png");
                 if (File.Exists(path))
-                    box.Image = new Bitmap(path);
+                    image = new Bitmap(path);
             }
         }
         catch
         {
-            box.Image = null;
+            image = null;
         }
+        iconCache[key] = image;
+        return image;
     }
 
     internal void ShowPreviewTab(int index)
@@ -1099,6 +1212,24 @@ public sealed class MainForm : Form
             "Швидкий: Esc ×2 → вниз → Crafting → Enter. Якщо перехід не підтвердиться, застосунок повернеться до класичного маршруту.",
             true
         );
+        fastRolls.Text = "Швидкі кидки: відповідь на меню за позицією";
+        fastRolls.Checked = profile.FastRolls;
+        fastRolls.AutoSize = true;
+        fastRolls.ForeColor = Color.White;
+        fastRolls.Margin = new(3, 10, 3, 6);
+        stack.Controls.Add(fastRolls);
+        settingsControls.Add(fastRolls);
+        fastRolls.CheckedChanged += (_, _) =>
+        {
+            profile.FastRolls = fastRolls.Checked;
+            if (!smoke)
+                profile.Save();
+        };
+        AddLabel(
+            stack,
+            "Пошук: Enter → Up одразу під час появи меню → Enter, щойно рамка на верхньому рядку. Покращення: Enter → Enter на середньому рядку. Меню не читається; результат береться з картки слота. Якщо рамка не підтвердиться, меню читається повністю, як раніше.",
+            true
+        );
         AddLabel(stack, "Ліміт кидків на весь запуск");
         Numeric(stack, limit, profile.MaxRolls);
         AddLabel(stack, "Спроби зчитування рамки (без нових кидків)");
@@ -1316,6 +1447,24 @@ public sealed class MainForm : Form
         );
         foreach (var label in stack.Controls.OfType<FluentText>())
             label.Width = 920;
+    }
+
+    // Public pages of the site the catalog is synced from (Sync-Catalog.ps1): the sets guide and the support page.
+    const string SetsUrl = "https://tunerfest.app/sets",
+        SupportUrl = "https://tunerfest.app/support";
+
+    void OpenSite(string url)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(
+                new System.Diagnostics.ProcessStartInfo { FileName = url, UseShellExecute = true }
+            );
+        }
+        catch (Exception e)
+        {
+            Log($"Не вдалося відкрити {url}: {e.Message}");
+        }
     }
 
     void OpenLogs()
@@ -1606,6 +1755,26 @@ public sealed class MainForm : Form
             SaveSelection();
             if (profile.SecondAlternative != "")
                 throw new InvalidOperationException("Alternative did not clear");
+            builds.SelectedItem = catalog.Builds.First(b => b.Title == "Nitro Chemist");
+            if (
+                iconBuild.Image == null
+                || !buildInfo.Visible
+                || !buildInfo.Text.Contains("NITRO")
+                || !setInfo.Text.Contains("повний сет: +50%")
+                || !firstInfo.Text.Contains("3–5%")
+                || !secondInfo.Text.Contains("speed")
+            )
+                throw new InvalidOperationException("Build, set or perk description did not follow the selection");
+            if (Describe(catalog.Affixes.First(a => a.Title == "Cluster")) != "Increase GEARSHIFTING BOOST EFFECT in DRAG RACE events · 1.2–2% · speed")
+                throw new InvalidOperationException("Perk description format changed: " + Describe(catalog.Affixes.First(a => a.Title == "Cluster")));
+            secondAlt.SelectedItem = catalog.Affixes.First(a => a.Title == "Rich");
+            if (iconSecondAlt.Image == null || !secondAltInfo.Visible || !secondAltInfo.Text.Contains("%"))
+                throw new InvalidOperationException("Alternative perk icon or description missing");
+            if (second.ItemImage?.Invoke(catalog.Affixes.First(a => a.Title == "Pure")) == null)
+                throw new InvalidOperationException("Dropdown item icon missing");
+            secondAlt.SelectedItem = NoAlternative;
+            if (iconSecondAlt.Image != null || secondAltInfo.Visible)
+                throw new InvalidOperationException("Cleared alternative kept its icon or description");
             OnProgress(new RunProgress("running", 3, 7, 41, 61500, 6150));
             if (runStatus.Current != StatusCard.Mode.Running || lastProgress?.Rolls != 41)
                 throw new InvalidOperationException("Status card did not enter running state");
@@ -1628,7 +1797,7 @@ public sealed class MainForm : Form
             OnProgress(new RunProgress("running", 3, 7, 41, 61500, 6150));
             File.AppendAllText(
                 Path.Combine(AppContext.BaseDirectory, "ui-controls-test.txt"),
-                "PASS status card: running, paused, resumed, done, failed, cancelled\nPASS app icon, dark scrollbars and toast toggle constructed\nPASS optional toggle and alternative perk goals save, duplicates rejected\n"
+                "PASS status card: running, paused, resumed, done, failed, cancelled\nPASS app icon, dark scrollbars and toast toggle constructed\nPASS optional toggle and alternative perk goals save, duplicates rejected\nPASS build, set and perk icons and descriptions follow the selection, also in the open list\n"
             );
             AppendLog("Шукаю пару: Rich + Legend. Порядок слотів довільний.");
             AppendLog("Знайдено Rich у слоті 2. У слоті 1 шукаю тільки Legend.");
@@ -1664,6 +1833,7 @@ public sealed class MainForm : Form
             throw new InvalidOperationException("Перки та альтернативи мають бути різними.");
         profile.Parts = selectedPartCount;
         profile.FastRecognition = fastRecognition.Checked;
+        profile.FastRolls = fastRolls.Checked;
         profile.Delay = (int)delay.Value;
         profile.ExitPauseMs = (int)exitPause.Value;
         profile.RandomPause = randomPause.Checked;
@@ -2015,9 +2185,8 @@ public sealed class MainForm : Form
             if (IsHandleCreated)
                 foreach (int id in new[] { 8, 9, 10 })
                     Desktop.UnregisterHotKey(Handle, id);
-            iconSet.Image?.Dispose();
-            iconFirst.Image?.Dispose();
-            iconSecond.Image?.Dispose();
+            foreach (var image in iconCache.Values)
+                image?.Dispose();
         }
         base.Dispose(disposing);
     }

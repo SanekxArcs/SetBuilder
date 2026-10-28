@@ -24,6 +24,7 @@ public sealed class Affix
     public double BonusPercentageRangeFrom { get; set; }
     public double BonusPercentageRangeTo { get; set; }
     public string Icon { get; set; } = "";
+    public string[]? Tags { get; set; }
 
     public override string ToString() => Title;
 }
@@ -33,6 +34,9 @@ public sealed class SetBonus
     public string Title { get; set; } = "";
     public string Description { get; set; } = "";
     public string Icon { get; set; } = "";
+    public double BonusPercentageThreeParts { get; set; }
+    public double BonusPercentageFull { get; set; }
+    public string[]? Tags { get; set; }
 
     public override string ToString() => Title;
 }
@@ -40,6 +44,8 @@ public sealed class SetBonus
 public sealed class Build
 {
     public string Title { get; set; } = "";
+    public string Description { get; set; } = "";
+    public string[]? Tags { get; set; }
     public string Set { get; set; } = "";
     public string[] Affixes { get; set; } = [];
 
@@ -98,6 +104,7 @@ public sealed class Profile
     public int Parts { get; set; } = 7;
     public int Delay { get; set; } = 450;
     public bool FastPartNavigation { get; set; } = false;
+    public bool FastRolls { get; set; } = true;
     public int LogPanelHeight { get; set; } = 220;
     public int LogFontSize { get; set; } = 11;
     public int ExitPauseMs { get; set; } = 450;

@@ -378,27 +378,49 @@ public sealed class Vision
         if (isolated == null)
             return null;
         trace?.Evidence(isolated, "yellow-value");
-        string digits = await Text(isolated);
-        var number = System.Text.RegularExpressions.Regex.Match(
-            System.Text.RegularExpressions.Regex.Replace(digits, @"(?<=\d)0\s*/\s*0", "%"),
-            @"(\d+(?:[.,]\d+)?)"
-        );
-        if (!number.Success)
-            return null;
-        try
+        // Windows OCR sometimes returns nothing for a lone short token such as "2%", so the glyphs are also
+        // placed inside a printed sentence; the number is then the token right before the bracket.
+        foreach (var (variant, image) in YellowVariants(isolated, bracket.Value))
         {
-            var reading = Parsed(affix.Title + " " + number.Groups[1].Value + "% " + bracket.Value, catalog);
+            string digits;
+            using (image)
+                digits = await Text(image);
+            string fixedDigits = System.Text.RegularExpressions.Regex.Replace(digits, @"(?<=\d)0\s*/\s*0", "%");
+            var number = System.Text.RegularExpressions.Regex.Match(
+                fixedDigits,
+                variant == "alone" ? @"(\d+(?:[.,]\d+)?)" : @"(\d+(?:[.,]\d+)?)\s*%\s*\["
+            );
+            if (!number.Success)
+                continue;
+            Reading reading;
+            try
+            {
+                reading = Parsed(affix.Title + " " + number.Groups[1].Value + "% " + bracket.Value, catalog);
+            }
+            catch (InvalidOperationException)
+            {
+                continue;
+            }
             // Values come in exactly ten tiers (truncated to one decimal); anything else is a misread.
             if (!Recognition.OnTierGrid(reading))
             {
-                trace?.Write("value_by_colour_rejected", new { digits, reading = reading.ToString() });
-                return null;
+                trace?.Write(
+                    "value_by_colour_rejected",
+                    new
+                    {
+                        variant,
+                        digits,
+                        reading = reading.ToString(),
+                    }
+                );
+                continue;
             }
             trace?.Write(
                 "value_by_colour",
                 new
                 {
                     affix = affix.Title,
+                    variant,
                     digits,
                     bracket = bracket.Value,
                     reading = reading.ToString(),
@@ -406,14 +428,72 @@ public sealed class Vision
             );
             return reading;
         }
-        catch (InvalidOperationException)
+        return null;
+    }
+
+    // The isolated glyphs as they are, then inside a printed line "Increase by <glyphs> <bracket>." at two
+    // sizes, then inverted. The first rendering that yields a number on the tier grid wins.
+    internal static IEnumerable<(string Label, Bitmap Image)> YellowVariants(Bitmap isolated, string bracket)
+    {
+        yield return ("alone", (Bitmap)isolated.Clone());
+        yield return ("context-half", WithContext(isolated, .5, bracket));
+        yield return ("context", WithContext(isolated, 1, bracket));
+        yield return ("inverted", Scaled(isolated, 1, true));
+    }
+
+    static Bitmap Scaled(Bitmap source, double factor, bool invert)
+    {
+        var result = new Bitmap(
+            Math.Max(8, (int)(source.Width * factor)),
+            Math.Max(8, (int)(source.Height * factor)),
+            PixelFormat.Format32bppArgb
+        );
+        using (var g = Graphics.FromImage(result))
         {
-            return null;
+            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+            g.Clear(Color.White);
+            g.DrawImage(source, new Rectangle(Point.Empty, result.Size));
         }
+        if (invert)
+            for (int y = 0; y < result.Height; y++)
+            for (int x = 0; x < result.Width; x++)
+            {
+                var c = result.GetPixel(x, y);
+                result.SetPixel(x, y, Color.FromArgb(255 - c.R, 255 - c.G, 255 - c.B));
+            }
+        return result;
+    }
+
+    static Bitmap WithContext(Bitmap source, double factor, string bracket)
+    {
+        using var glyphs = Scaled(source, factor, false);
+        using var font = new Font("Segoe UI", glyphs.Height * .45f, GraphicsUnit.Pixel);
+        string before = "Increase by ",
+            after = " " + bracket + ".";
+        SizeF left,
+            right;
+        using (var measure = Graphics.FromImage(glyphs))
+        {
+            left = measure.MeasureString(before, font);
+            right = measure.MeasureString(after, font);
+        }
+        var result = new Bitmap(
+            (int)(left.Width + glyphs.Width + right.Width) + 40,
+            glyphs.Height + 20,
+            PixelFormat.Format32bppArgb
+        );
+        using var g = Graphics.FromImage(result);
+        g.Clear(Color.White);
+        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+        float baseline = 10 + (glyphs.Height - left.Height) / 2;
+        g.DrawString(before, font, Brushes.Black, 20, baseline);
+        g.DrawImageUnscaled(glyphs, (int)(20 + left.Width), 10);
+        g.DrawString(after, font, Brushes.Black, 20 + left.Width + glyphs.Width, baseline);
+        return result;
     }
 
     // Black text on white built from the yellow pixels below `top`; null when fewer than a few dozen are found.
-    static Bitmap? YellowText(Bitmap crop, int top)
+    internal static Bitmap? YellowText(Bitmap crop, int top)
     {
         var data = crop.LockBits(
             new Rectangle(Point.Empty, crop.Size),
@@ -439,16 +519,29 @@ public sealed class Vision
         // The focused card carries a yellow border, so a margin around the crop edges is ignored.
         int marginX = Math.Max(8, crop.Width * 3 / 100),
             marginY = Math.Max(8, crop.Height * 3 / 100);
-        for (int y = Math.Max(0, top); y < crop.Height - marginY; y++)
-        for (int x = marginX; x < crop.Width - marginX; x++)
+        // Yellowness keeps antialiased glyph edges; gray description text scores below 30 on this measure.
+        bool Yellow(int x, int y)
         {
             int i = y * stride + x * 4;
             int b = bytes[i],
                 g = bytes[i + 1],
                 r = bytes[i + 2];
-            // Yellowness keeps antialiased glyph edges; gray description text scores below 30 on this measure.
-            if (r + g - 2 * b > 100 && r > 90)
+            return r + g - 2 * b > 100 && r > 90;
+        }
+        for (int y = Math.Max(0, top); y < crop.Height - marginY; y++)
+        {
+            // A yellow run across most of the row is the card's bottom border when the crop sits a few pixels
+            // off; glyphs never cover more than a small part of the width.
+            int inRow = 0;
+            for (int x = marginX; x < crop.Width - marginX; x++)
+                if (Yellow(x, y))
+                    inRow++;
+            if (inRow == 0 || inRow > (crop.Width - 2 * marginX) * 4 / 10)
+                continue;
+            for (int x = marginX; x < crop.Width - marginX; x++)
             {
+                if (!Yellow(x, y))
+                    continue;
                 mask[y * crop.Width + x] = true;
                 count++;
                 left = Math.Min(left, x);
@@ -477,6 +570,7 @@ public sealed class Vision
         }
         return result;
     }
+
 
     public async Task<Affix> ReadName(Bitmap frame, string zone)
     {
@@ -1128,7 +1222,15 @@ public sealed class Runner : IBuildGame
         // The full read reports the precise failure if the menu is still open.
     }
 
-    async Task<PartView> Part(CancellationToken ct, bool popup = false, int slot = -1, PerkCard? expected = null)
+    // `expected` accepts the first frame that shows exactly that card in `slot`; `changedFrom` accepts the first
+    // frame whose card in `slot` is complete and differs from it. Otherwise two identical frames are required.
+    async Task<PartView> Part(
+        CancellationToken ct,
+        bool popup = false,
+        int slot = -1,
+        PerkCard? expected = null,
+        PerkCard? changedFrom = null
+    )
     {
         if (!popup)
             await WaitMenuClosed(ct);
@@ -1163,6 +1265,7 @@ public sealed class Runner : IBuildGame
             log($"Автосет: {detected} → {p.First} + {p.Second}. Профіль: {choice.Title}.");
             autoApplied?.Invoke(choice);
         }
+        string[] wanted = p.WantedNames();
         return await Until(
             async frame =>
             {
@@ -1177,7 +1280,7 @@ public sealed class Runner : IBuildGame
                 {
                     string zone = i == 0 ? "left" : "right";
                     cards[i] = await vision.Card(frame, zone);
-                    if ((cards[i].Name == p.First || cards[i].Name == p.Second) && cards[i].Stats == null)
+                    if (wanted.Contains(cards[i].Name) && cards[i].Stats == null)
                         cards[i] = new(cards[i].Name, await vision.Read(frame, zone));
                 }
                 int focus = vision.Focus(frame, ["left", "right"]);
@@ -1189,13 +1292,23 @@ public sealed class Runner : IBuildGame
                 a.Id == b.Id && a.Focus == b.Focus && a.Cards.Zip(b.Cards).All(v => PerkCard.Same(v.First, v.Second)),
             ct,
             ["part", "set", "left", "right", "topLeft", "topRight"],
-            accept: expected?.Stats == null || slot < 0
-                ? null
-                : view =>
-                    view.Focus >= 0
-                    && view.Cards[slot].Name == expected.Name
-                    && view.Cards[slot].Stats != null
-                    && Recognition.Equal(view.Cards[slot].Stats!, expected.Stats)
+            accept: slot < 0 ? null
+                : expected?.Stats != null
+                    ? view =>
+                        view.Focus >= 0
+                        && view.Cards[slot].Name == expected.Name
+                        && view.Cards[slot].Stats != null
+                        && Recognition.Equal(view.Cards[slot].Stats!, expected.Stats)
+                : changedFrom != null
+                    ? view =>
+                        view.Focus >= 0
+                        && !PerkCard.Same(view.Cards[slot], changedFrom)
+                        && (
+                            view.Cards[slot].Stats != null
+                                ? Recognition.OnTierGrid(view.Cards[slot].Stats!)
+                                : !wanted.Contains(view.Cards[slot].Name)
+                        )
+                : null
         );
     }
 
@@ -1237,33 +1350,34 @@ public sealed class Runner : IBuildGame
                 ledger.NotSent(rollId);
             throw;
         }
-        // Pause-aware like Until: time spent waiting for focus does not count against the 9 s limit.
-        var paidClock = System.Diagnostics.Stopwatch.StartNew();
-        long paidPausedBefore = pausedMs;
-        bool paid = false;
-        while (paidClock.ElapsedMilliseconds - (pausedMs - paidPausedBefore) < 9000)
-        {
-            ct.ThrowIfCancellationRequested();
-            var paidFrame = await Frame(ct, ["topLeft", "topRight"], "paid-roll-observation");
-            if (await vision.PopupSide(paidFrame) == slot)
-            {
-                ledger.Confirm(rollId);
-                paid = true;
-                break;
-            }
-            await Task.Delay(p.FastRecognition ? 50 : 100, ct);
-        }
-        if (!paid)
-            throw new InvalidOperationException(
-                "Новий оплачений кидок не підтверджено. Натискання записано як непідтверджене."
-            );
+        // The answer to the menu is fixed by the phase: the fresh offer on the top row for a search, the reroll
+        // on the middle row for a maximize. The menu opens with the frame on the middle row, so a quick search
+        // presses Up at once, while the menu is still fading in, as a player does; the frame is verified before
+        // Enter and the result is read from the slot card afterwards instead of from the menu.
+        int desired = phase == RollPhase.Search ? 0 : 1;
+        bool quick = p.FastRolls;
+        if (quick && desired == 0)
+            await Press("Up", ct, false);
+        string[] rows = Rows(slot);
+        int focus = await ConfirmPaid(slot, rows, rollId, ct);
         rolls = ledger.Confirmed;
         Report("running");
         log(
             $"Кидок {rolls} · слот {slot + 1} · "
                 + (phase == RollPhase.Search ? $"пошук {string.Join(" / ", targets)}" : $"максимум {current.Name}")
         );
-        string[] rows = Rows(slot);
+        if (quick)
+        {
+            try
+            {
+                return await QuickChoice(slot, rows, desired, focus, current, phase, targets, rollId, ct);
+            }
+            catch (QuickRollException e)
+            {
+                trace?.Write("quick_roll_fallback", new { rollId, error = e.Message });
+                log("Швидкий кидок: " + e.Message + " Читаю меню повністю.");
+            }
+        }
         var choice = await Selection(rows, current, phase, targets, ct);
         ledger.Offer(
             new RollSample(
@@ -1291,6 +1405,120 @@ public sealed class Runner : IBuildGame
         ledger.Saved(rollId, saved.Cards[slot]);
         log("Збережено: " + saved.Cards[slot]);
         return saved.Cards[slot];
+    }
+
+    // Raised only before the choice is confirmed, so the classic path can still read the open menu.
+    sealed class QuickRollException(string message) : InvalidOperationException(message);
+
+    // Watches the slot's three rows until the roll menu is open, which confirms the paid roll. Returns the row
+    // that carries the frame in the confirming frame (-1 when the frame was not visible yet).
+    async Task<int> ConfirmPaid(int slot, string[] rows, int rollId, CancellationToken ct)
+    {
+        // Pause-aware like Until: time spent waiting for focus does not count against the 9 s limit.
+        var paidClock = System.Diagnostics.Stopwatch.StartNew();
+        long paidPausedBefore = pausedMs;
+        string[] zones = [.. rows, "topLeft", "topRight"];
+        while (paidClock.ElapsedMilliseconds - (pausedMs - paidPausedBefore) < 9000)
+        {
+            ct.ThrowIfCancellationRequested();
+            var paidFrame = await Frame(ct, zones, "paid-roll-observation");
+            if (await vision.PopupSide(paidFrame) == slot)
+            {
+                ledger.Confirm(rollId);
+                return vision.Focus(paidFrame, rows);
+            }
+            await Task.Delay(p.FastRecognition ? 50 : 100, ct);
+        }
+        throw new InvalidOperationException(
+            "Новий оплачений кидок не підтверджено. Натискання записано як непідтверджене."
+        );
+    }
+
+    async Task<PerkCard> QuickChoice(
+        int slot,
+        string[] rows,
+        int desired,
+        int focus,
+        PerkCard current,
+        RollPhase phase,
+        string[] targets,
+        int rollId,
+        CancellationToken ct
+    )
+    {
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        long pausedBefore = pausedMs,
+            middleSince = -1;
+        bool repeated = false;
+        while (focus != desired)
+        {
+            long elapsed = clock.ElapsedMilliseconds - (pausedMs - pausedBefore);
+            if (elapsed > 2500)
+                throw new QuickRollException($"рамка не стала на рядок {desired + 1} за 2,5 с.");
+            if (focus == 2 || (focus == 0 && desired == 1))
+                throw new QuickRollException($"рамка на рядку {focus + 1}, очікується {desired + 1}.");
+            if (focus == 1 && desired == 0)
+            {
+                // Up pressed during the fade-in is normally applied; when the frame still sits on the middle row
+                // a moment later, the key was lost and is repeated once.
+                if (middleSince < 0)
+                    middleSince = elapsed;
+                else if (!repeated && elapsed - middleSince > 350)
+                {
+                    repeated = true;
+                    trace?.Write("quick_roll_retry_up", new { rollId, elapsed });
+                    await Press("Up", ct, false);
+                }
+            }
+            await Task.Delay(p.FastRecognition ? 40 : 100, ct);
+            var frame = await Frame(ct, rows, "quick-focus");
+            focus = vision.Focus(frame, rows);
+        }
+        trace?.Write(
+            "quick_choice",
+            new
+            {
+                rollId,
+                phase = phase.ToString(),
+                slot = slot + 1,
+                row = desired + 1,
+                waitedMs = clock.ElapsedMilliseconds,
+            }
+        );
+        await Press("Confirm", ct);
+        lastPart = await Part(ct, false, slot, null, current);
+        var card = lastPart.Cards[slot];
+        if (
+            phase == RollPhase.Maximize
+            && (
+                card.Name != current.Name
+                || card.Stats == null
+                || current.Stats == null
+                || card.Stats.Minimum != current.Stats.Minimum
+                || card.Stats.Maximum != current.Stats.Maximum
+            )
+        )
+            throw new InvalidOperationException($"Після покращення у слоті {slot + 1} інший перк: {card}.");
+        ledger.Offer(
+            new RollSample(
+                rollId,
+                DateTimeOffset.Now,
+                lastPart.Id,
+                slot + 1,
+                phase.ToString(),
+                targets,
+                lastPart.Cards[1 - slot].Name,
+                phase == RollPhase.Search ? card : null,
+                phase == RollPhase.Maximize ? card : null,
+                current,
+                desired + 1,
+                card,
+                trace?.CurrentFrame ?? "none"
+            )
+        );
+        ledger.Saved(rollId, card);
+        log($"Варіант {desired + 1} · збережено: {card}");
+        return card;
     }
 
     Task<PopupSelection> Selection(
@@ -1475,7 +1703,7 @@ public sealed class Runner : IBuildGame
                     return -1;
                 return vision.GridFocus(frame);
             },
-            Press,
+            (action, token) => Press(action, token),
             24,
             75,
             (reason, attempt, index) =>
@@ -1528,14 +1756,14 @@ public sealed class Runner : IBuildGame
         await OpenFromGrid(ct);
     }
 
-    async Task Press(string action, CancellationToken ct)
+    async Task Press(string action, CancellationToken ct, bool evidence = true)
     {
         await EnsureFocus(ct);
         trace?.Write("input_context", new { action, rolls });
         await input!.Press(action, ct);
         await EnsureFocus(ct);
         // The after-press frame is purely diagnostic; skip the capture once the PNG budget is spent.
-        if (action != "Confirm" && trace?.ScreenshotBudgetAvailable == true)
+        if (evidence && action != "Confirm" && trace?.ScreenshotBudgetAvailable == true)
             await Frame(ct, null, "after-" + action);
     }
 
@@ -1582,7 +1810,7 @@ public sealed class Runner : IBuildGame
                 var frame = await Frame(ct, rows, "FocusRows-read");
                 return vision.Focus(frame, rows);
             },
-            Press,
+            (action, token) => Press(action, token),
             p.FocusReadAttempts,
             p.FocusRetryMs,
             (reason, attempt, focus) =>
