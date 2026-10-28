@@ -1,0 +1,77 @@
+<UserControl x:Class="TunerFest.Ui.Controls.StatusCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:TunerFest.Ui.Controls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=local:StatusCardViewModel}"
+             AutomationProperties.Name="{Binding AccessibleName}">
+  <UserControl.Resources>
+    <!-- Dot colour per mode: accent while counting down or running; semantic colours otherwise (inventory section 1). -->
+    <Style x:Key="StatusDot" TargetType="Ellipse">
+      <Setter Property="Width" Value="10" />
+      <Setter Property="Height" Value="10" />
+      <Setter Property="Fill" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding Current}" Value="Countdown">
+          <Setter Property="Fill" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding Current}" Value="Running">
+          <Setter Property="Fill" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding Current}" Value="Paused">
+          <Setter Property="Fill" Value="#FFA726" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding Current}" Value="Done">
+          <Setter Property="Fill" Value="#86DAA4" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding Current}" Value="Failed">
+          <Setter Property="Fill" Value="#FF6B6B" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding Current}" Value="Stopped">
+          <Setter Property="Fill" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    <Style x:Key="StatusClock" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="22" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+      <Setter Property="Visibility" Value="Visible" />
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsClockVisible}" Value="False">
+          <Setter Property="Visibility" Value="Collapsed" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding Current}" Value="Paused">
+          <Setter Property="Foreground" Value="#FFA726" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+  </UserControl.Resources>
+
+  <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+          BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+          BorderThickness="1" CornerRadius="8" Padding="16,12,16,12">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Ellipse Style="{StaticResource StatusDot}" VerticalAlignment="Top" Margin="0,6,12,0" />
+      <StackPanel Grid.Column="1" VerticalAlignment="Center" MinHeight="40">
+        <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                   Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+        <TextBlock Text="{Binding Detail}" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0"
+                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+      </StackPanel>
+      <TextBlock Grid.Column="2" Style="{StaticResource StatusClock}" Text="{Binding Clock}" Margin="16,0,16,0"
+                 FontFamily="Segoe UI Variable Display, Segoe UI" />
+      <ContentPresenter Grid.Column="3" VerticalAlignment="Center"
+                        Content="{Binding Actions, RelativeSource={RelativeSource AncestorType=local:StatusCard}}" />
+    </Grid>
+  </Border>
+</UserControl>
