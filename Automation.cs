@@ -1,4 +1,4 @@
-﻿using System.Drawing.Imaging;
+using System.Drawing.Imaging;
 using Windows.Globalization;
 using Windows.Graphics.Imaging;
 using Windows.Media.Ocr;
@@ -909,6 +909,7 @@ public sealed class Runner : IBuildGame
     RunLedger ledger;
     PartView? lastPart;
     bool autoResolved;
+    string foreignSetLogged = "";
     readonly Action<Build>? autoApplied;
     Bitmap? lastFrame;
     long pausedMs;
@@ -1290,9 +1291,7 @@ public sealed class Runner : IBuildGame
                 ["part", "set"]
             );
             var choice = AutoSetResolver.Resolve(catalog, detected);
-            p.Set = detected;
-            p.First = choice.Affixes[0];
-            p.Second = choice.Affixes[1];
+            AutoSetResolver.Apply(p, detected, choice);
             autoResolved = true;
             trace?.SaveEffectiveProfile(p);
             trace?.Write(
@@ -1303,21 +1302,34 @@ public sealed class Runner : IBuildGame
                     preset = choice.Title,
                     first = p.First,
                     second = p.Second,
+                    secondManual = p.AutoSecondManual,
+                    ignoreSet = p.IgnoreSet,
                 }
             );
-            log($"Автосет: {detected} → {p.First} + {p.Second}. Профіль: {choice.Title}.");
+            log(AutoSetResolver.Describe(p, detected, choice));
             autoApplied?.Invoke(choice);
         }
         string[] wanted = p.WantedNames();
-        return await Until(
+        string seenSet = "";
+        var view = await Until(
             async frame =>
             {
                 if (!popup && await vision.PopupSide(frame) >= 0)
                     throw new InvalidOperationException("Меню кидка ще закривається.");
                 string title = await vision.PartName(frame);
-                string set = await vision.SetName(frame);
-                if (set != p.Set)
+                // With IgnoreSet a part of any set (even one the catalog does not know) is rolled for the perks.
+                string set;
+                try
+                {
+                    set = await vision.SetName(frame);
+                }
+                catch (InvalidOperationException) when (p.IgnoreSet)
+                {
+                    set = "";
+                }
+                if (!p.IgnoreSet && set != p.Set)
                     throw new InvalidOperationException($"Деталь має сет {set}, очікується {p.Set}.");
+                seenSet = set;
                 var cards = new PerkCard[2];
                 for (int i = 0; i < 2; i++)
                 {
@@ -1353,6 +1365,13 @@ public sealed class Runner : IBuildGame
                         )
                 : null
         );
+        if (p.IgnoreSet && seenSet != p.Set && foreignSetLogged != view.Id)
+        {
+            foreignSetLogged = view.Id;
+            trace?.Write("foreign_set", new { part = view.Id, set = seenSet, expected = p.Set });
+            log($"Деталь має сет {(seenSet == "" ? "(не розпізнано)" : seenSet)} — сет не враховується, працюю з перками.");
+        }
+        return view;
     }
 
     // After a roll whose chosen card differs from the previous one, the first frame that already shows the

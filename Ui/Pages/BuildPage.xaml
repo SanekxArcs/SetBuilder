@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="TunerFest.Ui.Pages.BuildPage"
+<UserControl x:Class="TunerFest.Ui.Pages.BuildPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
@@ -118,7 +118,13 @@
           <!-- Set -->
           <Border Style="{StaticResource SettingsPanel}">
             <StackPanel>
-              <TextBlock Text="Сет деталі" Style="{StaticResource CardTitle}" Margin="0,0,0,10" />
+              <Grid Margin="0,0,0,10">
+                <TextBlock Text="Сет деталі" Style="{StaticResource CardTitle}" VerticalAlignment="Center" />
+                <ui:ToggleSwitch Content="Не зважати на сет" HorizontalAlignment="Right" IsEnabled="{Binding CanEdit}"
+                                 IsChecked="{Binding IgnoreSet, Mode=TwoWay}"
+                                 ToolTip="Деталь будь-якого сету крутиться на перки; сет не перевіряється. В авторежимі сет першої деталі й далі обирає пресет перків."
+                                 AutomationProperties.Name="Не зважати на сет" />
+              </Grid>
               <Grid>
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto" />
@@ -178,8 +184,15 @@
             <StackPanel>
               <Grid Margin="0,0,0,10">
                 <TextBlock Text="Другий перк" Style="{StaticResource CardTitle}" VerticalAlignment="Center" />
-                <ui:ToggleSwitch Content="Необов'язковий" HorizontalAlignment="Right" IsEnabled="{Binding CanEdit}"
-                                 IsChecked="{Binding SecondOptional, Mode=TwoWay}" AutomationProperties.Name="Необов'язковий перк" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                  <ui:ToggleSwitch Content="Вручну в авторежимі" IsEnabled="{Binding CanEdit}" Margin="0,0,16,0"
+                                   Visibility="{Binding AutoSet, Converter={StaticResource BoolToVisibility}}"
+                                   IsChecked="{Binding AutoSecondManual, Mode=TwoWay}"
+                                   ToolTip="Автосет обирає сет і перший перк; другий перк і його альтернатива лишаються такими, як обрано тут."
+                                   AutomationProperties.Name="Другий перк вручну в авторежимі" />
+                  <ui:ToggleSwitch Content="Необов'язковий" IsEnabled="{Binding CanEdit}"
+                                   IsChecked="{Binding SecondOptional, Mode=TwoWay}" AutomationProperties.Name="Необов'язковий перк" />
+                </StackPanel>
               </Grid>
               <Grid>
                 <Grid.ColumnDefinitions>
@@ -195,14 +208,14 @@
                 </Grid.RowDefinitions>
                 <Image Grid.Row="0" Grid.Column="1" Style="{StaticResource GoalIcon}" Source="{Binding SecondIcon}" />
                 <ComboBox Grid.Row="0" Grid.Column="2" Style="{StaticResource GoalCombo}" ItemsSource="{Binding Affixes}"
-                          SelectedItem="{Binding Second, Mode=TwoWay}" IsEnabled="{Binding CanEditTargets}"
+                          SelectedItem="{Binding Second, Mode=TwoWay}" IsEnabled="{Binding CanEditSecond}"
                           AutomationProperties.Name="Другий перк" />
                 <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding SecondDescription}" Style="{StaticResource GoalDescription}"
                            Visibility="{Binding SecondDescription, Converter={StaticResource NullToVisibility}}" />
                 <TextBlock Grid.Row="2" Grid.Column="0" Text="або" Style="{StaticResource OrLabel}" Margin="0,10,12,0" />
                 <Image Grid.Row="2" Grid.Column="1" Style="{StaticResource GoalIcon}" Margin="0,10,12,0" Source="{Binding SecondAlternativeIcon}" />
                 <ComboBox Grid.Row="2" Grid.Column="2" Style="{StaticResource GoalCombo}" Margin="0,10,0,0" ItemsSource="{Binding Alternatives}"
-                          SelectedItem="{Binding SecondAlternative, Mode=TwoWay}" IsEnabled="{Binding CanEditTargets}"
+                          SelectedItem="{Binding SecondAlternative, Mode=TwoWay}" IsEnabled="{Binding CanEditSecond}"
                           AutomationProperties.Name="Альтернатива другого перка" />
                 <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding SecondAlternativeDescription}" Style="{StaticResource GoalDescription}"
                            Visibility="{Binding SecondAlternativeDescription, Converter={StaticResource NullToVisibility}}" />
@@ -211,7 +224,7 @@
           </Border>
 
           <TextBlock Style="{StaticResource CardDescription}" Margin="2,6,0,0"
-                     Text="Будь-який порядок слотів. «або» — беремо той із двох, що випав першим, і доводимо до максимуму. Необов'язковий не шукається й не покращується." />
+                     Text="Будь-який порядок слотів. «або» — беремо той із двох, що випав першим, і доводимо до максимуму. Необов'язковий не шукається й не покращується. «Не зважати на сет» крутить деталь будь-якого сету; «Вручну в авторежимі» лишає другий перк за вами, а сет і перший перк бере з пресету." />
         </StackPanel>
 
         <!-- Right column: the game window, the part count and the pre-start checks. -->

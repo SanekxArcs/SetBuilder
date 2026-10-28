@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -84,6 +84,14 @@ public sealed class Profile
     // Alternatives: a goal is satisfied by its main name or its alternative, whichever appears first.
     public string FirstAlternative { get; set; } = "";
     public string SecondAlternative { get; set; } = "";
+
+    // The part's SET BONUS is not checked: a part of any set is rolled for the perks. Auto mode still reads the
+    // set of the first part to pick its preset.
+    public bool IgnoreSet { get; set; }
+
+    // In auto mode the second perk (and its alternative) stay as chosen here; only the set and the first perk come
+    // from the preset.
+    public bool AutoSecondManual { get; set; }
 
     // The two slot goals. Each is a set of acceptable names plus whether the goal may be skipped.
     public PerkGoal[] Goals() =>

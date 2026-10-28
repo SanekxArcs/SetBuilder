@@ -58,8 +58,11 @@ public sealed class BuildViewModel : PageViewModel
     public IReadOnlyList<int> PartCounts { get; }
     public ObservableCollection<GameWindow> GameWindows { get; } = [];
 
-    /// <summary>Selectors of the set, perks, alternatives and build are editable while nothing runs and auto mode is off.</summary>
+    /// <summary>Selectors of the set, first perk, its alternative and the build are editable while nothing runs and auto mode is off.</summary>
     public bool CanEditTargets => CanEdit && !AutoSet;
+
+    /// <summary>The second perk and its alternative: also in auto mode once "second perk manually" is on.</summary>
+    public bool CanEditSecond => CanEdit && (!AutoSet || AutoSecondManual);
 
     public bool AutoSet
     {
@@ -71,6 +74,36 @@ public sealed class BuildViewModel : PageViewModel
             Profile.AutoSet = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(CanEditTargets));
+            OnPropertyChanged(nameof(CanEditSecond));
+        }
+    }
+
+    /// <summary>Profile.IgnoreSet: parts of any set are rolled for the perks; saved at once.</summary>
+    public bool IgnoreSet
+    {
+        get => Profile.IgnoreSet;
+        set
+        {
+            if (Profile.IgnoreSet == value)
+                return;
+            Profile.IgnoreSet = value;
+            Shell.SaveProfile();
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>Profile.AutoSecondManual: in auto mode the second perk stays as chosen here; saved at once.</summary>
+    public bool AutoSecondManual
+    {
+        get => Profile.AutoSecondManual;
+        set
+        {
+            if (Profile.AutoSecondManual == value)
+                return;
+            Profile.AutoSecondManual = value;
+            Shell.SaveProfile();
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(CanEditSecond));
         }
     }
 
@@ -291,17 +324,14 @@ public sealed class BuildViewModel : PageViewModel
         await Shell.InspectFile(dialog.FileName);
     }
 
-    /// <summary>Auto mode found the set: take the set, both perks and the build from the choice, clear the alternatives and save.</summary>
+    /// <summary>Auto mode found the set: take the set and the perks from the choice (the second stays manual when so chosen) and save.</summary>
     void OnAutoSetApplied(Build choice)
     {
         var set = catalog.Sets.FirstOrDefault(s => Recognition.Normalize(s.Title) == Recognition.Normalize(choice.Set));
-        if (set != null)
+        if (choice.Affixes.Length >= 2 && choice.Affixes.All(n => catalog.Affixes.Any(a => a.Title == n)))
+            AutoSetResolver.Apply(Profile, set?.Title ?? choice.Set, choice);
+        else if (set != null)
             Profile.Set = set.Title;
-        if (choice.Affixes.Length > 0)
-            Profile.First = catalog.Affixes.FirstOrDefault(a => a.Title == choice.Affixes[0])?.Title ?? Profile.First;
-        if (choice.Affixes.Length > 1)
-            Profile.Second = catalog.Affixes.FirstOrDefault(a => a.Title == choice.Affixes[1])?.Title ?? Profile.Second;
-        Profile.FirstAlternative = Profile.SecondAlternative = "";
         selectedBuild = choice;
         Shell.SaveProfile();
         Refresh();
@@ -313,6 +343,7 @@ public sealed class BuildViewModel : PageViewModel
         {
             OnPropertyChanged(nameof(CanEdit));
             OnPropertyChanged(nameof(CanEditTargets));
+            OnPropertyChanged(nameof(CanEditSecond));
         }
         else if (e.PropertyName is nameof(IShellContext.Game))
             OnPropertyChanged(nameof(SelectedWindow));
@@ -329,7 +360,10 @@ public sealed class BuildViewModel : PageViewModel
     {
         base.Refresh();
         OnPropertyChanged(nameof(CanEditTargets));
+        OnPropertyChanged(nameof(CanEditSecond));
         OnPropertyChanged(nameof(AutoSet));
+        OnPropertyChanged(nameof(IgnoreSet));
+        OnPropertyChanged(nameof(AutoSecondManual));
         RaiseBuild();
         foreach (
             var name in new[]
@@ -435,6 +469,60 @@ public sealed class BuildViewModel : PageViewModel
         if (p.SecondAlternative != "" || !ReferenceEquals(SecondAlternative, NoAlternative))
             throw new InvalidOperationException("Alternative did not clear");
         passed.Add("PASS optional toggle and alternative perk goals save, duplicates rejected");
+
+        // Ignore set: the set may stay empty; the toggle persists.
+        bool priorIgnore = p.IgnoreSet;
+        string priorSet = p.Set;
+        IgnoreSet = true;
+        p.Set = "";
+        ProfileRules.Validate(p);
+        IgnoreSet = false;
+        bool emptySetRejected = false;
+        try
+        {
+            ProfileRules.Validate(p);
+        }
+        catch (InvalidOperationException)
+        {
+            emptySetRejected = true;
+        }
+        if (!emptySetRejected)
+            throw new InvalidOperationException("Empty set without IgnoreSet was not rejected");
+        p.Set = priorSet;
+        IgnoreSet = priorIgnore;
+        passed.Add("PASS ignore-set toggle saves and lifts the set requirement");
+
+        // Auto mode with a manual second perk: the second selector opens, auto keeps the user's second perk.
+        bool priorAuto = p.AutoSet,
+            priorManual = p.AutoSecondManual;
+        string priorFirst = p.First,
+            priorSecond = p.Second,
+            priorSecondAlt = p.SecondAlternative;
+        AutoSet = true;
+        AutoSecondManual = false;
+        if (CanEditSecond)
+            throw new InvalidOperationException("Second perk must be locked in auto mode without the manual toggle");
+        AutoSecondManual = true;
+        if (!CanEditSecond || CanEditTargets)
+            throw new InvalidOperationException("Manual second perk did not unlock only the second selector");
+        Second = A("Cluster");
+        SecondAlternative = A("Rich");
+        var nitro = catalog.Builds.First(b => b.Title == "Nitro Chemist");
+        OnAutoSetApplied(nitro);
+        if (p.First != "Pure" || p.Second != "Cluster" || p.SecondAlternative != "Rich" || p.Set != "NITRO CHEMIST")
+            throw new InvalidOperationException($"Auto set overwrote the manual second perk: {p.First} + {p.Second} / {p.SecondAlternative}");
+        AutoSecondManual = false;
+        OnAutoSetApplied(nitro);
+        if (p.Second != "Extra Pump" || p.SecondAlternative != "")
+            throw new InvalidOperationException("Auto set without the manual toggle did not take the preset's second perk");
+        AutoSet = priorAuto;
+        AutoSecondManual = priorManual;
+        p.First = priorFirst;
+        p.Second = priorSecond;
+        p.SecondAlternative = priorSecondAlt;
+        Shell.SaveProfile();
+        Refresh();
+        passed.Add("PASS auto mode keeps a manual second perk and its alternative");
 
         // Icons and descriptions follow the selection, also in the open list.
         SelectedBuild = catalog.Builds.FirstOrDefault(b => b.Title == "Nitro Chemist")

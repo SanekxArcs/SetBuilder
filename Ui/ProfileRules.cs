@@ -1,4 +1,4 @@
-﻿namespace TunerFest.Ui;
+namespace TunerFest.Ui;
 
 /// <summary>Validation that used to live in MainForm.SaveSelection; the shell runs it before every run or PNG check.</summary>
 public static class ProfileRules
@@ -14,8 +14,17 @@ public static class ProfileRules
             if (used.Distinct().Count() != used.Length)
                 throw new InvalidOperationException("Перки та альтернативи мають бути різними.");
         }
+        else if (p.AutoSecondManual)
+        {
+            if (p.Second == "")
+                throw new InvalidOperationException("Оберіть другий перк або вимкніть «Другий перк вручну».");
+            if (p.Second == p.SecondAlternative)
+                throw new InvalidOperationException("Другий перк і його альтернатива мають бути різними.");
+        }
         PressTiming.Validate(p);
-        if (!p.AutoSet && (p.Set == "" || p.First == "" || p.Second == "" || p.First == p.Second))
-            throw new InvalidOperationException("Оберіть сет і два різні перки.");
+        if (!p.AutoSet && (p.First == "" || p.Second == "" || p.First == p.Second))
+            throw new InvalidOperationException("Оберіть два різні перки.");
+        if (!p.AutoSet && !p.IgnoreSet && p.Set == "")
+            throw new InvalidOperationException("Оберіть сет або увімкніть «Не зважати на сет».");
     }
 }

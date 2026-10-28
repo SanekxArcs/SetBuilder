@@ -1,4 +1,4 @@
-﻿using System.Drawing.Imaging;
+using System.Drawing.Imaging;
 
 namespace TunerFest;
 
@@ -408,6 +408,55 @@ public static class Verification
                 && Vision.BreadcrumbIsRecaliber(Recognition.Normalize("PROFILE/VEHICLES")) == null,
             "breadcrumb: last segment decides the screen (stale RECALIBER prefix, 28.10 21:02)"
         );
+        {
+            var nitro = AutoSetResolver.Resolve(c, "NITRO CHEMIST");
+            var manual = new Profile
+            {
+                AutoSet = true,
+                AutoSecondManual = true,
+                Second = "Cluster",
+                SecondAlternative = "Rich",
+                FirstAlternative = "Legend",
+            };
+            AutoSetResolver.Apply(manual, "NITRO CHEMIST", nitro);
+            Assert(
+                manual.Set == "NITRO CHEMIST"
+                    && manual.First == "Pure"
+                    && manual.Second == "Cluster"
+                    && manual.SecondAlternative == "Rich"
+                    && manual.FirstAlternative == "",
+                "auto set keeps a manual second perk and its alternative"
+            );
+            AutoSetResolver.Apply(manual, "NITRO CHEMIST", nitro);
+            Assert(manual.First == "Pure" && manual.Second == "Cluster", "auto set apply is idempotent");
+            var collide = new Profile
+            {
+                AutoSet = true,
+                AutoSecondManual = true,
+                Second = "Pure",
+                SecondAlternative = "Extra Pump",
+            };
+            AutoSetResolver.Apply(collide, "NITRO CHEMIST", nitro);
+            Assert(
+                collide.First == "Extra Pump" && collide.Second == "Pure" && collide.SecondAlternative == "",
+                "manual second equal to the preset's first takes the preset's other perk as first"
+            );
+            var plain = new Profile
+            {
+                AutoSet = true,
+                Second = "Cluster",
+                SecondAlternative = "Rich",
+            };
+            AutoSetResolver.Apply(plain, "NITRO CHEMIST", nitro);
+            Assert(
+                plain.First == "Pure" && plain.Second == "Extra Pump" && plain.SecondAlternative == "",
+                "auto set without the manual toggle takes both preset perks"
+            );
+            Assert(
+                AutoSetResolver.Describe(manual, "NITRO CHEMIST", nitro).Contains("Cluster (вручну)"),
+                "auto set log names the manual second perk"
+            );
+        }
         var partialName = Recognition
             .Name("Clean Driver Decrease BUCKS loss by 2.1% with CLEAN DRIVING modifier", c)
             .Title;

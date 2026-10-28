@@ -413,14 +413,10 @@ public sealed class MainViewModel : ObservableObject, IShellContext
         var set = Catalog.Sets.FirstOrDefault(s =>
             Recognition.Normalize(s.Title) == Recognition.Normalize(choice.Set)
         );
-        if (set != null)
-            Profile.Set = set.Title;
         if (choice.Affixes.Length >= 2)
-        {
-            Profile.First = choice.Affixes[0];
-            Profile.Second = choice.Affixes[1];
-        }
-        Profile.FirstAlternative = Profile.SecondAlternative = "";
+            AutoSetResolver.Apply(Profile, set?.Title ?? choice.Set, choice);
+        else if (set != null)
+            Profile.Set = set.Title;
         AutoSetApplied?.Invoke(choice);
         RefreshPages();
         SaveProfile();
@@ -532,9 +528,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
             {
                 string detected = await vision.SetName(frame);
                 var choice = AutoSetResolver.Resolve(Catalog, detected);
-                Profile.Set = detected;
-                Profile.First = choice.Affixes[0];
-                Profile.Second = choice.Affixes[1];
+                AutoSetResolver.Apply(Profile, detected, choice);
                 recording?.SaveEffectiveProfile(Profile);
                 recording?.Write(
                     "auto_set_preview",
@@ -547,7 +541,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
                     }
                 );
                 OnAutoSet(choice);
-                Log($"Автосет: {detected} → {Profile.First} + {Profile.Second} ({choice.Title}).");
+                Log(AutoSetResolver.Describe(Profile, detected, choice));
             }
             catch (InvalidOperationException e)
             {
