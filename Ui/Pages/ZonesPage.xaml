@@ -10,7 +10,7 @@
   <ScrollViewer Style="{StaticResource PageScroll}">
     <StackPanel Style="{StaticResource PageBody}">
       <TextBlock Text="Зони екрана" Style="{StaticResource PageTitle}" />
-      <TextBlock Text="Базові зони відповідають твоїм скрінам 3440×1440. Для іншого HUD виділи їх вручну." Style="{StaticResource CardTitle}" Margin="2,4,0,0" />
+      <TextBlock Text="Базові зони відповідають скрінам 3440×1440. Для іншого HUD виділи їх вручну: «Приклад» показує, де зона має бути." Style="{StaticResource CardTitle}" Margin="2,4,0,0" />
       <TextBlock Text="Основний екран: 2 перки, назва сету та заголовок деталі. Меню кидка: верхній і середній блоки для кожного слота. Нижній збігається з основним перком." Style="{StaticResource CardDescription}" Margin="2,2,0,0" />
 
       <TextBlock Text="Зони" Style="{StaticResource SectionHeader}" />
@@ -18,18 +18,85 @@
       <ItemsControl ItemsSource="{Binding Zones}" Focusable="False">
         <ItemsControl.ItemTemplate>
           <DataTemplate DataType="{x:Type vm:ZoneRow}">
-            <ui:CardControl Margin="0,0,0,4" IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ItemsControl}}">
-              <ui:CardControl.Icon>
-                <ui:SymbolIcon Symbol="{Binding Icon}" />
-              </ui:CardControl.Icon>
-              <ui:CardControl.Header>
-                <StackPanel>
-                  <TextBlock Text="{Binding Label}" Style="{StaticResource CardTitle}" />
-                  <TextBlock Text="{Binding Value}" Style="{StaticResource CardDescription}" />
+            <StackPanel>
+              <ui:CardControl Margin="0,0,0,4">
+                <ui:CardControl.Icon>
+                  <ui:SymbolIcon Symbol="{Binding Icon}" />
+                </ui:CardControl.Icon>
+                <ui:CardControl.Header>
+                  <StackPanel>
+                    <TextBlock Text="{Binding Label}" Style="{StaticResource CardTitle}" />
+                    <TextBlock Text="{Binding Value}" Style="{StaticResource CardDescription}" />
+                    <TextBlock Text="{Binding Hint}" Style="{StaticResource CardDescription}" Margin="0,4,0,0" MaxWidth="640" HorizontalAlignment="Left" />
+                  </StackPanel>
+                </ui:CardControl.Header>
+                <StackPanel Orientation="Horizontal">
+                  <ui:Button Content="Приклад" Icon="{ui:SymbolIcon Image24}" Command="{Binding ExampleCommand}" MinWidth="110" Margin="0,0,8,0"
+                             ToolTip="Показати скріншот екрана з цією зоною" AutomationProperties.Name="{Binding Label, StringFormat=Приклад: {0}}">
+                    <ui:Button.Style>
+                      <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsExample}" Value="True">
+                            <Setter Property="Appearance" Value="Primary" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </ui:Button.Style>
+                  </ui:Button>
+                  <ui:Button Content="Виділити" Icon="{ui:SymbolIcon SelectObject24}" Command="{Binding PickCommand}" MinWidth="120"
+                             IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
                 </StackPanel>
-              </ui:CardControl.Header>
-              <ui:Button Content="Виділити" Icon="{ui:SymbolIcon SelectObject24}" Command="{Binding PickCommand}" MinWidth="120" />
-            </ui:CardControl>
+              </ui:CardControl>
+
+              <!-- Example under the card: the reference screenshot with the default zone framed in yellow and the current zone dashed when it differs. -->
+              <Grid Visibility="{Binding IsExample, Converter={StaticResource BoolToVisibility}}">
+              <Border Style="{StaticResource SettingsPanel}" Margin="0,0,0,8"
+                      DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                      AutomationProperties.Name="Приклад зони">
+                <StackPanel>
+                  <Grid>
+                    <StackPanel Margin="0,0,120,0">
+                      <TextBlock Text="{Binding ExampleScreen}" Style="{StaticResource CardTitle}" />
+                      <TextBlock Text="{Binding ExampleWhere}" Style="{StaticResource CardDescription}" />
+                    </StackPanel>
+                    <ui:Button Content="Сховати" Icon="{ui:SymbolIcon Dismiss24}" Command="{Binding HideExampleCommand}"
+                               HorizontalAlignment="Right" VerticalAlignment="Top" AutomationProperties.Name="Сховати приклад" />
+                  </Grid>
+                  <TextBlock Text="{Binding ExampleHint}" Style="{StaticResource CardDescription}" Margin="0,8,0,10"
+                             Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                  <TextBlock Text="Зразок не знайдено: немає файлу в Assets\reference поруч із програмою." Style="{StaticResource CardDescription}"
+                             Visibility="{Binding ExampleMissing, Converter={StaticResource BoolToVisibility}}" />
+                  <Viewbox Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left"
+                           Visibility="{Binding ExampleImage, Converter={StaticResource NullToVisibility}}">
+                    <Grid Width="{Binding ImageWidth}" Height="{Binding ImageHeight}">
+                      <Image Source="{Binding ExampleImage}" Stretch="Fill" />
+                      <Canvas>
+                        <!-- Current zone (dashed, accent) under the default so the yellow frame stays readable. -->
+                        <Rectangle Canvas.Left="{Binding CurrentRect.X}" Canvas.Top="{Binding CurrentRect.Y}"
+                                   Width="{Binding CurrentRect.Width}" Height="{Binding CurrentRect.Height}"
+                                   Stroke="{DynamicResource AccentFillColorDefaultBrush}" StrokeThickness="4" StrokeDashArray="5,3"
+                                   Visibility="{Binding ShowCurrent, Converter={StaticResource BoolToVisibility}}" />
+                        <Rectangle Canvas.Left="{Binding DefaultRect.X}" Canvas.Top="{Binding DefaultRect.Y}"
+                                   Width="{Binding DefaultRect.Width}" Height="{Binding DefaultRect.Height}"
+                                   Stroke="#FFD400" StrokeThickness="4" />
+                        <Border Canvas.Left="{Binding LabelLeft}" Canvas.Top="{Binding LabelTop}" Background="#FFD400" Padding="8,2" CornerRadius="2">
+                          <TextBlock Text="{Binding ExampleTitle}" Foreground="#1A1A1A" FontSize="16" FontWeight="SemiBold" />
+                        </Border>
+                      </Canvas>
+                    </Grid>
+                  </Viewbox>
+                  <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Rectangle Width="18" Height="10" Stroke="#FFD400" StrokeThickness="3" VerticalAlignment="Center" />
+                    <TextBlock Text="зона зі скріншотів 3440×1440" Style="{StaticResource CardDescription}" Margin="6,0,18,0" VerticalAlignment="Center" />
+                    <StackPanel Orientation="Horizontal" Visibility="{Binding ShowCurrent, Converter={StaticResource BoolToVisibility}}">
+                      <Rectangle Width="18" Height="10" Stroke="{DynamicResource AccentFillColorDefaultBrush}" StrokeThickness="3" StrokeDashArray="3,2" VerticalAlignment="Center" />
+                      <TextBlock Text="твоя поточна зона" Style="{StaticResource CardDescription}" Margin="6,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </StackPanel>
+                </StackPanel>
+              </Border>
+              </Grid>
+            </StackPanel>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
