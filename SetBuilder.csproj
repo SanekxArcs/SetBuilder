@@ -16,6 +16,8 @@
     <StartupObject>TunerFest.Program</StartupObject>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
     <NoWarn>$(NoWarn);WFAC010</NoWarn>
+    <!-- Agent worktrees live under .claude; they must never be globbed into this build. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);.claude/**;tools/**</DefaultItemExcludes>
   </PropertyGroup>
   <ItemGroup>
     <!-- WinForms types are opted into per file; WPF code must not see them through global usings. -->

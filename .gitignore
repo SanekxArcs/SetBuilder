@@ -7,3 +7,4 @@ Logs/
 *.user
 latest-build.txt
 *.mp4
+.claude/
