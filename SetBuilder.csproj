@@ -1,19 +1,34 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <Version>1.5.8</Version>
+    <Version>1.6.0</Version>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- WinForms stays for System.Drawing capture/OCR crops, the Keys enum in Desktop.cs, the zone picker overlay and the tray icon. -->
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationManifest>../app.manifest</ApplicationManifest>
     <AssemblyName>TunerFest Set Builder</AssemblyName>
+    <RootNamespace>TunerFest</RootNamespace>
     <ApplicationIcon>Assets/app.ico</ApplicationIcon>
+    <!-- Program.Main stays the entry point: verification modes run before any window exists. -->
+    <StartupObject>TunerFest.Program</StartupObject>
+    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- WinForms types are opted into per file; WPF code must not see them through global usings. -->
+    <Using Remove="System.Windows.Forms" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
     <PackageReference Include="Svg" Version="3.4.8" />
     <PackageReference Include="Nefarius.ViGEm.Client" Version="1.21.256" />
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
     <Content Include="catalog.json;Assets/**/*" CopyToOutputDirectory="PreserveNewest" />
+    <Resource Include="Assets/app.ico" />
+    <Compile Remove="tools/**" />
+    <None Remove="tools/**" />
   </ItemGroup>
 </Project>

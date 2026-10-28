@@ -1,4 +1,5 @@
-﻿namespace TunerFest;
+﻿using System.Windows.Forms;
+namespace TunerFest;
 
 internal static class Program
 {

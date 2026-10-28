@@ -1,3 +1,4 @@
+﻿using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 using Microsoft.Toolkit.Uwp.Notifications;

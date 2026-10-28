@@ -124,6 +124,9 @@ public sealed class Profile
     public int FocusLostWaitSeconds { get; set; } = 120;
     public bool ToastEnabled { get; set; } = true;
 
+    // Window look: "system" follows Windows, or "dark" / "light".
+    public string Theme { get; set; } = "system";
+
     // Last window placement (x, y, width, height) in screen pixels; restored only when still visible.
     public int[]? WindowBounds { get; set; }
     public bool WindowMaximized { get; set; }

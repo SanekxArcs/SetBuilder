@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Windows.Forms;
+using System.Runtime.InteropServices;
 using System.Text;
 using Nefarius.ViGEm.Client;
 using Nefarius.ViGEm.Client.Targets;

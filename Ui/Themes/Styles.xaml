@@ -1,0 +1,64 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                    xmlns:local="clr-namespace:TunerFest.Ui">
+  <!-- Shared look of every page: Windows 11 settings style (section headers, cards with title + description). -->
+  <local:InverseBoolConverter x:Key="InverseBool" />
+  <local:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+  <local:BoolToVisibilityConverter x:Key="BoolToCollapsed" Invert="True" />
+  <local:NullToVisibilityConverter x:Key="NullToVisibility" />
+  <local:EqualsConverter x:Key="Equals" />
+
+  <Style x:Key="SectionHeader" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Margin" Value="2,24,0,8" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+  </Style>
+  <Style x:Key="PageTitle" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="24" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Margin" Value="2,0,0,4" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+  </Style>
+  <Style x:Key="CardTitle" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+  <Style x:Key="CardDescription" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Margin" Value="0,2,0,0" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+  <Style x:Key="FieldLabel" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+  </Style>
+  <Style x:Key="ValueText" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+  </Style>
+  <Style x:Key="SettingsPanel" TargetType="Border">
+    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Padding" Value="16" />
+    <Setter Property="Margin" Value="0,0,0,4" />
+  </Style>
+  <!-- The scrolling body of a page: pages put this ScrollViewer at their root and this StackPanel inside it. -->
+  <Style x:Key="PageScroll" TargetType="ScrollViewer">
+    <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+    <Setter Property="Focusable" Value="False" />
+  </Style>
+  <Style x:Key="PageBody" TargetType="StackPanel">
+    <Setter Property="MaxWidth" Value="1000" />
+    <Setter Property="Margin" Value="28,8,28,28" />
+  </Style>
+</ResourceDictionary>

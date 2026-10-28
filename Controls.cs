@@ -1,4 +1,5 @@
-﻿using System.Drawing.Drawing2D;
+﻿using System.Windows.Forms;
+using System.Drawing.Drawing2D;
 
 namespace TunerFest;
 
