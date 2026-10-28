@@ -730,12 +730,26 @@ public sealed class Vision
         return new(index, expected, phase, fresh, reroll, bottom, focus);
     }
 
+    /// <summary>
+    /// Which screen the breadcrumb names: the game keeps a stale "RECALIBER/" prefix after backing out of the
+    /// recaliber screen ("RECALIBER/PROFILE/VEHICLES/UPGRADE" on the seven-parts screen), so only the segment
+    /// that comes last counts. Null when neither UPGRADE nor RECALIBER is there.
+    /// </summary>
+    public static bool? BreadcrumbIsRecaliber(string normalizedBreadcrumb)
+    {
+        int upgrade = normalizedBreadcrumb.LastIndexOf("UPGRADE", StringComparison.Ordinal);
+        int recaliber = normalizedBreadcrumb.LastIndexOf("RECALIBER", StringComparison.Ordinal);
+        if (upgrade < 0 && recaliber < 0)
+            return null;
+        return recaliber > upgrade;
+    }
+
     public async Task<GameScreen> ScreenState(Bitmap frame)
     {
         string breadcrumb = Recognition.Normalize(await Text(frame, "breadcrumb"));
-        if (!breadcrumb.Contains("UPGRADE"))
+        if (BreadcrumbIsRecaliber(breadcrumb) is not { } recaliber)
             return GameScreen.Unknown;
-        if (!breadcrumb.Contains("RECALIBER"))
+        if (!recaliber)
         {
             if (GridFocus(frame) < 0)
                 return GameScreen.Unknown;

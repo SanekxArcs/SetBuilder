@@ -400,6 +400,14 @@ public static class Verification
             "spaced value and uppercase I correction"
         );
         Assert(Parse("Drifty 1% [O .8%-2%]").Minimum == .8, "zero glyph in range");
+        Assert(
+            Vision.BreadcrumbIsRecaliber(Recognition.Normalize("PROFILE/VEHICLES/UPGRADE")) == false
+                && Vision.BreadcrumbIsRecaliber(Recognition.Normalize("PROFILE/VEHICLES/UPGRADE/RECALIBER")) == true
+                && Vision.BreadcrumbIsRecaliber(Recognition.Normalize("RECALIBER/PROFILE/VEHICLES/UPGRADE")) == false
+                && Vision.BreadcrumbIsRecaliber(Recognition.Normalize("RECALIBER/PROFILE/VEHICLES/UPGRADE/RECALIBER")) == true
+                && Vision.BreadcrumbIsRecaliber(Recognition.Normalize("PROFILE/VEHICLES")) == null,
+            "breadcrumb: last segment decides the screen (stale RECALIBER prefix, 28.10 21:02)"
+        );
         var partialName = Recognition
             .Name("Clean Driver Decrease BUCKS loss by 2.1% with CLEAN DRIVING modifier", c)
             .Title;
