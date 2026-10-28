@@ -8,7 +8,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationManifest>../app.manifest</ApplicationManifest>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>TunerFest Set Builder</AssemblyName>
     <RootNamespace>TunerFest</RootNamespace>
     <ApplicationIcon>Assets/app.ico</ApplicationIcon>
