@@ -1,8 +1,12 @@
-﻿using System.Windows.Forms;
+﻿using System.Windows;
+using TunerFest.Ui;
+
 namespace TunerFest;
 
 internal static class Program
 {
+    const string CrashTitle = "TunerFest Set Builder";
+
     static void WriteCrash(string error)
     {
         try
@@ -22,7 +26,6 @@ internal static class Program
     [STAThread]
     static int Main(string[] args)
     {
-        ApplicationConfiguration.Initialize();
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
             WriteCrash(e.ExceptionObject.ToString() ?? "Unknown fatal error");
         try
@@ -77,54 +80,7 @@ internal static class Program
                 return 2;
             }
             if (args.Contains("--ui-smoke"))
-            {
-                using var form = new MainForm(true);
-                using var timer = new System.Windows.Forms.Timer { Interval = 1000 };
-                int page = 0;
-                timer.Tick += (_, _) =>
-                {
-                    using var b = new Bitmap(form.Width, form.Height);
-                    form.DrawToBitmap(b, new Rectangle(Point.Empty, b.Size));
-                    b.Save(
-                        Path.Combine(
-                            AppContext.BaseDirectory,
-                            new[]
-                            {
-                                "ui-preview.png",
-                                "ui-zones.png",
-                                "ui-controls.png",
-                                "ui-diagnostics.png",
-                                "ui-notifications.png",
-                                "ui-analytics.png",
-                            }[page]
-                        )
-                    );
-                    if (page == 0)
-                    {
-                        form.SaveAutoPreview(Path.Combine(AppContext.BaseDirectory, "ui-auto-set.png"));
-                        form.SaveSelectorPreview(Path.Combine(AppContext.BaseDirectory, "ui-selector.png"));
-                    }
-                    if (++page == 6)
-                    {
-                        form.SaveAnalyticsTextPreview(Path.Combine(AppContext.BaseDirectory, "ui-analytics-logs.png"));
-                        form.SaveAnalyticsItemsPreview(
-                            Path.Combine(AppContext.BaseDirectory, "ui-analytics-items.png")
-                        );
-                        form.SaveExpandedLogPreview(Path.Combine(AppContext.BaseDirectory, "ui-expanded-log.png"));
-                        timer.Stop();
-                        form.Close();
-                    }
-                    else
-                        form.ShowPreviewTab(page);
-                };
-                form.Shown += async (_, _) =>
-                {
-                    await form.LoadAnalyticsPreview();
-                    timer.Start();
-                };
-                Application.Run(form);
-                return 0;
-            }
+                return Ui.Shell.SmokeRun.Execute();
             // Normal launch (also when a toast is clicked): one instance only, friendly crash dialog.
             using var instance = new Mutex(true, @"Local\TunerFestSetBuilder", out bool firstInstance);
             if (!firstInstance)
@@ -132,19 +88,24 @@ internal static class Program
                 Shell.ActivateExisting();
                 return 0;
             }
-            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
-            Application.ThreadException += (_, e) =>
+            var app = new App();
+            app.InitializeComponent();
+            app.DispatcherUnhandledException += (_, e) =>
             {
                 WriteCrash(e.Exception.ToString());
                 MessageBox.Show(
                     "Сталася неочікувана помилка. Звіт збережено у папці Logs поруч із програмою.\n\n"
                         + e.Exception.Message,
-                    "TunerFest Set Builder",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
+                    CrashTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
                 );
+                e.Handled = true;
             };
-            Application.Run(new MainForm());
+            var shell = new MainViewModel(preview: false);
+            shell.ApplyTheme();
+            var window = new MainWindow(shell);
+            app.Run(window);
             return 0;
         }
         catch (Exception e)
@@ -152,7 +113,7 @@ internal static class Program
             WriteCrash(e.ToString());
             File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "error.txt"), e.ToString());
             if (args.Length == 0)
-                MessageBox.Show(e.Message, "TunerFest Set Builder");
+                MessageBox.Show(e.Message, CrashTitle);
             return 1;
         }
     }
