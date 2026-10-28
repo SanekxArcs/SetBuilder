@@ -1,0 +1,225 @@
+<UserControl x:Class="TunerFest.Ui.Pages.AnalyticsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:local="clr-namespace:TunerFest.Ui"
+             xmlns:vm="clr-namespace:TunerFest.Ui.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DataContext="{d:DesignInstance Type=vm:AnalyticsViewModel}"
+             mc:Ignorable="d"
+             IsVisibleChanged="OnVisibleChanged">
+  <UserControl.Resources>
+    <local:AnalyticsTabAppearanceConverter x:Key="TabAppearance" />
+    <local:AnalyticsAllTrueVisibilityConverter x:Key="EmptyItemsVisibility" />
+
+    <!-- Both grids: read-only, full-row selection, sortable headers, alternating rows, theme brushes only. -->
+    <Style x:Key="AnalyticsGrid" TargetType="ui:DataGrid">
+      <Setter Property="AutoGenerateColumns" Value="False" />
+      <Setter Property="IsReadOnly" Value="True" />
+      <Setter Property="SelectionMode" Value="Single" />
+      <Setter Property="SelectionUnit" Value="FullRow" />
+      <Setter Property="CanUserAddRows" Value="False" />
+      <Setter Property="CanUserDeleteRows" Value="False" />
+      <Setter Property="CanUserResizeRows" Value="False" />
+      <Setter Property="CanUserReorderColumns" Value="False" />
+      <Setter Property="CanUserSortColumns" Value="True" />
+      <Setter Property="HeadersVisibility" Value="Column" />
+      <Setter Property="GridLinesVisibility" Value="Horizontal" />
+      <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}" />
+      <Setter Property="AlternationCount" Value="2" />
+      <Setter Property="RowBackground" Value="Transparent" />
+      <Setter Property="AlternatingRowBackground" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="RowHeight" Value="32" />
+      <Setter Property="ColumnHeaderHeight" Value="36" />
+      <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
+      <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    </Style>
+    <Style x:Key="AnalyticsHeader" TargetType="DataGridColumnHeader">
+      <Setter Property="Background" Value="{DynamicResource LayerFillColorDefaultBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Padding" Value="12,0" />
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+      <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style x:Key="AnalyticsCell" TargetType="DataGridCell">
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="12,0" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="DataGridCell">
+            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
+              <ContentPresenter VerticalAlignment="Center" />
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+      <Style.Triggers>
+        <Trigger Property="IsSelected" Value="True">
+          <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+          <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+    <Style x:Key="AnalyticsRow" TargetType="DataGridRow">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Style.Triggers>
+        <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+          <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+        </Trigger>
+        <Trigger Property="IsMouseOver" Value="True">
+          <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+        </Trigger>
+        <Trigger Property="IsSelected" Value="True">
+          <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+    <Style x:Key="TabButton" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+      <Setter Property="Margin" Value="0,0,8,0" />
+      <Setter Property="Padding" Value="14,6" />
+    </Style>
+  </UserControl.Resources>
+
+  <!-- The page does not scroll as a whole: the inner tab content takes the remaining height. -->
+  <Grid Margin="28,8,28,28">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <TextBlock Grid.Row="0" Text="Аналітика" Style="{StaticResource PageTitle}" />
+    <TextBlock Grid.Row="1" Style="{StaticResource CardDescription}"
+               Text="Частоти перків, усі текстові журнали та завершені деталі з журналів усіх версій програми." />
+
+    <!-- Toolbar -->
+    <WrapPanel Grid.Row="2" Margin="0,14,0,0">
+      <ui:Button Content="Оновити" Icon="{ui:SymbolIcon ArrowSync24}" Appearance="Primary"
+                 Command="{Binding ReloadCommand}" Margin="0,0,8,8" />
+      <ui:Button Content="Зберегти TXT + CSV + JSON" Icon="{ui:SymbolIcon Save24}"
+                 Command="{Binding ExportCommand}" Margin="0,0,8,8" />
+      <ui:Button Content="Додати папку Logs" Icon="{ui:SymbolIcon FolderAdd24}"
+                 Command="{Binding AddFolderCommand}" Margin="0,0,8,8" />
+    </WrapPanel>
+
+    <!-- Filters: any change re-renders -->
+    <WrapPanel Grid.Row="3" Margin="0,2,0,0">
+      <ComboBox Width="190" Margin="0,0,8,8" ItemsSource="{Binding SetChoices}" SelectedItem="{Binding SelectedSet, Mode=TwoWay}" />
+      <ComboBox Width="155" Margin="0,0,8,8" ItemsSource="{Binding PhaseChoices}" SelectedItem="{Binding SelectedPhase, Mode=TwoWay}" />
+      <ComboBox Width="140" Margin="0,0,8,8" ItemsSource="{Binding VersionChoices}" SelectedItem="{Binding SelectedVersion, Mode=TwoWay}" />
+      <ComboBox Width="210" Margin="0,0,8,8" ItemsSource="{Binding OtherChoices}" SelectedItem="{Binding SelectedOther, Mode=TwoWay}" />
+      <ComboBox Width="580" Margin="0,0,8,8" ItemsSource="{Binding SessionChoices}" SelectedItem="{Binding SelectedSession, Mode=TwoWay}" />
+    </WrapPanel>
+
+    <!-- Totals, item totals, note -->
+    <TextBlock Grid.Row="4" Margin="2,6,0,0" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap"
+               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Text="{Binding Totals}" />
+    <TextBlock Grid.Row="5" Margin="2,8,0,0" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap"
+               Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="{Binding ItemTotals}" />
+    <TextBlock Grid.Row="6" Margin="2,8,0,0" MaxWidth="980" HorizontalAlignment="Left" TextWrapping="Wrap"
+               Style="{StaticResource CardDescription}" Text="{Binding Note}" />
+
+    <!-- Inner tab strip -->
+    <StackPanel Grid.Row="7" Orientation="Horizontal" Margin="0,16,0,8">
+      <ui:Button Content="Рейтинг перків" Icon="{ui:SymbolIcon Trophy24}" Style="{StaticResource TabButton}"
+                 Command="{Binding SelectTabCommand}" CommandParameter="0"
+                 Appearance="{Binding InnerTab, Converter={StaticResource TabAppearance}, ConverterParameter=0}" />
+      <ui:Button Content="Усі текстові журнали" Icon="{ui:SymbolIcon DocumentText24}" Style="{StaticResource TabButton}"
+                 Command="{Binding SelectTabCommand}" CommandParameter="1"
+                 Appearance="{Binding InnerTab, Converter={StaticResource TabAppearance}, ConverterParameter=1}" />
+      <ui:Button Content="Завершені деталі" Icon="{ui:SymbolIcon CheckmarkCircle24}" Style="{StaticResource TabButton}"
+                 Command="{Binding SelectTabCommand}" CommandParameter="2"
+                 Appearance="{Binding InnerTab, Converter={StaticResource TabAppearance}, ConverterParameter=2}" />
+    </StackPanel>
+
+    <!-- Inner tab content -->
+    <Border Grid.Row="8" Style="{StaticResource SettingsPanel}" Padding="0" Margin="0" ClipToBounds="True">
+      <Grid>
+        <!-- 0: perk ranking -->
+        <ui:DataGrid Style="{StaticResource AnalyticsGrid}" ColumnHeaderStyle="{StaticResource AnalyticsHeader}"
+                     CellStyle="{StaticResource AnalyticsCell}" RowStyle="{StaticResource AnalyticsRow}"
+                     ItemsSource="{Binding Ranking}"
+                     Visibility="{Binding ShowRanking, Converter={StaticResource BoolToVisibility}}">
+          <ui:DataGrid.Columns>
+            <DataGridTextColumn Header="№" Binding="{Binding Rank}" Width="35*" />
+            <DataGridTextColumn Header="Перк" Binding="{Binding Perk}" Width="180*" />
+            <DataGridTextColumn Header="Появ" Binding="{Binding Count}" Width="65*" />
+            <DataGridTextColumn Header="Частка, %" Binding="{Binding Chance, StringFormat=0.00}" Width="90*" />
+            <DataGridTextColumn Header="З % зчитано" Binding="{Binding Numeric}" Width="85*" />
+            <DataGridTextColumn Header="На максимумі" Binding="{Binding Max}" Width="85*" />
+            <DataGridTextColumn Header="Макс., %" Binding="{Binding MaxChance, StringFormat=0.00, TargetNullValue=—}" Width="80*" />
+          </ui:DataGrid.Columns>
+        </ui:DataGrid>
+
+        <!-- 1: all text logs -->
+        <Grid Visibility="{Binding ShowLogs, Converter={StaticResource BoolToVisibility}}">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <ui:TextBox Grid.Row="0" Margin="12,12,12,8" Icon="{ui:SymbolIcon Search24}" ClearButtonEnabled="True"
+                      PlaceholderText="Пошук у всіх текстових журналах…"
+                      Text="{Binding Search, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+          <TextBox Grid.Row="1" Margin="12,0,12,0" IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap"
+                   FontFamily="Cascadia Mono, Consolas" FontSize="12"
+                   HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible"
+                   Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                   Text="{Binding LogsText, Mode=OneWay}" />
+          <DockPanel Grid.Row="2" Margin="12,8,12,12" LastChildFill="True">
+            <ui:Button DockPanel.Dock="Left" Content="←" MinWidth="44" Margin="0,0,8,0" Command="{Binding PreviousPageCommand}" />
+            <ui:Button DockPanel.Dock="Left" Content="→" MinWidth="44" Margin="0,0,12,0" Command="{Binding NextPageCommand}" />
+            <TextBlock Style="{StaticResource CardDescription}" Margin="0" VerticalAlignment="Center" Text="{Binding PageLabel}" />
+          </DockPanel>
+        </Grid>
+
+        <!-- 2: completed items -->
+        <ui:DataGrid Style="{StaticResource AnalyticsGrid}" ColumnHeaderStyle="{StaticResource AnalyticsHeader}"
+                     CellStyle="{StaticResource AnalyticsCell}" RowStyle="{StaticResource AnalyticsRow}"
+                     ItemsSource="{Binding Items}"
+                     Visibility="{Binding ShowItems, Converter={StaticResource BoolToVisibility}}">
+          <ui:DataGrid.Columns>
+            <DataGridTextColumn Header="Завершено" Binding="{Binding Time}" SortMemberPath="TimeValue" Width="110*" />
+            <DataGridTextColumn Header="Деталь" Binding="{Binding Part}" Width="155*" />
+            <DataGridTextColumn Header="Сет" Binding="{Binding Set}" Width="125*" />
+            <DataGridTextColumn Header="Час¹" Binding="{Binding Duration}" SortMemberPath="DurationSeconds" Width="90*" />
+            <DataGridTextColumn Header="Кидків¹" Binding="{Binding Rolls, StringFormat=N0, TargetNullValue=—}" Width="65*" />
+            <DataGridTextColumn Header="Bucks¹" Binding="{Binding Bucks, StringFormat=N0, TargetNullValue=—}" Width="85*" />
+            <DataGridTextColumn Header="Запчастин¹" Binding="{Binding Spares, StringFormat=N0, TargetNullValue=—}" Width="85*" />
+            <DataGridTextColumn Header="Запуск" Binding="{Binding Session}" Width="135*" />
+          </ui:DataGrid.Columns>
+        </ui:DataGrid>
+        <TextBlock Style="{StaticResource CardDescription}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                   Text="Завершених деталей за цими фільтрами ще немає." IsHitTestVisible="False">
+          <TextBlock.Visibility>
+            <MultiBinding Converter="{StaticResource EmptyItemsVisibility}">
+              <Binding Path="ShowItems" />
+              <Binding Path="HasNoItems" />
+            </MultiBinding>
+          </TextBlock.Visibility>
+        </TextBlock>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>
