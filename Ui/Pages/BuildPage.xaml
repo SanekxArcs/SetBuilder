@@ -1,0 +1,270 @@
+<UserControl x:Class="TunerFest.Ui.Pages.BuildPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:local="clr-namespace:TunerFest.Ui"
+             xmlns:vm="clr-namespace:TunerFest.Ui.ViewModels"
+             d:DataContext="{d:DesignInstance Type=vm:BuildViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+  <UserControl.Resources>
+    <local:PerkIconConverter x:Key="PerkIcon20" Size="20" />
+
+    <!-- Items of the build, set, perk and alternative lists: a 20 px icon and the title. -->
+    <DataTemplate x:Key="IconItem">
+      <StackPanel Orientation="Horizontal">
+        <Image Width="20" Height="20" Margin="0,0,8,0" VerticalAlignment="Center"
+               RenderOptions.BitmapScalingMode="HighQuality"
+               Source="{Binding Converter={StaticResource PerkIcon20}}" />
+        <TextBlock Text="{Binding}" VerticalAlignment="Center" />
+      </StackPanel>
+    </DataTemplate>
+
+    <Style x:Key="GoalIcon" TargetType="Image">
+      <Setter Property="Width" Value="32" />
+      <Setter Property="Height" Value="32" />
+      <Setter Property="Margin" Value="0,0,12,0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality" />
+    </Style>
+    <Style x:Key="GoalCombo" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="ItemTemplate" Value="{StaticResource IconItem}" />
+    </Style>
+    <Style x:Key="GoalDescription" TargetType="TextBlock" BasedOn="{StaticResource CardDescription}">
+      <Setter Property="Margin" Value="0,6,0,0" />
+    </Style>
+    <Style x:Key="OrLabel" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="0,0,12,0" />
+    </Style>
+    <Style x:Key="HintText" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="LineHeight" Value="20" />
+    </Style>
+    <Style x:Key="PartButton" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+      <Setter Property="Width" Value="45" />
+      <Setter Property="Height" Value="36" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Margin" Value="0,0,6,0" />
+      <Setter Property="Appearance" Value="Secondary" />
+      <Setter Property="FontSize" Value="14" />
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding Selected}" Value="True">
+          <Setter Property="Appearance" Value="Primary" />
+          <Setter Property="FontWeight" Value="SemiBold" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+  </UserControl.Resources>
+
+  <ScrollViewer Style="{StaticResource PageScroll}">
+    <StackPanel Style="{StaticResource PageBody}">
+      <TextBlock Text="Збірка" Style="{StaticResource PageTitle}" />
+      <TextBlock Text="Два перки · сім деталей · один готовий сет" Style="{StaticResource CardDescription}" />
+
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="58*" />
+          <ColumnDefinition Width="24" />
+          <ColumnDefinition Width="42*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left column: the profile from the site, then the set and the perks. -->
+        <StackPanel Grid.Column="0">
+          <TextBlock Text="Профіль із TunerFest" Style="{StaticResource SectionHeader}" />
+
+          <Border Style="{StaticResource SettingsPanel}">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Border Width="56" Height="56" CornerRadius="10" Margin="0,0,14,0" VerticalAlignment="Top"
+                      Background="{DynamicResource SubtleFillColorSecondaryBrush}">
+                <Image Width="32" Height="32" RenderOptions.BitmapScalingMode="HighQuality" Source="{Binding BuildIcon}" />
+              </Border>
+              <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <ComboBox Style="{StaticResource GoalCombo}" ItemsSource="{Binding Builds}"
+                          SelectedItem="{Binding SelectedBuild, Mode=TwoWay}" IsEnabled="{Binding CanEditTargets}"
+                          AutomationProperties.Name="Збірка з TunerFest" />
+                <TextBlock Text="{Binding BuildDescription}" Style="{StaticResource GoalDescription}"
+                           Visibility="{Binding BuildDescription, Converter={StaticResource NullToVisibility}}" />
+              </StackPanel>
+            </Grid>
+          </Border>
+
+          <StackPanel Orientation="Horizontal" Margin="0,4,0,8">
+            <ui:Button Content="Сети та інструкції на сайті ↗" Icon="{ui:SymbolIcon Open24}" Command="{Binding OpenSetsCommand}" />
+            <ui:Button Content="Підтримка ↗" Icon="{ui:SymbolIcon ChatHelp24}" Command="{Binding OpenSupportCommand}" Margin="8,0,0,0" />
+          </StackPanel>
+
+          <ui:CardControl Icon="{ui:SymbolIcon ScreenSearch24}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
+            <ui:CardControl.Header>
+              <StackPanel>
+                <TextBlock Text="Автоматично визначати сет і пару перків" Style="{StaticResource CardTitle}" />
+              </StackPanel>
+            </ui:CardControl.Header>
+            <ui:ToggleSwitch IsChecked="{Binding AutoSet, Mode=TwoWay}" AutomationProperties.Name="Автоматично визначати сет і пару перків" />
+          </ui:CardControl>
+
+          <TextBlock Text="Сет і перки" Style="{StaticResource SectionHeader}" />
+
+          <!-- Set -->
+          <Border Style="{StaticResource SettingsPanel}">
+            <StackPanel>
+              <TextBlock Text="Сет деталі" Style="{StaticResource CardTitle}" Margin="0,0,0,10" />
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Image Style="{StaticResource GoalIcon}" Source="{Binding SetIcon}" />
+                <StackPanel Grid.Column="1">
+                  <ComboBox Style="{StaticResource GoalCombo}" ItemsSource="{Binding Sets}"
+                            SelectedItem="{Binding Set, Mode=TwoWay}" IsEnabled="{Binding CanEditTargets}"
+                            AutomationProperties.Name="Сет деталі" />
+                  <TextBlock Text="{Binding SetDescription}" Style="{StaticResource GoalDescription}"
+                             Visibility="{Binding SetDescription, Converter={StaticResource NullToVisibility}}" />
+                </StackPanel>
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <!-- First perk -->
+          <Border Style="{StaticResource SettingsPanel}">
+            <StackPanel>
+              <Grid Margin="0,0,0,10">
+                <TextBlock Text="Перший перк" Style="{StaticResource CardTitle}" VerticalAlignment="Center" />
+                <ui:ToggleSwitch Content="Необов'язковий" HorizontalAlignment="Right" IsEnabled="{Binding CanEdit}"
+                                 IsChecked="{Binding FirstOptional, Mode=TwoWay}" AutomationProperties.Name="Необов'язковий перк" />
+              </Grid>
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Image Grid.Row="0" Grid.Column="1" Style="{StaticResource GoalIcon}" Source="{Binding FirstIcon}" />
+                <ComboBox Grid.Row="0" Grid.Column="2" Style="{StaticResource GoalCombo}" ItemsSource="{Binding Affixes}"
+                          SelectedItem="{Binding First, Mode=TwoWay}" IsEnabled="{Binding CanEditTargets}"
+                          AutomationProperties.Name="Перший перк" />
+                <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding FirstDescription}" Style="{StaticResource GoalDescription}"
+                           Visibility="{Binding FirstDescription, Converter={StaticResource NullToVisibility}}" />
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="або" Style="{StaticResource OrLabel}" Margin="0,10,12,0" />
+                <Image Grid.Row="2" Grid.Column="1" Style="{StaticResource GoalIcon}" Margin="0,10,12,0" Source="{Binding FirstAlternativeIcon}" />
+                <ComboBox Grid.Row="2" Grid.Column="2" Style="{StaticResource GoalCombo}" Margin="0,10,0,0" ItemsSource="{Binding Alternatives}"
+                          SelectedItem="{Binding FirstAlternative, Mode=TwoWay}" IsEnabled="{Binding CanEditTargets}"
+                          AutomationProperties.Name="Альтернатива першого перка" />
+                <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding FirstAlternativeDescription}" Style="{StaticResource GoalDescription}"
+                           Visibility="{Binding FirstAlternativeDescription, Converter={StaticResource NullToVisibility}}" />
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <!-- Second perk -->
+          <Border Style="{StaticResource SettingsPanel}">
+            <StackPanel>
+              <Grid Margin="0,0,0,10">
+                <TextBlock Text="Другий перк" Style="{StaticResource CardTitle}" VerticalAlignment="Center" />
+                <ui:ToggleSwitch Content="Необов'язковий" HorizontalAlignment="Right" IsEnabled="{Binding CanEdit}"
+                                 IsChecked="{Binding SecondOptional, Mode=TwoWay}" AutomationProperties.Name="Необов'язковий перк" />
+              </Grid>
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Image Grid.Row="0" Grid.Column="1" Style="{StaticResource GoalIcon}" Source="{Binding SecondIcon}" />
+                <ComboBox Grid.Row="0" Grid.Column="2" Style="{StaticResource GoalCombo}" ItemsSource="{Binding Affixes}"
+                          SelectedItem="{Binding Second, Mode=TwoWay}" IsEnabled="{Binding CanEditTargets}"
+                          AutomationProperties.Name="Другий перк" />
+                <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding SecondDescription}" Style="{StaticResource GoalDescription}"
+                           Visibility="{Binding SecondDescription, Converter={StaticResource NullToVisibility}}" />
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="або" Style="{StaticResource OrLabel}" Margin="0,10,12,0" />
+                <Image Grid.Row="2" Grid.Column="1" Style="{StaticResource GoalIcon}" Margin="0,10,12,0" Source="{Binding SecondAlternativeIcon}" />
+                <ComboBox Grid.Row="2" Grid.Column="2" Style="{StaticResource GoalCombo}" Margin="0,10,0,0" ItemsSource="{Binding Alternatives}"
+                          SelectedItem="{Binding SecondAlternative, Mode=TwoWay}" IsEnabled="{Binding CanEditTargets}"
+                          AutomationProperties.Name="Альтернатива другого перка" />
+                <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding SecondAlternativeDescription}" Style="{StaticResource GoalDescription}"
+                           Visibility="{Binding SecondAlternativeDescription, Converter={StaticResource NullToVisibility}}" />
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <TextBlock Style="{StaticResource CardDescription}" Margin="2,6,0,0"
+                     Text="Будь-який порядок слотів. «або» — беремо той із двох, що випав першим, і доводимо до максимуму. Необов'язковий не шукається й не покращується." />
+        </StackPanel>
+
+        <!-- Right column: the game window, the part count and the pre-start checks. -->
+        <StackPanel Grid.Column="2">
+          <TextBlock Text="Вікно гри" Style="{StaticResource SectionHeader}" />
+          <Border Style="{StaticResource SettingsPanel}">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding GameWindows}" DisplayMemberPath="Title"
+                        SelectedItem="{Binding SelectedWindow, Mode=TwoWay}" IsEnabled="{Binding CanEdit}"
+                        AutomationProperties.Name="Вікно гри" />
+              <ui:Button Grid.Column="1" Margin="8,0,0,0" Icon="{ui:SymbolIcon ArrowSync24}" ToolTip="Оновити список вікон"
+                         AutomationProperties.Name="Оновити список вікон" Command="{Binding RefreshWindowsCommand}" IsEnabled="{Binding CanEdit}" />
+            </Grid>
+          </Border>
+
+          <TextBlock Text="Деталей за запуск" Style="{StaticResource SectionHeader}" />
+          <Border Style="{StaticResource SettingsPanel}">
+            <ItemsControl ItemsSource="{Binding PartOptions}" IsEnabled="{Binding CanEdit}" HorizontalAlignment="Left">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <ui:Button Style="{StaticResource PartButton}" Content="{Binding Count}"
+                             Command="{Binding DataContext.PickPartsCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                             CommandParameter="{Binding Count}"
+                             AutomationProperties.Name="{Binding AccessibleName}" AutomationProperties.HelpText="{Binding Hint}" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Border>
+
+          <TextBlock Text="Перевірка перед стартом" Style="{StaticResource SectionHeader}" />
+          <Border Style="{StaticResource SettingsPanel}">
+            <StackPanel>
+              <TextBlock Style="{StaticResource HintText}"
+                         Text="Відкрий екран семи деталей або перків.&#10;Перевір зони й поверни фокус у гру.&#10;F8 — запуск · F7 — зчитати · F10 — стоп." />
+              <ui:Button Content="Зчитати екран без натискань" Icon="{ui:SymbolIcon Eye24}" Margin="0,14,0,0"
+                         HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                         Command="{Binding ReadScreenCommand}" IsEnabled="{Binding CanEdit}" />
+              <ui:Button Content="Перевірити PNG зі скріншота" Icon="{ui:SymbolIcon Image24}" Margin="0,8,0,0"
+                         HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                         Command="{Binding InspectPngCommand}" IsEnabled="{Binding CanEdit}" />
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Grid>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
