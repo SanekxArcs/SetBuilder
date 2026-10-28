@@ -31,6 +31,8 @@ public static class SmokeRun
         var shell = new MainViewModel(preview: true);
         shell.Theme.Apply("dark");
         var window = new MainWindow(shell);
+        // Above a full-screen game: a window it covers never raises ContentRendered and the smoke run would wait forever.
+        window.Topmost = true;
         Exception? failure = null;
         window.ContentRendered += async (_, _) =>
         {
@@ -156,11 +158,74 @@ public static class SmokeRun
         // Command bar and start/stop follow the busy state; a run without a game window only logs.
         Expect(shell.CanStart && !shell.CanStop && shell.CanExport, "idle: start and export enabled, stop disabled");
         Expect(shell.StartCommand.CanExecute(null) && !shell.StopCommand.CanExecute(null), "commands follow busy state");
+        // The build page selects a running game automatically, so the smoke run clears it first and then proves that a
+        // preview shell refuses to run even with a window selected (it must never press a key in a real game).
+        var priorGame = shell.Game;
+        shell.Game = null;
         shell.Arm(true);
         Expect(!shell.IsBusy && shell.StatusLine == "Вибери вікно гри.", "run without a game window is refused");
+        shell.Game = new GameWindow(IntPtr.Zero, "smoke", "smoke");
+        shell.Arm(true);
+        Expect(!shell.IsBusy && shell.StatusLine == "Попередній перегляд: запуск не виконується.", "preview refuses to run");
+        shell.Arm(false);
+        Expect(!shell.IsBusy && shell.StatusLine == "Попередній перегляд: запуск не виконується.", "preview refuses to read");
+        shell.Game = null;
         Expect(shell.Pages.Count == 6 && shell.Pages.Select(p => p.Title).SequenceEqual(PageRegistry.Entries.Select(e => e.Title)),
             "six pages in order");
         passed.Add("PASS command bar, start and stop follow the busy state; run without a game window is refused");
+
+        // Manual pause: only during a run; the "held" progress state shows as a pause on the status card.
+        Expect(!shell.CanPause && !shell.PauseCommand.CanExecute(null), "pause disabled while idle");
+        shell.PauseCommand.Execute(null);
+        Expect(!shell.IsPaused && shell.PauseLabel == "Пауза", "pause ignored while idle");
+        shell.OnProgress(new RunProgress("held", 2, 7, 9, 13500, 1350));
+        Expect(shell.Status.Current == StatusMode.Paused && shell.Status.Title == "Пауза", "status card: held");
+        Expect(shell.Status.Detail.Contains("Кидків 9") && shell.Status.Detail.EndsWith("відновлює запуск"), "status card: held detail");
+        shell.OnProgress(new RunProgress("running", 3, 7, 41, 61500, 6150));
+        passed.Add("PASS manual pause: disabled while idle; held state shows as a pause on the status card");
+
+        // Overlay placement: left of every zone's captured area at common game sizes, never wider than the free strip.
+        var zones = shell.Profile.Zones.Values.ToList();
+        foreach (var size in new[] { new System.Drawing.Size(1280, 720), new System.Drawing.Size(1920, 1080), new System.Drawing.Size(2560, 1440), new System.Drawing.Size(3840, 2160) })
+        {
+            var game = new Rectangle(new System.Drawing.Point(100, 50), size);
+            var panel = OverlayPlacement.Place(game, zones, 300, 120);
+            Expect(panel.X == 112 && panel.Y == 62, $"overlay corner at {size.Width}");
+            Expect(panel.Width >= OverlayPlacement.MinWidth && panel.Width <= 300, $"overlay width at {size.Width}: {panel.Width}");
+            Expect(!OverlayPlacement.TouchesZones(panel, game, zones), $"overlay touches a zone at {size.Width}");
+        }
+        var tiny = OverlayPlacement.Place(new Rectangle(0, 0, 640, 360), zones, 300, 120);
+        Expect(tiny.Width == OverlayPlacement.MinWidth && tiny.Height == 120, "overlay keeps its minimum width on a tiny game window");
+        Expect(
+            OverlayPlacement.TouchesZones(new Rectangle(400, 100, 300, 120), new Rectangle(0, 0, 1920, 1080), zones),
+            "overlay placed over the breadcrumb zone is detected"
+        );
+        passed.Add("PASS overlay placement stays left of every zone at 720p, 1080p, 1440p and 4K");
+
+        // Overlay window: constructs, shows without activating, renders.
+        var overlay = new OverlayWindow(shell);
+        try
+        {
+            overlay.ShowForPreview(window.Left + 60, window.Top + 120);
+            await Settle(overlay);
+            Expect(overlay.IsVisible && !overlay.IsActive, "overlay shows without activation");
+            Expect(Math.Abs(overlay.ActualWidth - OverlayWindow.PreferredWidth) < 1 && overlay.ActualHeight > 80,
+                $"overlay width {overlay.ActualWidth} (the FluentWindow style must not impose its MinWidth)");
+            Render(app, overlay, "ui-overlay.png");
+            shell.Game = null;
+            overlay.Refresh();
+            await Settle(window);
+            Expect(!overlay.IsVisible, "overlay hides without a game window");
+            passed.Add(
+                "PASS overlay window shows without activation, renders, hides without a game window"
+                    + (overlay.CaptureExcluded ? "; excluded from capture" : "; capture exclusion unavailable")
+            );
+        }
+        finally
+        {
+            overlay.Close();
+        }
+        shell.Game = priorGame;
 
         // Pages: checks, screenshots and preview variants.
         for (int i = 0; i < shell.Pages.Count; i++)

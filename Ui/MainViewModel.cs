@@ -16,6 +16,8 @@ public sealed record LogLine(DateTime At, string Text);
 public sealed class MainViewModel : ObservableObject, IShellContext
 {
     bool busy;
+    bool paused;
+    bool runActive;
     CancellationTokenSource? active;
     SessionLog? recording;
     string? lastSessionFolder;
@@ -42,6 +44,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
             Toasts.Enabled = false;
         StartCommand = new RelayCommand(() => Arm(true), () => !IsBusy);
         StopCommand = new RelayCommand(Cancel, () => IsBusy);
+        PauseCommand = new RelayCommand(TogglePause, () => CanPause);
         OpenLogsCommand = new RelayCommand(OpenLogs);
         ExportLogsCommand = new AsyncCommand(ExportLogs, () => !IsBusy);
         OpenSetsCommand = new RelayCommand(() => OpenSite(Links.Sets));
@@ -88,6 +91,60 @@ public sealed class MainViewModel : ObservableObject, IShellContext
     public bool CanStop => busy;
     public bool CanExport => !busy;
 
+    /// <summary>A manual pause is possible only while an automation run (F8) is in progress, not during a read.</summary>
+    public bool CanPause => busy && runActive;
+
+    /// <summary>Manual pause requested from the overlay or the status card; the runner holds before its next screen read.</summary>
+    public bool IsPaused
+    {
+        get => paused;
+        private set
+        {
+            if (!SetProperty(ref paused, value))
+                return;
+            OnPropertyChanged(nameof(PauseLabel));
+            OnPropertyChanged(nameof(PauseIcon));
+        }
+    }
+
+    public string PauseLabel => paused ? "Продовжити" : "Пауза";
+    public Wpf.Ui.Controls.SymbolRegular PauseIcon =>
+        paused ? Wpf.Ui.Controls.SymbolRegular.Play24 : Wpf.Ui.Controls.SymbolRegular.Pause24;
+
+    /// <summary>Profile.OverlayEnabled: the small always-on-top panel in the top-left corner of the game.</summary>
+    public bool OverlayEnabled
+    {
+        get => Profile.OverlayEnabled;
+        set
+        {
+            if (Profile.OverlayEnabled == value)
+                return;
+            Profile.OverlayEnabled = value;
+            SaveProfile();
+            OnPropertyChanged();
+            RefreshPages();
+        }
+    }
+
+    public void ApplyOverlay() => OnPropertyChanged(nameof(OverlayEnabled));
+
+    void TogglePause()
+    {
+        if (!CanPause)
+            return;
+        IsPaused = !IsPaused;
+        Log(IsPaused ? "Пауза запитана: запуск зупиниться перед наступним читанням екрана." : "Продовжити запитано.");
+    }
+
+    void SetRunActive(bool value)
+    {
+        runActive = value;
+        if (!value)
+            IsPaused = false;
+        OnPropertyChanged(nameof(CanPause));
+        PauseCommand.RaiseCanExecuteChanged();
+    }
+
     public GameWindow? Game
     {
         get => game;
@@ -112,6 +169,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
 
     public RelayCommand StartCommand { get; }
     public RelayCommand StopCommand { get; }
+    public RelayCommand PauseCommand { get; }
     public RelayCommand OpenLogsCommand { get; }
     public AsyncCommand ExportLogsCommand { get; }
     public ICommand OpenSetsCommand { get; }
@@ -190,9 +248,16 @@ public sealed class MainViewModel : ObservableObject, IShellContext
             Log("Вибери вікно гри.");
             return;
         }
+        if (Preview)
+        {
+            // Previews and --ui-smoke must never press a key in or read a running game.
+            Log("Попередній перегляд: запуск не виконується.");
+            return;
+        }
         var session = new CancellationTokenSource();
         active = session;
         IsBusy = true;
+        SetRunActive(run);
         string outcome = "completed";
         Exception? failure = null;
         try
@@ -235,9 +300,16 @@ public sealed class MainViewModel : ObservableObject, IShellContext
                 await Task.Delay(250, session.Token);
             }
             if (run)
-                await new Runner(Catalog, Profile, target.Handle, Log, recording, OnAutoSet, OnProgress).Run(
-                    session.Token
-                );
+                await new Runner(
+                    Catalog,
+                    Profile,
+                    target.Handle,
+                    Log,
+                    recording,
+                    OnAutoSet,
+                    OnProgress,
+                    () => IsPaused
+                ).Run(session.Token);
             else
             {
                 using var frame = Desktop.Capture(target.Handle);
@@ -270,6 +342,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
             }
             session.Dispose();
             active = null;
+            SetRunActive(false);
             IsBusy = false;
         }
     }
@@ -287,6 +360,12 @@ public sealed class MainViewModel : ObservableObject, IShellContext
             Status.Set(StatusMode.Paused, "Пауза: гра без фокусу", detail + " · поверни фокус у гру");
             SetTrayText("пауза, гра без фокусу");
             Toasts.Show("Set Builder на паузі", "Гра втратила фокус. Поверни фокус у гру, щоб продовжити.", "state");
+            return;
+        }
+        if (r.State == "held")
+        {
+            Status.Set(StatusMode.Paused, "Пауза", detail + " · «Продовжити» відновлює запуск");
+            SetTrayText("пауза");
             return;
         }
         if (wasPaused)

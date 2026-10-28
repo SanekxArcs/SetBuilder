@@ -46,6 +46,8 @@ public sealed class PreviewShell : IShellContext
 
     public void ApplyTheme() { }
 
+    public void ApplyOverlay() { }
+
     public void Arm(bool run) => ArmCalls++;
 
     public void Cancel() { }

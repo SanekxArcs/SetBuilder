@@ -899,6 +899,7 @@ public sealed class Runner : IBuildGame
     Bitmap? lastFrame;
     long pausedMs;
     readonly Action<RunProgress>? progress;
+    readonly Func<bool>? hold;
     int currentPart;
 
     void Report(string state) =>
@@ -920,7 +921,8 @@ public sealed class Runner : IBuildGame
         Action<string> status,
         SessionLog? diagnostics = null,
         Action<Build>? onAutoSet = null,
-        Action<RunProgress>? onProgress = null
+        Action<RunProgress>? onProgress = null,
+        Func<bool>? holdRequested = null
     )
     {
         catalog = c;
@@ -929,6 +931,7 @@ public sealed class Runner : IBuildGame
         trace = diagnostics;
         autoApplied = onAutoSet;
         progress = onProgress;
+        hold = holdRequested;
         vision = new(c, p, trace);
         ledger = trace?.Ledger ?? new RunLedger();
         log = status;
@@ -981,6 +984,7 @@ public sealed class Runner : IBuildGame
     {
         if (!Desktop.IsGame(window))
             throw new InvalidOperationException("Обране вікно не належить The Crew Motorfest.");
+        await EnsureNotHeld(ct);
         if (GameFocused)
             return;
         int waitSeconds = p.FocusLostWaitSeconds;
@@ -1010,6 +1014,31 @@ public sealed class Runner : IBuildGame
         }
         trace?.Write("focus_resumed", new { pausedMs = wait.ElapsedMilliseconds });
         log("Фокус повернувся. Перевіряю екран і продовжую.");
+        Report("running");
+    }
+
+    // Manual pause from the overlay or the status card: no key is sent and no frame is read until it is released.
+    // Like a lost focus, the held time does not count against any timeout, and the next read re-verifies the screen.
+    async Task EnsureNotHeld(CancellationToken ct)
+    {
+        if (hold?.Invoke() != true)
+            return;
+        var held = System.Diagnostics.Stopwatch.StartNew();
+        trace?.Write("hold");
+        log("Пауза. Натискання зупинено; «Продовжити» відновлює запуск · F10 — скасувати");
+        Report("held");
+        try
+        {
+            while (hold() == true)
+                await Task.Delay(200, ct);
+            await Task.Delay(400, ct);
+        }
+        finally
+        {
+            pausedMs += held.ElapsedMilliseconds;
+        }
+        trace?.Write("hold_released", new { heldMs = held.ElapsedMilliseconds });
+        log("Продовжую. Перевіряю екран.");
         Report("running");
     }
 

@@ -127,6 +127,9 @@ public sealed class Profile
     // Window look: "system" follows Windows, or "dark" / "light".
     public string Theme { get; set; } = "system";
 
+    // Small always-on-top panel in the top-left corner of the game window: status, start / pause / stop, last log line.
+    public bool OverlayEnabled { get; set; } = true;
+
     // Last window placement (x, y, width, height) in screen pixels; restored only when still visible.
     public int[]? WindowBounds { get; set; }
     public bool WindowMaximized { get; set; }

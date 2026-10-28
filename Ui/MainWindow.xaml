@@ -106,9 +106,20 @@
           <ui:Button Content="Почати · F8" Icon="{ui:SymbolIcon Play24}" Appearance="Primary" Padding="14,6" MinWidth="150"
                      Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}" Margin="0,0,8,0"
                      AutomationProperties.Name="Почати · F8" />
+          <ui:Button Content="{Binding PauseLabel}" Appearance="Secondary" Padding="14,6" MinWidth="130" Margin="0,0,8,0"
+                     Command="{Binding PauseCommand}" IsEnabled="{Binding CanPause}"
+                     ToolTip="Зупинити натискання перед наступним читанням екрана; «Продовжити» відновлює запуск"
+                     AutomationProperties.Name="Пауза">
+            <ui:Button.Icon>
+              <ui:SymbolIcon Symbol="{Binding PauseIcon}" />
+            </ui:Button.Icon>
+          </ui:Button>
           <ui:Button Content="Зупинити · F10" Icon="{ui:SymbolIcon Stop24}" Appearance="Secondary" Padding="14,6" MinWidth="150"
-                     Command="{Binding StopCommand}" IsEnabled="{Binding CanStop}"
+                     Command="{Binding StopCommand}" IsEnabled="{Binding CanStop}" Margin="0,0,8,0"
                      AutomationProperties.Name="Зупинити · F10" />
+          <ui:ToggleSwitch IsChecked="{Binding OverlayEnabled, Mode=TwoWay}" Content="Накладка" VerticalAlignment="Center" Margin="4,0,0,0"
+                           ToolTip="Панель поверх гри: стан, Почати · Пауза · Зупинити, останній рядок журналу"
+                           AutomationProperties.Name="Накладка поверх гри" />
         </StackPanel>
       </controls:StatusCard.Actions>
     </controls:StatusCard>

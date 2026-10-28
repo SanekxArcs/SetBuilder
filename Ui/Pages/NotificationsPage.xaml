@@ -71,6 +71,17 @@
                   SelectedValue="{Binding Theme, Mode=TwoWay}" />
       </ui:CardControl>
 
+      <ui:CardControl Icon="{ui:SymbolIcon PictureInPicture24}" Margin="0,0,0,4">
+        <ui:CardControl.Header>
+          <StackPanel>
+            <TextBlock Text="Накладка поверх гри" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="Маленька панель у лівому верхньому куті вікна гри: стан, Почати · Пауза · Зупинити й останній рядок журналу. Не забирає фокус у гри, не потрапляє у зони зчитування й у знімки екрана."
+                       Style="{StaticResource CardDescription}" />
+          </StackPanel>
+        </ui:CardControl.Header>
+        <ui:ToggleSwitch IsChecked="{Binding OverlayEnabled, Mode=TwoWay}" AutomationProperties.Name="Накладка поверх гри" />
+      </ui:CardControl>
+
       <TextBlock Text="{Binding VersionLine, Mode=OneWay}" Style="{StaticResource CardDescription}" Margin="2,16,0,0" />
     </StackPanel>
   </ScrollViewer>

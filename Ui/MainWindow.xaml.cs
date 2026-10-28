@@ -21,6 +21,7 @@ public partial class MainWindow
     readonly MainViewModel shell;
     TrayService? tray;
     HotkeyService? hotkeys;
+    OverlayWindow? overlay;
     bool restoringLogLayout;
 
     public MainWindow(MainViewModel viewModel)
@@ -76,6 +77,8 @@ public partial class MainWindow
             tray.Show();
             hotkeys = new HotkeyService(this, shell);
             hotkeys.Register();
+            overlay = new OverlayWindow(shell);
+            overlay.Start();
         }
         try
         {
@@ -112,6 +115,8 @@ public partial class MainWindow
 
     void OnClosed(object? sender, EventArgs e)
     {
+        overlay?.Close();
+        overlay = null;
         hotkeys?.Dispose();
         hotkeys = null;
         tray?.Dispose();

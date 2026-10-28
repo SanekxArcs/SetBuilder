@@ -49,6 +49,9 @@ public interface IShellContext : INotifyPropertyChanged
     /// <summary>Re-applies Profile.Theme ("system", "dark", "light") to the window.</summary>
     void ApplyTheme();
 
+    /// <summary>Re-reads Profile.OverlayEnabled and shows or hides the overlay panel over the game.</summary>
+    void ApplyOverlay();
+
     /// <summary>F8 (run = true) or F7 (run = false, read-only screen read). Cancels when busy.</summary>
     void Arm(bool run);
     void Cancel();

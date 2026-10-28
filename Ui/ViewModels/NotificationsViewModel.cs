@@ -115,6 +115,20 @@ public sealed class NotificationsViewModel : PageViewModel
         }
     }
 
+    public bool OverlayEnabled
+    {
+        get => Shell.Profile.OverlayEnabled;
+        set
+        {
+            if (Shell.Profile.OverlayEnabled == value)
+                return;
+            Shell.Profile.OverlayEnabled = value;
+            Shell.SaveProfile();
+            Shell.ApplyOverlay();
+            OnPropertyChanged();
+        }
+    }
+
     public string VersionLine => AppInfo.Title;
 
     /// <summary>Plays the selected tone even when its toggle is off.</summary>
@@ -135,6 +149,7 @@ public sealed class NotificationsViewModel : PageViewModel
         OnPropertyChanged(nameof(CompletionSound));
         OnPropertyChanged(nameof(StopSound));
         OnPropertyChanged(nameof(Theme));
+        OnPropertyChanged(nameof(OverlayEnabled));
     }
 
     public override void SmokeChecks(ICollection<string> passed)
@@ -209,5 +224,11 @@ public sealed class NotificationsViewModel : PageViewModel
             throw new InvalidOperationException("Theme option did not reach the profile");
         Theme = priorTheme;
         passed.Add("PASS theme option writes Profile.Theme");
+        bool priorOverlay = profile.OverlayEnabled;
+        OverlayEnabled = !priorOverlay;
+        if (profile.OverlayEnabled == priorOverlay)
+            throw new InvalidOperationException("Overlay toggle did not reach the profile");
+        OverlayEnabled = priorOverlay;
+        passed.Add("PASS overlay toggle writes Profile.OverlayEnabled");
     }
 }
