@@ -1,0 +1,43 @@
+<UserControl x:Class="TunerFest.Ui.Pages.ZonesPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:vm="clr-namespace:TunerFest.Ui.ViewModels"
+             d:DataContext="{d:DesignInstance Type=vm:ZonesViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+  <ScrollViewer Style="{StaticResource PageScroll}">
+    <StackPanel Style="{StaticResource PageBody}">
+      <TextBlock Text="Зони екрана" Style="{StaticResource PageTitle}" />
+      <TextBlock Text="Базові зони відповідають твоїм скрінам 3440×1440. Для іншого HUD виділи їх вручну." Style="{StaticResource CardTitle}" Margin="2,4,0,0" />
+      <TextBlock Text="Основний екран: 2 перки, назва сету та заголовок деталі. Меню кидка: верхній і середній блоки для кожного слота. Нижній збігається з основним перком." Style="{StaticResource CardDescription}" Margin="2,2,0,0" />
+
+      <TextBlock Text="Зони" Style="{StaticResource SectionHeader}" />
+
+      <ItemsControl ItemsSource="{Binding Zones}" Focusable="False">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate DataType="{x:Type vm:ZoneRow}">
+            <ui:CardControl Margin="0,0,0,4" IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ItemsControl}}">
+              <ui:CardControl.Icon>
+                <ui:SymbolIcon Symbol="{Binding Icon}" />
+              </ui:CardControl.Icon>
+              <ui:CardControl.Header>
+                <StackPanel>
+                  <TextBlock Text="{Binding Label}" Style="{StaticResource CardTitle}" />
+                  <TextBlock Text="{Binding Value}" Style="{StaticResource CardDescription}" />
+                </StackPanel>
+              </ui:CardControl.Header>
+              <ui:Button Content="Виділити" Icon="{ui:SymbolIcon SelectObject24}" Command="{Binding PickCommand}" MinWidth="120" />
+            </ui:CardControl>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <ui:Button Content="Відновити зони зі скріншотів" Icon="{ui:SymbolIcon ArrowReset24}" Command="{Binding RestoreDefaultsCommand}"
+                 IsEnabled="{Binding CanEdit}" HorizontalAlignment="Left" Margin="0,12,0,0" />
+      <TextBlock Text="Виділяй блок разом із верхньою рамкою, іконкою, назвою та описом із [мін%–макс%]. Ціну знизу не включай. Зони зберігаються відносно вікна гри."
+                 Style="{StaticResource CardDescription}" Margin="2,12,0,0" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
