@@ -11,7 +11,18 @@ namespace TunerFest;
 // One local recording per run. Text is flushed immediately; PNG encoding runs off the UI thread.
 public sealed class SessionLog
 {
-    public static string Root => Path.Combine(AppContext.BaseDirectory, "Logs");
+    // One Logs folder for every build: the project root when the executable sits inside the project tree
+    // (dist-v*, bin), otherwise Logs beside the executable. All versions write and read the same place.
+    public static string Root { get; } = FindRoot();
+
+    static string FindRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        for (int i = 0; i < 7 && directory != null; i++, directory = directory.Parent)
+            if (File.Exists(Path.Combine(directory.FullName, "SetBuilder.csproj")))
+                return Path.Combine(directory.FullName, "Logs");
+        return Path.Combine(AppContext.BaseDirectory, "Logs");
+    }
     public string Folder { get; }
     public RunLedger Ledger { get; }
     public string CurrentFrame { get; private set; } = "none";
@@ -55,7 +66,7 @@ public sealed class SessionLog
     public SessionLog(Profile profile, string mode, object? window = null, string? root = null)
     {
         Folder = Path.Combine(
-            root ?? Root,
+            root ?? (IsSelfTest(mode) ? Path.Combine(Root, "Tests") : Root),
             DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fff") + "_" + Guid.NewGuid().ToString("N")[..6]
         );
         Directory.CreateDirectory(Path.Combine(Folder, "screenshots"));
@@ -112,6 +123,11 @@ public sealed class SessionLog
             }
         );
     }
+
+    // Offline verification runs (Test.ps1, --self-test, --verify-*) go to Logs/Tests so the shared history
+    // holds only real runs and screen reads. "offline-png" is a user's own PNG inspection and stays with them.
+    static bool IsSelfTest(string mode) =>
+        mode.StartsWith("offline-", StringComparison.Ordinal) && mode != "offline-png";
 
     static StreamWriter Writer(string path) =>
         new(new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.ReadWrite), new UTF8Encoding(false))

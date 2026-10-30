@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using TunerFest.Ui;
 
 namespace TunerFest;
@@ -54,6 +54,8 @@ internal static class Program
                 return WorkflowVerification.Screens(args[1], args[2], args[3], args[4]).GetAwaiter().GetResult();
             if (args.Length == 2 && args[0] == "--verify-diagnostics")
                 return Verification.Diagnostics(args[1]).GetAwaiter().GetResult();
+            if (args.Length == 3 && args[0] == "--verify-grid-rarity")
+                return Verification.GridRarity(args[1], args[2]).GetAwaiter().GetResult();
             if (args.Length == 3 && args[0] == "--verify-value-crop")
                 return Verification.ValueCrop(args[1], args[2]).GetAwaiter().GetResult();
             if (args.Length > 1 && args[0] == "--probe-yellow")

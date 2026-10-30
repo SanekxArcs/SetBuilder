@@ -2,6 +2,9 @@
 
 public static class GridNavigator
 {
+    // Moves the seven-parts cursor to the target tile. Gray and pink tiles are not selectable in the game, so one
+    // arrow can jump over several of them; a landing past the target is accepted when that tile is selectable
+    // (gold) and the caller then works with the returned index instead of the requested one.
     public static async Task<int> Ensure(
         int target,
         Func<Task<int>> observe,
@@ -9,7 +12,8 @@ public static class GridNavigator
         int attempts,
         int retryMs,
         Action<string, int, int>? retry,
-        CancellationToken ct
+        CancellationToken ct,
+        Func<int, bool>? selectable = null
     )
     {
         if (target < 0 || target > 6 || attempts < 2 || retryMs < 1)
@@ -51,8 +55,17 @@ public static class GridNavigator
                     retry?.Invoke("retry-key", 1, previous);
                 }
             }
-            if (current != previous + direction)
+            if ((current - previous) * direction <= 0)
                 throw new InvalidOperationException("Стрілка вибрала неочікувану деталь; зупиняю перехід.");
+            bool passed = direction > 0 ? current > target : current < target;
+            if (!passed)
+                continue;
+            if (selectable?.Invoke(current) == true)
+            {
+                retry?.Invoke("skipped-target", move + 1, current);
+                return current;
+            }
+            throw new InvalidOperationException("Не вдалося вибрати потрібну деталь.");
         }
         if (current != target)
             throw new InvalidOperationException("Не вдалося вибрати потрібну деталь.");

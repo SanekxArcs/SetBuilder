@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text.Json;
 
 namespace TunerFest;
@@ -34,7 +34,8 @@ public static class VisionTraining
                 if (kind == "screenshot_saved")
                 {
                     string label = data.GetProperty("label").GetString()!;
-                    if (label.StartsWith("ocr-crop"))
+                    // Only full-window frames: zone crops and the isolated yellow value are evidence, not frames.
+                    if (label.StartsWith("ocr-crop") || label.StartsWith("yellow-value"))
                         continue;
                     string source = data.GetProperty("sourceFrame").GetString()!;
                     string file = Path.Combine(session, data.GetProperty("file").GetString()!);

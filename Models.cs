@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -213,10 +213,28 @@ public static class Recognition
     // Require an unambiguous title and three complete percentages; correct only known numeric OCR glyphs.
     public static Reading Parse(string text, Catalog catalog)
     {
-        text = Regex.Replace(text, @"(?<=\d)0\s*/\s*0", "%");
         var affix = Name(text, catalog);
-        // Windows OCR may split decimals and read 1 as l/I/|, or 0 as O.
-        // Restrict correction to a complete numeric token immediately before %, never names.
+        var numbers = Percentages(ref text);
+        if (numbers.Length != 3)
+            throw new InvalidOperationException($"Очікується значення і діапазон [мін%–макс%]: {text}");
+        var a = affix;
+        if (
+            numbers[1] <= 0
+            || numbers[2] < numbers[1]
+            || numbers[0] < numbers[1]
+            || numbers[0] > numbers[2]
+            || numbers[2] > 100
+        )
+            throw new InvalidOperationException($"Неправдоподібні відсотки: {text}");
+        // The in-game bracket is read when present; it has matched the catalog range in every logged roll.
+        return new(a, numbers[0], numbers[1], numbers[2]);
+    }
+
+    // Every percentage in the text, after fixing known OCR glyphs. Windows OCR may split decimals, read 1 as
+    // l/I/|, 0 as O, and % as 0/0. Correction is restricted to a numeric token right before %, never names.
+    public static double[] Percentages(ref string text)
+    {
+        text = Regex.Replace(text, @"(?<=\d)0\s*/\s*0", "%");
         text = Regex.Replace(
             text,
             @"(?<![\w.,])(?<n>[0-9Il|Oo](?:\s*[0-9Il|Oo])*(?:\s*[.,]\s*[0-9Il|Oo](?:\s*[0-9Il|Oo])*)?)\s*%",
@@ -229,23 +247,33 @@ public static class Recognition
                     .Replace('O', '0')
                     .Replace('o', '0') + "%"
         );
-        var matches = Regex.Matches(text, @"(?<![\w.,])(\d+(?:[.,]\d+)?)\s*%");
-        var numbers = matches
+        return Regex
+            .Matches(text, @"(?<![\w.,])(\d+(?:[.,]\d+)?)\s*%")
             .Select(m => double.Parse(m.Groups[1].Value.Replace(',', '.'), CultureInfo.InvariantCulture))
             .ToArray();
-        if (numbers.Length != 3)
-            throw new InvalidOperationException($"Очікується значення і діапазон [мін%–макс%]: {text}");
-        var a = affix;
-        if (
-            numbers[1] <= 0
-            || numbers[2] < numbers[1]
-            || numbers[0] < numbers[1]
-            || numbers[0] > numbers[2]
-            || numbers[2] > 100
-        )
-            throw new InvalidOperationException($"Неправдоподібні відсотки: {text}");
-        // In-game bracket is authoritative (ranges can differ by part/category).
-        return new(a, numbers[0], numbers[1], numbers[2]);
+    }
+
+    // Last resort when the gray "[min%-max%]" bracket is lost (it wraps to the next line on long descriptions
+    // such as Cluster) but the yellow value was read: the range comes from the catalog. Across 22 000 logged
+    // readings the bracket never differed from the catalog, and the value must still sit on the tier grid.
+    public static Reading? ParseWithCatalogRange(string text, Catalog catalog)
+    {
+        Affix affix;
+        try
+        {
+            affix = Name(text, catalog);
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
+        if (affix.BonusPercentageRangeTo <= affix.BonusPercentageRangeFrom)
+            return null;
+        var numbers = Percentages(ref text);
+        if (numbers.Length is 0 or > 3)
+            return null;
+        var reading = new Reading(affix, numbers[0], affix.BonusPercentageRangeFrom, affix.BonusPercentageRangeTo);
+        return OnTierGrid(reading) ? reading : null;
     }
 
     public static Affix Name(string text, Catalog catalog)

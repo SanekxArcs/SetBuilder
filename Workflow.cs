@@ -53,6 +53,9 @@ public interface IBuildGame
     }
 }
 
+// Raised by NextPart/Advance when no gold tile other than the current one is left on the seven-parts screen.
+public sealed class NoMorePartsException() : InvalidOperationException("Золотих деталей більше немає.");
+
 // Structured run state for the UI; log text stays the human-readable record.
 public sealed record RunProgress(string State, int Part, int Parts, int Rolls, long Bucks, long SpareParts);
 
@@ -69,6 +72,7 @@ public sealed class BuildWorkflow(IBuildGame game, Profile profile, Action<strin
         if (goals.Any(g => g.Names.Length == 0) || wanted.Length != goals.Sum(g => g.Names.Length))
             throw new InvalidOperationException("Оберіть різні перки для обох слотів.");
         int GoalOf(PerkCard card) => Array.FindIndex(goals, g => g.Names.Contains(card.Name));
+        int processed = profile.Parts;
         for (int part = 0; part < profile.Parts; part++)
         {
             ct.ThrowIfCancellationRequested();
@@ -145,15 +149,27 @@ public sealed class BuildWorkflow(IBuildGame game, Profile profile, Action<strin
             if (final.Id != state.Id || !satisfied)
                 throw new InvalidOperationException("Підсумкова перевірка перків не пройшла.");
             log($"✓ Деталь {part + 1}: {final.Cards[0]} + {final.Cards[1]}");
-            if (part + 1 < profile.Parts)
-                await game.Advance(ct);
-            else
+            if (part + 1 >= profile.Parts)
+            {
                 await game.ExitToParts(ct);
+                break;
+            }
+            try
+            {
+                await game.Advance(ct);
+            }
+            catch (NoMorePartsException)
+            {
+                // Gray and pink tiles are skipped; the run ends early when only gold parts already done remain.
+                processed = part + 1;
+                log($"Золотих деталей більше немає: оброблено {processed} із {profile.Parts}. Сірі та рожеві деталі пропущено.");
+                break;
+            }
         }
         log(
             goals.All(g => !g.Optional)
-                ? $"✓ Готово: {profile.Set}, {profile.Parts} деталей. Обидва перки на максимумі."
-                : $"✓ Готово: {profile.Set}, {profile.Parts} деталей. Обов'язкові перки на максимумі."
+                ? $"✓ Готово: {profile.Set}, {processed} деталей. Обидва перки на максимумі."
+                : $"✓ Готово: {profile.Set}, {processed} деталей. Обов'язкові перки на максимумі."
         );
     }
 }

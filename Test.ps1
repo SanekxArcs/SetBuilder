@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$Configuration = 'Release',
     [switch]$SkipBuild
 )
@@ -19,7 +19,11 @@ try {
         '--verify-stuck "test-results\stuck-clean-driver.png"',
         '--verify-value-crop "test-results\extra-impact-2-percent.png" "Extra Impact 2% / 4%"',
         '--verify-value-crop "test-results\extra-impact-2-percent-b.png" "Extra Impact 2% / 4%"',
-        '--verify-value-crop "test-results\extra-impact-2-percent-c.png" "Extra Impact 2% / 4%"'
+        '--verify-value-crop "test-results\extra-impact-2-percent-c.png" "Extra Impact 2% / 4%"',
+        '--verify-value-crop "test-results\cluster-1-2-percent.png" "Cluster 1.2% / 2%"',
+        '--verify-value-crop "test-results\cluster-2-percent-maxed.png" "Cluster 2% / 2%"',
+        '--verify-grid-rarity "test-results\grid-rarity-a.png" "xGPxGPG focus 4"',
+        '--verify-grid-rarity "test-results\grid-rarity-b.png" "xGxGGPG focus 3"'
     )
     $failed = @()
     foreach ($mode in $modes) {

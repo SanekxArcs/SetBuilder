@@ -1,4 +1,4 @@
-using System.Drawing.Imaging;
+﻿using System.Drawing.Imaging;
 
 namespace TunerFest;
 
@@ -267,6 +267,28 @@ public static class Verification
             System.Text.Json.JsonSerializer.Serialize(result, Catalog.JsonOptions)
         );
         return 0;
+    }
+
+    // Classifies the seven tiles of a saved seven-parts frame (G gold, P pink, x gray) and reads the cursor.
+    public static async Task<int> GridRarity(string path, string expected)
+    {
+        var p = new Profile();
+        var session = new SessionLog(p, "offline-grid-rarity", new { simulated = true, noGameInput = true });
+        var v = new Vision(Catalog.Load(), p, session);
+        using var source = new Bitmap(path);
+        using var frame = new Bitmap(source.Width, source.Height, PixelFormat.Format32bppArgb);
+        using (var g = Graphics.FromImage(frame))
+            g.DrawImageUnscaled(source, 0, 0);
+        string tiles = new(v.GridRarity(frame));
+        int focus = v.GridFocus(frame);
+        string actual = tiles + " focus " + focus;
+        bool ok = actual == expected;
+        await session.Finish(ok ? "completed" : "error");
+        File.WriteAllText(
+            Path.Combine(AppContext.BaseDirectory, "grid-rarity-test.txt"),
+            (ok ? "PASS " : "FAIL ") + Path.GetFileName(path) + " -> " + actual + " (expected " + expected + ")\n"
+        );
+        return ok ? 0 : 1;
     }
 
     // Reads one saved card crop as if it were the "left" zone and compares the result to the expected text.

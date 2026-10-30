@@ -120,6 +120,80 @@ public static class RecoveryVerification
             stopped = true;
         }
         Check(stopped && keys.Count == 0, "grid cancellation stops before sending input");
+        // Gray and pink tiles are not selectable: one Left from TIRES (6) lands on EXHAUST (4), past target 0.
+        current = 6;
+        keys.Clear();
+        end = await GridNavigator.Ensure(
+            0,
+            () => Task.FromResult(current),
+            (key, _) =>
+            {
+                keys.Add(key);
+                current = 4;
+                return Task.CompletedTask;
+            },
+            4,
+            1,
+            null,
+            CancellationToken.None,
+            i => i is 1 or 4 or 6
+        );
+        Check(
+            end == 4 && keys.SequenceEqual(new[] { "Left" }),
+            "arrow that jumps over unselectable tiles onto a gold tile past the target is accepted"
+        );
+        current = 3;
+        keys.Clear();
+        stopped = false;
+        try
+        {
+            await GridNavigator.Ensure(
+                4,
+                () => Task.FromResult(current),
+                (key, _) =>
+                {
+                    keys.Add(key);
+                    current = 1;
+                    return Task.CompletedTask;
+                },
+                4,
+                1,
+                null,
+                CancellationToken.None,
+                i => i is 1 or 3 or 4
+            );
+        }
+        catch (InvalidOperationException)
+        {
+            stopped = true;
+        }
+        Check(stopped && keys.Count == 1, "arrow landing on the wrong side still stops the transition");
+        current = 1;
+        keys.Clear();
+        stopped = false;
+        try
+        {
+            await GridNavigator.Ensure(
+                2,
+                () => Task.FromResult(current),
+                (key, _) =>
+                {
+                    keys.Add(key);
+                    current = 3;
+                    return Task.CompletedTask;
+                },
+                4,
+                1,
+                null,
+                CancellationToken.None,
+                i => i is 1 or 2
+            );
+        }
+        catch (InvalidOperationException)
+        {
+            stopped = true;
+        }
+        Check(stopped && keys.Count == 1, "overshooting onto a tile that is not gold stops the transition");
         var catalog = Catalog.Load();
         Check(
             Recognition.Parse("Bende Increase the player's lean bonus by 6.3% [3%-8%] for BIKES", catalog).Affix.Title

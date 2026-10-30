@@ -1,4 +1,4 @@
-using System.Drawing.Imaging;
+﻿using System.Drawing.Imaging;
 using Windows.Globalization;
 using Windows.Graphics.Imaging;
 using Windows.Media.Ocr;
@@ -268,6 +268,12 @@ public sealed class Vision
         var valueWord = words.FirstOrDefault(w =>
             System.Text.RegularExpressions.Regex.IsMatch(w.Text, @"^\d[\d.,]*(?:%|0/0)$")
         );
+        var texts = new List<string> { raw };
+        string Keep(string text)
+        {
+            texts.Add(text);
+            return text;
+        }
         try
         {
             return Parsed(raw, catalog);
@@ -287,13 +293,13 @@ public sealed class Vision
             trace?.Evidence(crop, "ocr-crop-" + zone);
             try
             {
-                return Parsed(await Text(crop, true), catalog);
+                return Parsed(Keep(await Text(crop, true)), catalog);
             }
             catch (InvalidOperationException)
             {
                 try
                 {
-                    return Parsed(await Text(crop, true, true), catalog);
+                    return Parsed(Keep(await Text(crop, true, true)), catalog);
                 }
                 catch (InvalidOperationException)
                 {
@@ -305,7 +311,7 @@ public sealed class Vision
                     try
                     {
                         return Parsed(
-                            Recognition.Name(raw, catalog).Title + " " + await Text(description, true, true),
+                            Keep(Recognition.Name(raw, catalog).Title + " " + await Text(description, true, true)),
                             catalog
                         );
                     }
@@ -348,6 +354,9 @@ public sealed class Vision
                         var byColour = await ValueByColour(crop, raw);
                         if (byColour != null)
                             return byColour;
+                        var byCatalog = ValueByCatalogRange(texts);
+                        if (byCatalog != null)
+                            return byCatalog;
                         throw new InvalidOperationException(
                             first.Message + " Додаткове зчитування також не підтвердило значення."
                         );
@@ -355,6 +364,39 @@ public sealed class Vision
                 }
             }
         }
+    }
+
+    // The bracket was lost in every OCR pass but the value was read: take the range from the catalog.
+    Reading? ValueByCatalogRange(IEnumerable<string> texts)
+    {
+        foreach (string text in texts)
+        {
+            var reading = Recognition.ParseWithCatalogRange(text, catalog);
+            if (reading == null)
+                continue;
+            trace?.Write(
+                "range_from_catalog",
+                new
+                {
+                    zone = diagnosticZone,
+                    text,
+                    reading = reading.ToString(),
+                }
+            );
+            trace?.Write(
+                "reading",
+                new
+                {
+                    zone = diagnosticZone,
+                    affix = reading.Affix.Title,
+                    reading.Value,
+                    reading.Minimum,
+                    reading.Maximum,
+                }
+            );
+            return reading;
+        }
+        return null;
     }
 
     // Reads the yellow value of a card crop on its own and combines it with the bracketed range from the
@@ -371,16 +413,27 @@ public sealed class Vision
             return null;
         }
         string fixedRaw = System.Text.RegularExpressions.Regex.Replace(raw, @"(?<=\d)0\s*/\s*0", "%");
-        var bracket = System.Text.RegularExpressions.Regex.Match(fixedRaw, @"\[[^\]]*\]");
-        if (!bracket.Success)
+        var match = System.Text.RegularExpressions.Regex.Match(fixedRaw, @"\[[^\]]*\]");
+        // A wrapped bracket (long descriptions such as Cluster) is often lost together with the value; the
+        // catalog range stands in, and the value read below must still land on its tier grid.
+        string bracket = match.Success
+            ? match.Value
+            : affix.BonusPercentageRangeTo > affix.BonusPercentageRangeFrom
+                ? System.FormattableString.Invariant(
+                    $"[{affix.BonusPercentageRangeFrom}%-{affix.BonusPercentageRangeTo}%]"
+                )
+                : "";
+        if (bracket == "")
             return null;
+        if (!match.Success)
+            trace?.Write("range_from_catalog", new { zone = diagnosticZone, text = raw, bracket });
         using var isolated = YellowText(crop, crop.Height * 55 / 100);
         if (isolated == null)
             return null;
         trace?.Evidence(isolated, "yellow-value");
         // Windows OCR sometimes returns nothing for a lone short token such as "2%", so the glyphs are also
         // placed inside a printed sentence; the number is then the token right before the bracket.
-        foreach (var (variant, image) in YellowVariants(isolated, bracket.Value))
+        foreach (var (variant, image) in YellowVariants(isolated, bracket))
         {
             string digits;
             using (image)
@@ -395,7 +448,7 @@ public sealed class Vision
             Reading reading;
             try
             {
-                reading = Parsed(affix.Title + " " + number.Groups[1].Value + "% " + bracket.Value, catalog);
+                reading = Parsed(affix.Title + " " + number.Groups[1].Value + "% " + bracket, catalog);
             }
             catch (InvalidOperationException)
             {
@@ -422,7 +475,7 @@ public sealed class Vision
                     affix = affix.Title,
                     variant,
                     digits,
-                    bracket = bracket.Value,
+                    bracket,
                     reading = reading.ToString(),
                 }
             );
@@ -794,6 +847,51 @@ public sealed class Vision
         }
     }
 
+    // Rarity of the seven tiles from the coloured line under each level number: yellow = gold (legendary),
+    // magenta = pink, none = gray. The game cursor skips gray and pink tiles, and only gold parts are rolled.
+    // The line sits about 5% of the grid height above its bottom edge; the selection border starts lower.
+    public char[] GridRarity(Bitmap frame)
+    {
+        var grid = profile.Zones["parts"].Pixels(frame.Size);
+        var result = new char[7];
+        int top = Math.Max(0, grid.Bottom - grid.Height * 7 / 100),
+            bottom = Math.Min(frame.Height, grid.Bottom - grid.Height * 5 / 200);
+        for (int i = 0; i < 7; i++)
+        {
+            int x0 = grid.X + i * grid.Width / 7,
+                width = grid.Width / 7 * 96 / 100,
+                yellowRows = 0,
+                pinkRows = 0;
+            for (int y = top; y < bottom; y++)
+            {
+                int yellow = 0,
+                    pink = 0,
+                    total = 0;
+                for (int x = x0 + width / 10; x < Math.Min(frame.Width, x0 + width * 9 / 10); x += 4)
+                {
+                    var p = frame.GetPixel(x, y);
+                    total++;
+                    if (p.R > 190 && p.G > 170 && p.B < 80)
+                        yellow++;
+                    else if (p.R > 100 && p.G < 40 && p.B > 35)
+                        pink++;
+                }
+                if (total == 0)
+                    continue;
+                if (yellow * 100 / total >= 25)
+                    yellowRows++;
+                if (pink * 100 / total >= 25)
+                    pinkRows++;
+            }
+            result[i] =
+                yellowRows >= 2 ? 'G'
+                : pinkRows >= 2 ? 'P'
+                : 'x';
+        }
+        trace?.Write("grid_rarity", new { tiles = new string(result) });
+        return result;
+    }
+
     public int Focus(Bitmap frame, IReadOnlyList<string> zones)
     {
         var matches = new List<int>();
@@ -906,6 +1004,7 @@ public sealed class Runner : IBuildGame
     Input? input;
     int rolls,
         gridIndex = -1;
+    char[]? rarity; // Seven-parts tiles as last seen: G gold, P pink, x gray. Null until the grid was observed.
     RunLedger ledger;
     PartView? lastPart;
     bool autoResolved;
@@ -1226,7 +1325,7 @@ public sealed class Runner : IBuildGame
             {
                 if (await vision.ScreenState(frame) != GameScreen.Parts)
                     throw new InvalidOperationException("Очікую екран семи деталей перед відкриттям.");
-                int index = vision.GridFocus(frame);
+                int index = ObserveGrid(frame);
                 if (index < 0)
                     throw new InvalidOperationException("Очікую стабільну рамку вибраної деталі.");
                 return index;
@@ -1673,7 +1772,9 @@ public sealed class Runner : IBuildGame
             await NextPart(ct);
             return;
         }
-        int expected = (previous + 1) % 7;
+        int expected = NextTarget(previous);
+        if (expected < 0)
+            throw new NoMorePartsException();
         await PartTransition.Run(
             p.FastPartNavigation,
             async () =>
@@ -1691,8 +1792,13 @@ public sealed class Runner : IBuildGame
                 await BackWithPause(ct);
                 await BackWithPause(ct);
                 await InventoryCategory(ct, previous);
-                await Press("Down", ct);
-                await InventoryCategory(ct, expected);
+                // One Down per category; gray and pink categories between are passed through, not opened.
+                for (int category = previous; category != expected; )
+                {
+                    category = (category + 1) % 7;
+                    await Press("Down", ct);
+                    await InventoryCategory(ct, category);
+                }
                 input!.ValidateRecalibrate();
                 await Press("Recalibrate", ct);
                 await Press("Confirm", ct);
@@ -1707,6 +1813,8 @@ public sealed class Runner : IBuildGame
                 var next = await ReadPart(ct);
                 if (PartTransition.Category(next.Id) != expected)
                     throw new InvalidOperationException("Швидкий перехід відкрив іншу категорію деталі.");
+                if (!IsGoldPart(next.Id))
+                    throw new InvalidOperationException($"Швидкий перехід відкрив не золоту деталь ({next.Id}).");
                 gridIndex = expected;
                 trace?.Write("navigation_quick_confirmed", new { expected, part = next.Id });
             },
@@ -1718,10 +1826,9 @@ public sealed class Runner : IBuildGame
             async () =>
             {
                 await RecoverToGrid(ct);
-                await SelectGridCategory(expected, ct);
-                await OpenFromGrid(ct);
-                if (PartTransition.Category(lastPart?.Id ?? "") != expected)
-                    throw new InvalidOperationException("Резервний маршрут не підтвердив очікувану деталь.");
+                await NextPart(ct);
+                if (!IsGoldPart(lastPart?.Id ?? ""))
+                    throw new InvalidOperationException("Резервний маршрут відкрив не золоту деталь.");
             },
             error =>
             {
@@ -1737,7 +1844,7 @@ public sealed class Runner : IBuildGame
         for (int step = 0; step <= 3; step++)
         {
             var screen = await Until(
-                async frame => (await vision.ScreenState(frame), vision.GridFocus(frame)),
+                async frame => (await vision.ScreenState(frame), ObserveGrid(frame)),
                 (a, b) => a == b,
                 ct,
                 timeoutMs: 3000
@@ -1763,7 +1870,7 @@ public sealed class Runner : IBuildGame
                 var frame = await Frame(ct, null, "grid-navigation-read");
                 if (await vision.ScreenState(frame) != GameScreen.Parts)
                     return -1;
-                return vision.GridFocus(frame);
+                return ObserveGrid(frame);
             },
             (action, token) => Press(action, token),
             24,
@@ -1782,9 +1889,35 @@ public sealed class Runner : IBuildGame
                 );
                 if (reason == "retry-key")
                     log("Стрілка не змінила вибрану деталь. Повторюю один раз.");
+                else if (reason == "skipped-target")
+                    log($"Курсор перестрибнув деталь {target + 1}; відкриваю золоту деталь {index + 1}.");
             },
-            ct
+            ct,
+            IsGoldTile
         );
+    }
+
+    // Reads the cursor and remembers the tile colours from the same frame.
+    int ObserveGrid(Bitmap frame)
+    {
+        rarity = vision.GridRarity(frame);
+        return vision.GridFocus(frame);
+    }
+
+    bool IsGoldTile(int index) => rarity == null || rarity[index] == 'G';
+
+    static bool IsGoldPart(string id) => id.StartsWith("LEGENDARY", StringComparison.Ordinal);
+
+    // Next gold tile after the current one, wrapping to the first gold tile; -1 when none other remains.
+    int NextTarget(int from)
+    {
+        for (int i = from + 1; i < 7; i++)
+            if (IsGoldTile(i))
+                return i;
+        for (int i = 0; i < from; i++)
+            if (IsGoldTile(i))
+                return i;
+        return -1;
     }
 
     public async Task ExitToParts(CancellationToken ct)
@@ -1799,7 +1932,7 @@ public sealed class Runner : IBuildGame
             {
                 if (await vision.ScreenState(frame) != GameScreen.Parts)
                     throw new InvalidOperationException("Очікую екран семи деталей після Esc ×3.");
-                int index = vision.GridFocus(frame);
+                int index = ObserveGrid(frame);
                 if (index < 0)
                     throw new InvalidOperationException("Не знайдено рамку деталі.");
                 return index;
@@ -1813,7 +1946,11 @@ public sealed class Runner : IBuildGame
     {
         if (gridIndex < 0)
             throw new InvalidOperationException("Спочатку треба повернутися до семи деталей.");
-        int expected = (gridIndex + 1) % 7;
+        int expected = NextTarget(gridIndex);
+        if (expected < 0)
+            throw new NoMorePartsException();
+        if (expected != (gridIndex + 1) % 7)
+            log($"Пропускаю сірі та рожеві деталі: наступна золота — {expected + 1}.");
         await SelectGridCategory(expected, ct);
         await OpenFromGrid(ct);
     }
