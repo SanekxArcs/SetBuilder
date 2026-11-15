@@ -1,0 +1,163 @@
+<UserControl x:Class="TunerFest.Ui.Pages.AboutPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:vm="clr-namespace:TunerFest.Ui.ViewModels"
+             d:DataContext="{d:DesignInstance Type=vm:AboutViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+  <UserControl.Resources>
+    <Style x:Key="Paragraph" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="LineHeight" Value="20" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="Margin" Value="0,0,0,10" />
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+    </Style>
+  </UserControl.Resources>
+  <ScrollViewer Style="{StaticResource PageScroll}">
+    <StackPanel Style="{StaticResource PageBody}">
+      <TextBlock Text="{DynamicResource AboutTitle}" Style="{StaticResource PageTitle}" />
+      <TextBlock Text="{Binding Version}" Style="{StaticResource CardDescription}" />
+
+      <!-- Why the app exists. -->
+      <TextBlock Text="{DynamicResource AboutStoryHeader}" Style="{StaticResource SectionHeader}" />
+      <Border Style="{StaticResource SettingsPanel}">
+        <StackPanel>
+          <TextBlock Text="{DynamicResource AboutStory1}" Style="{StaticResource Paragraph}" />
+          <TextBlock Text="{DynamicResource AboutStory2}" Style="{StaticResource Paragraph}" />
+          <TextBlock Text="{DynamicResource AboutStory3}" Style="{StaticResource Paragraph}" Margin="0" />
+        </StackPanel>
+      </Border>
+
+      <!-- The author's own totals. -->
+      <TextBlock Text="{DynamicResource AboutStatsHeader}" Style="{StaticResource SectionHeader}" />
+      <Border Style="{StaticResource SettingsPanel}">
+        <StackPanel>
+          <ItemsControl ItemsSource="{Binding AuthorTiles}" Focusable="False">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <UniformGrid Columns="3" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border Margin="0,0,8,8" Padding="12,10" CornerRadius="4"
+                        Background="{DynamicResource SubtleFillColorSecondaryBrush}">
+                  <StackPanel>
+                    <TextBlock Text="{Binding Label}" Style="{StaticResource CardDescription}" Margin="0" />
+                    <TextBlock Text="{Binding Value}" FontSize="20" FontWeight="SemiBold" Margin="0,2,0,0"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBlock Text="{Binding AuthorDetails}" Style="{StaticResource CardDescription}" Margin="0,4,0,0" LineHeight="18" />
+        </StackPanel>
+      </Border>
+
+      <!-- Share logs for global statistics. -->
+      <TextBlock Text="{DynamicResource AboutShareHeader}" Style="{StaticResource SectionHeader}" />
+      <Border Style="{StaticResource SettingsPanel}">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <ui:SymbolIcon Symbol="ArrowExportUp24" FontSize="20" Margin="0,2,16,0" VerticalAlignment="Top"
+                         Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+          <StackPanel Grid.Column="1">
+            <TextBlock Text="{DynamicResource AboutShare1}" Style="{StaticResource Paragraph}" />
+            <TextBlock Text="{DynamicResource AboutShare2}" Style="{StaticResource CardDescription}" />
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+              <ui:Button Content="{DynamicResource ExportLogs}" Icon="{ui:SymbolIcon ArrowExportUp24}" Appearance="Primary"
+                         Command="{Binding ExportLogsCommand}" ToolTip="{DynamicResource ExportLogsHint}" />
+              <ui:Button Content="{DynamicResource AboutDiscordButton}" Icon="{ui:SymbolIcon Chat24}" Margin="8,0,0,0"
+                         Command="{Binding OpenDiscordCommand}" />
+              <ui:Button Content="{DynamicResource AboutFeedback}" Icon="{ui:SymbolIcon PersonFeedback24}" Margin="8,0,0,0"
+                         Command="{Binding OpenFeedbackCommand}" />
+            </StackPanel>
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- Privacy. -->
+      <TextBlock Text="{DynamicResource AboutPrivacyHeader}" Style="{StaticResource SectionHeader}" />
+      <ui:CardControl Icon="{ui:SymbolIcon ShieldCheckmark24}" Margin="0,0,0,4">
+        <ui:CardControl.Header>
+          <StackPanel>
+            <TextBlock Text="{DynamicResource AboutPrivacyTitle}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource AboutPrivacyText}" Style="{StaticResource CardDescription}" />
+          </StackPanel>
+        </ui:CardControl.Header>
+      </ui:CardControl>
+      <ui:CardControl Icon="{ui:SymbolIcon Info24}" Margin="0,0,0,4">
+        <ui:CardControl.Header>
+          <StackPanel>
+            <TextBlock Text="{DynamicResource AboutLegalTitle}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource AboutLegalText}" Style="{StaticResource CardDescription}" />
+          </StackPanel>
+        </ui:CardControl.Header>
+      </ui:CardControl>
+
+      <!-- Links. -->
+      <TextBlock Text="{DynamicResource AboutLinksHeader}" Style="{StaticResource SectionHeader}" />
+      <ui:CardControl Icon="{ui:SymbolIcon Star24}" Margin="0,0,0,4">
+        <ui:CardControl.Header>
+          <StackPanel>
+            <TextBlock Text="{DynamicResource AboutStarTitle}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource AboutStarText}" Style="{StaticResource CardDescription}" />
+          </StackPanel>
+        </ui:CardControl.Header>
+        <ui:Button Content="{DynamicResource AboutStarButton}" Icon="{ui:SymbolIcon Star24}" Command="{Binding OpenGitHubCommand}" />
+      </ui:CardControl>
+      <ui:CardControl Icon="{ui:SymbolIcon Chat24}" Margin="0,0,0,4">
+        <ui:CardControl.Header>
+          <StackPanel>
+            <TextBlock Text="{DynamicResource AboutDiscordTitle}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource AboutDiscordText}" Style="{StaticResource CardDescription}" />
+          </StackPanel>
+        </ui:CardControl.Header>
+        <ui:Button Content="{DynamicResource AboutDiscordButton}" Icon="{ui:SymbolIcon Chat24}" Command="{Binding OpenDiscordCommand}" />
+      </ui:CardControl>
+      <ui:CardControl Icon="{ui:SymbolIcon Heart24}" Margin="0,0,0,4">
+        <ui:CardControl.Header>
+          <StackPanel>
+            <TextBlock Text="{DynamicResource AboutSupportTitle}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource AboutSupportText}" Style="{StaticResource CardDescription}" />
+          </StackPanel>
+        </ui:CardControl.Header>
+        <ui:Button Content="{DynamicResource Loc0365}" Icon="{ui:SymbolIcon Heart24}" Command="{Binding OpenSupportCommand}" />
+      </ui:CardControl>
+      <ui:CardControl Icon="{ui:SymbolIcon PersonFeedback24}" Margin="0,0,0,4">
+        <ui:CardControl.Header>
+          <StackPanel>
+            <TextBlock Text="{DynamicResource AboutFeedbackTitle}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource AboutFeedbackText}" Style="{StaticResource CardDescription}" />
+          </StackPanel>
+        </ui:CardControl.Header>
+        <ui:Button Content="{DynamicResource AboutFeedback}" Icon="{ui:SymbolIcon PersonFeedback24}" Command="{Binding OpenFeedbackCommand}" />
+      </ui:CardControl>
+      <ui:CardControl Icon="{ui:SymbolIcon Bug24}" Margin="0,0,0,4">
+        <ui:CardControl.Header>
+          <StackPanel>
+            <TextBlock Text="{DynamicResource AboutBugTitle}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource ReportBugHint}" Style="{StaticResource CardDescription}" />
+          </StackPanel>
+        </ui:CardControl.Header>
+        <ui:Button Content="{DynamicResource ReportBug}" Icon="{ui:SymbolIcon Bug24}" Command="{Binding ReportBugCommand}" />
+      </ui:CardControl>
+      <ui:CardControl Icon="{ui:SymbolIcon Globe24}" Margin="0,0,0,4">
+        <ui:CardControl.Header>
+          <StackPanel>
+            <TextBlock Text="tunerfest.app" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource AboutSiteText}" Style="{StaticResource CardDescription}" />
+          </StackPanel>
+        </ui:CardControl.Header>
+        <ui:Button Content="tunerfest.app ↗" Icon="{ui:SymbolIcon Open24}" Command="{Binding OpenSiteCommand}" />
+      </ui:CardControl>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -60,7 +60,7 @@ public sealed class LogsViewModel : PageViewModel
     /// <summary>Always available, also during a run.</summary>
     public ICommand OpenLogsCommand { get; }
 
-    /// <summary>Zips the latest session; disabled while a run is in progress.</summary>
+    /// <summary>Exports every session into one shareable ZIP; disabled while a run is in progress.</summary>
     public ICommand ExportLogsCommand => exportLogs;
 
     public override void Refresh()

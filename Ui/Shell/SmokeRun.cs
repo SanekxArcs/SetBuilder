@@ -22,6 +22,7 @@ public static class SmokeRun
         "ui-diagnostics.png",
         "ui-notifications.png",
         "ui-analytics.png",
+        "ui-about.png",
     ];
 
     public static int Execute()
@@ -182,8 +183,22 @@ public static class SmokeRun
         shell.Arm(false);
         Expect(!shell.IsBusy && shell.StatusLine == L.T("Попередній перегляд: запуск не виконується."), "preview refuses to read");
         shell.Game = null;
-        Expect(shell.Pages.Count == 6 && shell.Pages.Select(p => p.Title).SequenceEqual(PageRegistry.Entries.Select(e => e.Title)),
-            "six pages in order");
+        Expect(shell.Pages.Count == 7 && shell.Pages.Select(p => p.Title).SequenceEqual(PageRegistry.Entries.Select(e => e.Title)),
+            "seven pages in order");
+        Expect(shell.MainPages.Count == 6 && shell.FooterPages.Count == 1 && shell.FooterPages[0].Entry.Name == "About",
+            "About is the only footer page");
+        var beforeNull = shell.SelectedPage;
+        shell.SelectedPage = null;
+        Expect(shell.SelectedPage == beforeNull, "a null page selection is ignored");
+        var nav = (System.Windows.Controls.ListBox)window.FindName("Nav");
+        var footerNav = (System.Windows.Controls.ListBox)window.FindName("FooterNav");
+        shell.SelectedPage = shell.FooterPages[0];
+        Expect(nav.SelectedItem == null && footerNav.SelectedItem == shell.FooterPages[0], "About selected: only the bottom list shows a selection");
+        shell.SelectedPage = shell.MainPages[0];
+        Expect(nav.SelectedItem == shell.MainPages[0] && footerNav.SelectedItem == null, "Build selected: only the top list shows a selection");
+        footerNav.SelectedItem = shell.FooterPages[0];
+        Expect(shell.SelectedPage == shell.FooterPages[0] && nav.SelectedItem == null, "clicking About selects it and clears the top list");
+        shell.SelectedPage = beforeNull;
         passed.Add("PASS command bar, start and stop follow the busy state; run without a game window is refused");
 
         // Manual pause: only during a run; the "held" progress state shows as a pause on the status card.

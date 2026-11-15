@@ -36,6 +36,12 @@ internal static class Program
                 return RecoveryVerification.BendedLog(args[1]).GetAwaiter().GetResult();
             if (args.Contains("--verify-analytics"))
                 return AnalyticsVerification.Tests();
+            if (args.Length == 2 && args[0] == "--export-logs")
+            {
+                var exported = LogExport.Create(Path.GetFullPath(args[1]), Catalog.Load());
+                Console.WriteLine($"{exported.Path}: {exported.Sessions} sessions, {exported.Rolls} rolls, {exported.Bytes / 1048576.0:F1} MB");
+                return 0;
+            }
             if (args.Contains("--analyze-logs"))
                 return AnalyticsVerification.Real();
             if (args.Length == 4 && args[0] == "--verify-focus-replay")

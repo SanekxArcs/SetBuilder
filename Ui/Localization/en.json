@@ -537,5 +537,17 @@
   "Зберегти як нову": "Save as new",
   "Оновити вибрану": "Update selected",
   "Видалити": "Delete",
-  "Оберіть сет і перки, назвіть комбінацію та збережіть її до списку.": "Choose the set and perks, name your combination and save it to the list."
+  "Оберіть сет і перки, назвіть комбінацію та збережіть її до списку.": "Choose the set and perks, name your combination and save it to the list.",
+  "Про програму": "About",
+  "Запусків": "Sessions",
+  "Кидків": "Rolls",
+  "Готових деталей": "Completed parts",
+  "Запчастин": "Spare parts",
+  "Час запусків": "Session time",
+  "Нових пропозицій розпізнано: {0} · Без назви/пропозиції: {1} · Непідтверджених натискань: {2}\nСереднє на готову деталь: {3} кидків · {4} Bucks · {5} запчастин · {6}": "New offers recognized: {0} · No name/offer: {1} · Unconfirmed inputs: {2}\nAverage per completed part: {3} rolls · {4} Bucks · {5} spare parts · {6}",
+  "Експорт журналів": "Export logs",
+  "ZIP-архів": "ZIP archive",
+  "Експорт журналів…": "Exporting logs…",
+  "Експортовано: {0} запусків, {1} кидків, {2} МБ → {3}": "Exported: {0} sessions, {1} rolls, {2} MB → {3}",
+  "Не вдалося експортувати журнали: ": "Could not export logs: "
 }

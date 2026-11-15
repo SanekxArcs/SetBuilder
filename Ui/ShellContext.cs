@@ -8,6 +8,10 @@ public static class Links
     public const string Site = "https://tunerfest.app";
     public const string Sets = "https://tunerfest.app/sets";
     public const string Support = "https://tunerfest.app/support";
+    public const string Feedback = "https://tunerfest.app/feedback";
+    public const string Discord = "https://discord.gg/pe5H2S3uEq";
+    public const string GitHub = "https://github.com/SanekxArcs/SetBuilder";
+    public const string Issues = "https://github.com/SanekxArcs/SetBuilder/issues";
 }
 
 public static class AppInfo
@@ -58,6 +62,8 @@ public interface IShellContext : INotifyPropertyChanged
     Task InspectFile(string path);
     void OpenSite(string url);
     void OpenLogs();
+
+    /// <summary>Asks where to save and packs every session into one shareable ZIP (LogExport). No-op in preview.</summary>
     Task ExportLogs();
     void PlayNotification(bool enabled, string code, bool preview = false);
 

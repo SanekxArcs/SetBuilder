@@ -51,6 +51,12 @@ public partial class MainWindow
         Log.CollapsedChanged += collapsed => ApplyLogRow(collapsed ? 0 : viewModel.Profile.LogPanelHeight, collapsed);
         if (!viewModel.Preview)
             WindowPlacement.Restore(this, viewModel.Profile);
+        SyncNav();
+        viewModel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(MainViewModel.SelectedPage))
+                SyncNav();
+        };
         Loaded += OnLoaded;
         Closing += OnClosing;
         Closed += OnClosed;
@@ -126,6 +132,22 @@ public partial class MainWindow
     }
 
     void OnTogglePane(object sender, RoutedEventArgs e) => IsPaneOpen = !IsPaneOpen;
+
+    // ---- navigation: two pane lists (main pages on top, About at the bottom) share one selected page ----
+
+    void OnNavSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.ListBox { SelectedItem: PageHost page })
+            shell.SelectedPage = page;
+    }
+
+    /// <summary>Shows the selection in the list that holds the selected page and clears the other list.</summary>
+    void SyncNav()
+    {
+        var page = shell.SelectedPage;
+        Nav.SelectedItem = page is { IsFooter: false } ? page : null;
+        FooterNav.SelectedItem = page is { IsFooter: true } ? page : null;
+    }
 
     // ---- log panel height ------------------------------------------------------------------------------
 

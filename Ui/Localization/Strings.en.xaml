@@ -172,4 +172,36 @@ F8 — start · F7 — read · F10 — stop.</sys:String>
   <sys:String x:Key="CombinationSave" xml:space="preserve">Save as new</sys:String>
   <sys:String x:Key="CombinationUpdate" xml:space="preserve">Update selected</sys:String>
   <sys:String x:Key="CombinationDelete" xml:space="preserve">Delete</sys:String>
+  <sys:String x:Key="ReportBug" xml:space="preserve">Report a bug ↗</sys:String>
+  <sys:String x:Key="ReportBugHint" xml:space="preserve">Opens GitHub Issues. Describe what happened and attach the exported logs file if you can.</sys:String>
+  <sys:String x:Key="ExportLogs" xml:space="preserve">Export logs…</sys:String>
+  <sys:String x:Key="ExportLogsHint" xml:space="preserve">Packs every session into one small ZIP you can send to us for global statistics. Screenshots are not included.</sys:String>
+  <sys:String x:Key="AboutTitle" xml:space="preserve">About</sys:String>
+  <sys:String x:Key="AboutStoryHeader" xml:space="preserve">Why this app exists</sys:String>
+  <sys:String x:Key="AboutStory1" xml:space="preserve">Building a full Legendary set in The Crew Motorfest is a grind. Every part has two perk slots, the game offers random perks from a pool of 31, and every perk value lands on one of ten tiers. To get the two perks you want, both at their maximum, on all seven parts, you open the same menus and press the same buttons hundreds of times.</sys:String>
+  <sys:String x:Key="AboutStory2" xml:space="preserve">Each roll costs Bucks, spare parts and a few seconds of menu presses. One part can take dozens of rolls, and a full set easily eats an evening. It isn't hard. It is just long and not fun, so I wrote an app that does the pressing for me and stops when both perks are maxed.</sys:String>
+  <sys:String x:Key="AboutStory3" xml:space="preserve">Below are my own numbers from the Analytics page. They are also why the app counts every roll: the game never tells you how much a set really costs.</sys:String>
+  <sys:String x:Key="AboutStatsHeader" xml:space="preserve">My statistics</sys:String>
+  <sys:String x:Key="AboutShareHeader" xml:space="preserve">Share your statistics</sys:String>
+  <sys:String x:Key="AboutShare1" xml:space="preserve">Help build global statistics. Export your logs into one file and send it to us: in the TunerFest Discord, through the feedback page, or any other way you can share a file (e-mail, Telegram, Google Drive and so on). We will combine the numbers from many players and later publish perk chances and real set costs on tunerfest.app.</sys:String>
+  <sys:String x:Key="AboutShare2" xml:space="preserve">The file contains text logs, the roll ledger, spending and the settings used. No screenshots and no account data; your Windows user name is removed from file paths. Only you decide whether to send it.</sys:String>
+  <sys:String x:Key="AboutFeedback" xml:space="preserve">Feedback ↗</sys:String>
+  <sys:String x:Key="AboutPrivacyHeader" xml:space="preserve">Privacy and legal</sys:String>
+  <sys:String x:Key="AboutPrivacyTitle" xml:space="preserve">Fully offline</sys:String>
+  <sys:String x:Key="AboutPrivacyText" xml:space="preserve">The app does not collect or send any data. No account, no telemetry, no network calls. Everything stays in the Logs folder on your PC unless you export and send it yourself. Links on this page only open your browser.</sys:String>
+  <sys:String x:Key="AboutLegalTitle" xml:space="preserve">Not affiliated with Ubisoft or Ivory Tower</sys:String>
+  <sys:String x:Key="AboutLegalText" xml:space="preserve">TunerFest Set Builder is an independent fan-made tool. It is not made, endorsed, sponsored by or connected with Ubisoft, Ivory Tower or The Crew Motorfest in any way. All game names and trademarks belong to their owners. Automating input may be against the game's terms of use; use it at your own risk and only on your own account.</sys:String>
+  <sys:String x:Key="AboutLinksHeader" xml:space="preserve">Links and support</sys:String>
+  <sys:String x:Key="AboutStarTitle" xml:space="preserve">Give it a star on GitHub</sys:String>
+  <sys:String x:Key="AboutStarText" xml:space="preserve">Source code, releases and updates. A star helps other players find the app.</sys:String>
+  <sys:String x:Key="AboutStarButton" xml:space="preserve">Star on GitHub ↗</sys:String>
+  <sys:String x:Key="AboutSupportTitle" xml:space="preserve">Support the project</sys:String>
+  <sys:String x:Key="AboutSupportText" xml:space="preserve">If the app saved you hours, you can support it with money on the TunerFest support page.</sys:String>
+  <sys:String x:Key="AboutFeedbackTitle" xml:space="preserve">Ideas and feedback</sys:String>
+  <sys:String x:Key="AboutFeedbackText" xml:space="preserve">Everything else: ideas, questions, sets you would like to see, or your exported logs.</sys:String>
+  <sys:String x:Key="AboutBugTitle" xml:space="preserve">Found a bug?</sys:String>
+  <sys:String x:Key="AboutSiteText" xml:space="preserve">Sets, guides and, later, the global statistics.</sys:String>
+  <sys:String x:Key="AboutDiscordButton" xml:space="preserve">Discord ↗</sys:String>
+  <sys:String x:Key="AboutDiscordTitle" xml:space="preserve">TunerFest Discord</sys:String>
+  <sys:String x:Key="AboutDiscordText" xml:space="preserve">Chat with other players, ask questions and drop your exported logs file.</sys:String>
 </ResourceDictionary>

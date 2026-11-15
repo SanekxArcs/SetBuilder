@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <img alt="Version 1.6.11" src="https://shieldcn.dev/badge/version-1.6.11-16A34A.svg?variant=secondary&logo=github" />
+  <img alt="Version 1.6.12" src="https://shieldcn.dev/badge/version-1.6.12-16A34A.svg?variant=secondary&logo=github" />
   <img alt="Platform Windows 10 and 11" src="https://shieldcn.dev/badge/platform-Windows%2010%2F11-0078D4.svg?variant=secondary&logo=windows" />
   <img alt=".NET 8" src="https://shieldcn.dev/badge/.NET-8.0-512BD4.svg?variant=secondary&logo=dotnet" />
   <img alt="UI WPF" src="https://shieldcn.dev/badge/UI-WPF%20%2B%20WPF--UI-7C3AED.svg?variant=secondary" />
@@ -83,9 +83,10 @@ The ledger counts a roll only when the paid popup is confirmed on screen, so the
 | **Build** | Set, two perks (required, optional, or "either of"), number of parts, and the auto-detected set of the current part |
 | **Zones** | OCR zones over a reference screenshot, one-click auto calibration, examples of every screen |
 | **Control** | Keyboard or gamepad, press timing, extra pause after Esc, quick navigation, fast recognition, screenshot budget |
-| **Logs** | Opens the shared `Logs` folder, zips the last run |
+| **Logs** | Diagnostics settings, opens the shared `Logs` folder, exports all logs into one file to share |
 | **Notifications** | Toasts, sounds, app language, tray behavior, theme, overlay over the game |
 | **Analytics** | Perk frequency across all runs, text log search, completed parts with average cost |
+| **About** (bottom of the pane) | Why the app exists, the author's statistics, log sharing, privacy and legal notes, GitHub, Discord, support and feedback links |
 
 ## Build from source
 
@@ -106,7 +107,7 @@ The version comes from `SetBuilder.csproj` alone. Each build updates the **Tuner
 ### Retrain the perk templates
 
 ```powershell
-& "dist-v1.6.11\TunerFest Set Builder.exe" --train-vision "Logs" "new-model.json"
+& "dist-v1.6.12\TunerFest Set Builder.exe" --train-vision "Logs" "new-model.json"
 ```
 
 The newest session is held out for validation. The model is saved only when it makes zero wrong name matches and zero wrong numeric readings on that session. Copy the result over `Assets/recognition-templates.json` and rebuild.
@@ -123,6 +124,10 @@ All builds write to one shared `Logs` folder in the project root. Each run gets 
 | `spending.json` / `summary.json` | Cost, outcome, errors, screenshot totals |
 | `settings.json` | The exact profile and zones used |
 | `screenshots/` | Optional PNGs within the configured budget |
+
+### Share your logs
+
+The app never sends anything by itself. To help build global perk and cost statistics (to be published on [tunerfest.app](https://tunerfest.app)), use **Export logs…** on the About or Logs page. It writes one ZIP with `statistics.json` and every session's text logs, roll ledger, spending and settings. Screenshots and per-frame event dumps are left out, and your Windows user folder is replaced with `%USERPROFILE%`. Send the file in the [TunerFest Discord](https://discord.gg/pe5H2S3uEq), through [tunerfest.app/feedback](https://tunerfest.app/feedback), or any other way you share files.
 
 Self-tests go to `Logs/Tests`, calibration evidence to `Logs/Calibration`, analytics exports to `Logs/Analytics`. `Prune-Screenshots.ps1 -Apply` deletes PNGs from old sessions and keeps the text.
 
@@ -148,6 +153,16 @@ docs/CHANGELOG-uk.md Detailed version history and design notes (Ukrainian)
 - The game UI must be visible on screen. Captures are of the game window only.
 - Tested with keyboard input and with a ViGEm virtual pad. For the pad, install [ViGEmBus](https://github.com/nefarius/ViGEmBus).
 
+## Found a bug?
+
+Open an issue on [GitHub Issues](https://github.com/SanekxArcs/SetBuilder/issues), or use **Report a bug** in the app (command bar or the About page). Please include:
+
+- the app version and your screen resolution;
+- what you expected and what happened;
+- the exported logs file (**About → Export logs…**). Turn on diagnostic screenshots first if the problem is about screen reading.
+
+Other ideas and questions: [TunerFest Discord](https://discord.gg/pe5H2S3uEq) or [tunerfest.app/feedback](https://tunerfest.app/feedback). If the app saved you time, you can support it at [tunerfest.app/support](https://tunerfest.app/support) or give the repo a star.
+
 ## Disclaimer
 
-This is a personal tool, not affiliated with Ubisoft or Ivory Tower. *The Crew Motorfest* is a trademark of its owner. Automating input may be against the game's terms of use; use it at your own risk and on your own account only.
+The app is fully offline: it collects and sends no data. It is an independent fan-made tool, not affiliated with, endorsed by or connected to Ubisoft or Ivory Tower. *The Crew Motorfest* is a trademark of its owner. Automating input may be against the game's terms of use; use it at your own risk and on your own account only.

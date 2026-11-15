@@ -172,4 +172,36 @@ F8 — запуск · F7 — зчитати · F10 — стоп.</sys:String>
   <sys:String x:Key="CombinationSave" xml:space="preserve">Зберегти як нову</sys:String>
   <sys:String x:Key="CombinationUpdate" xml:space="preserve">Оновити вибрану</sys:String>
   <sys:String x:Key="CombinationDelete" xml:space="preserve">Видалити</sys:String>
+  <sys:String x:Key="ReportBug" xml:space="preserve">Повідомити про баг ↗</sys:String>
+  <sys:String x:Key="ReportBugHint" xml:space="preserve">Відкриває GitHub Issues. Опиши, що сталося, і за можливості додай файл експортованих журналів.</sys:String>
+  <sys:String x:Key="ExportLogs" xml:space="preserve">Експортувати журнали…</sys:String>
+  <sys:String x:Key="ExportLogsHint" xml:space="preserve">Пакує всі запуски в один невеликий ZIP, який можна надіслати нам для глобальної статистики. Скріншоти не додаються.</sys:String>
+  <sys:String x:Key="AboutTitle" xml:space="preserve">Про програму</sys:String>
+  <sys:String x:Key="AboutStoryHeader" xml:space="preserve">Навіщо ця програма</sys:String>
+  <sys:String x:Key="AboutStory1" xml:space="preserve">Зібрати повний легендарний сет у The Crew Motorfest — це гринд. Кожна деталь має два слоти перків, гра пропонує випадкові перки з 31 можливого, а значення кожного перка падає на один із десяти рівнів. Щоб отримати два потрібні перки на максимумі на всіх семи деталях, доводиться сотні разів відкривати ті самі меню й тиснути ті самі кнопки.</sys:String>
+  <sys:String x:Key="AboutStory2" xml:space="preserve">Кожен кидок коштує Bucks, запчастини й кілька секунд натискань у меню. Одна деталь може забрати десятки кидків, а повний сет легко з'їдає вечір. Це не складно, це просто довго й нецікаво, тож я написав програму, яка тисне кнопки за мене і зупиняється, коли обидва перки на максимумі.</sys:String>
+  <sys:String x:Key="AboutStory3" xml:space="preserve">Нижче — мої власні цифри зі сторінки «Аналітика». Саме через них програма рахує кожен кидок: гра ніколи не каже, скільки сет коштує насправді.</sys:String>
+  <sys:String x:Key="AboutStatsHeader" xml:space="preserve">Моя статистика</sys:String>
+  <sys:String x:Key="AboutShareHeader" xml:space="preserve">Поділися своєю статистикою</sys:String>
+  <sys:String x:Key="AboutShare1" xml:space="preserve">Допоможи зібрати глобальну статистику. Експортуй журнали в один файл і надішли нам: у Discord TunerFest, через сторінку відгуків або будь-яким іншим способом передати файл (пошта, Telegram, Google Drive тощо). Ми об'єднаємо цифри багатьох гравців і згодом опублікуємо шанси перків і реальну вартість сетів на tunerfest.app.</sys:String>
+  <sys:String x:Key="AboutShare2" xml:space="preserve">У файлі — текстові журнали, реєстр кидків, витрати й використані налаштування. Без скріншотів і без даних акаунта; ім'я користувача Windows прибрано зі шляхів до файлів. Надсилати чи ні — вирішуєш лише ти.</sys:String>
+  <sys:String x:Key="AboutFeedback" xml:space="preserve">Відгук ↗</sys:String>
+  <sys:String x:Key="AboutPrivacyHeader" xml:space="preserve">Приватність і правове</sys:String>
+  <sys:String x:Key="AboutPrivacyTitle" xml:space="preserve">Повністю офлайн</sys:String>
+  <sys:String x:Key="AboutPrivacyText" xml:space="preserve">Програма не збирає й не надсилає жодних даних. Без акаунта, без телеметрії, без мережевих запитів. Усе лишається в папці Logs на твоєму ПК, доки ти сам не експортуєш і не надішлеш це. Посилання на цій сторінці лише відкривають браузер.</sys:String>
+  <sys:String x:Key="AboutLegalTitle" xml:space="preserve">Не пов'язано з Ubisoft чи Ivory Tower</sys:String>
+  <sys:String x:Key="AboutLegalText" xml:space="preserve">TunerFest Set Builder — незалежний фанатський інструмент. Його не створювали, не схвалювали й не спонсорували Ubisoft, Ivory Tower чи The Crew Motorfest, і він ніяк з ними не пов'язаний. Усі назви гри й торгові марки належать їхнім власникам. Автоматизація введення може порушувати умови використання гри; використовуй на власний ризик і лише на своєму акаунті.</sys:String>
+  <sys:String x:Key="AboutLinksHeader" xml:space="preserve">Посилання й підтримка</sys:String>
+  <sys:String x:Key="AboutStarTitle" xml:space="preserve">Постав зірку на GitHub</sys:String>
+  <sys:String x:Key="AboutStarText" xml:space="preserve">Код, релізи й оновлення. Зірка допомагає іншим гравцям знайти програму.</sys:String>
+  <sys:String x:Key="AboutStarButton" xml:space="preserve">Зірка на GitHub ↗</sys:String>
+  <sys:String x:Key="AboutSupportTitle" xml:space="preserve">Підтримати проєкт</sys:String>
+  <sys:String x:Key="AboutSupportText" xml:space="preserve">Якщо програма зекономила тобі години, її можна підтримати грошима на сторінці підтримки TunerFest.</sys:String>
+  <sys:String x:Key="AboutFeedbackTitle" xml:space="preserve">Ідеї та відгуки</sys:String>
+  <sys:String x:Key="AboutFeedbackText" xml:space="preserve">Усе інше: ідеї, питання, сети, які хочеш побачити, або твої експортовані журнали.</sys:String>
+  <sys:String x:Key="AboutBugTitle" xml:space="preserve">Знайшов баг?</sys:String>
+  <sys:String x:Key="AboutSiteText" xml:space="preserve">Сети, інструкції, а згодом і глобальна статистика.</sys:String>
+  <sys:String x:Key="AboutDiscordButton" xml:space="preserve">Discord ↗</sys:String>
+  <sys:String x:Key="AboutDiscordTitle" xml:space="preserve">Discord TunerFest</sys:String>
+  <sys:String x:Key="AboutDiscordText" xml:space="preserve">Спілкуйся з іншими гравцями, став питання й надсилай файл експортованих журналів.</sys:String>
 </ResourceDictionary>

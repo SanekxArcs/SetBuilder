@@ -4,8 +4,8 @@ using Wpf.Ui.Controls;
 
 namespace TunerFest.Ui;
 
-/// <summary>One navigation entry: the page title, the class-name stem and the pane icon.</summary>
-public sealed record PageEntry(string Title, string Name, SymbolRegular Icon);
+/// <summary>One navigation entry: the page title, the class-name stem, the pane icon and whether it sits at the bottom of the pane.</summary>
+public sealed record PageEntry(string Title, string Name, SymbolRegular Icon, bool Footer = false);
 
 /// <summary>A constructed page: its view model (null for a placeholder) and the element shown in the content area.</summary>
 public sealed class PageHost
@@ -20,10 +20,11 @@ public sealed class PageHost
     public string Title => Entry.Title;
     public SymbolRegular Icon => Entry.Icon;
     public bool IsPlaceholder => ViewModel == null;
+    public bool IsFooter => Entry.Footer;
 }
 
 /// <summary>
-/// The six pages in navigation order. Each is created by reflection
+/// The pages in navigation order; footer pages (About) are drawn at the bottom of the pane. Each is created by reflection
 /// (TunerFest.Ui.ViewModels.&lt;Name&gt;ViewModel(IShellContext) and TunerFest.Ui.Pages.&lt;Name&gt;Page(vm)),
 /// exactly like tools/PagePreview; a missing class becomes a placeholder so the shell runs without the pages.
 /// </summary>
@@ -37,6 +38,7 @@ public static class PageRegistry
         new(L.T("Журнали"), "Logs", SymbolRegular.DocumentBulletList24),
         new(L.T("Сповіщення"), "Notifications", SymbolRegular.Alert24),
         new(L.T("Аналітика"), "Analytics", SymbolRegular.DataBarVertical24),
+        new(L.T("Про програму"), "About", SymbolRegular.Info24, Footer: true),
     ];
 
     public static List<PageHost> Create(IShellContext shell)

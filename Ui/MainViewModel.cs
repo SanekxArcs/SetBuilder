@@ -9,7 +9,7 @@ namespace TunerFest.Ui;
 public sealed record LogLine(DateTime At, string Text);
 
 /// <summary>
-/// The shell: owns the catalog and profile, the six pages, the status card and the whole run lifecycle
+/// The shell: owns the catalog and profile, the pages, the status card and the whole run lifecycle
 /// (ported from MainForm: Arm, Cancel, InspectFile, Inspect, OnProgress, ShowOutcome, diagnostics, toasts, sounds).
 /// Implements IShellContext for the pages. In preview mode nothing is saved, played, opened or recorded.
 /// </summary>
@@ -51,6 +51,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
         ExportLogsCommand = new AsyncCommand(ExportLogs, () => !IsBusy);
         OpenSetsCommand = new RelayCommand(() => OpenSite(Links.Sets));
         OpenSupportCommand = new RelayCommand(() => OpenSite(Links.Support));
+        ReportBugCommand = new RelayCommand(() => OpenSite(Links.Issues));
         Pages = PageRegistry.Create(this);
         foreach (var page in Pages)
             page.ViewModel?.Refresh();
@@ -63,6 +64,12 @@ public sealed class MainViewModel : ObservableObject, IShellContext
     public ThemeService Theme { get; } = new();
     public StatusCardViewModel Status { get; } = new();
     public IReadOnlyList<PageHost> Pages { get; }
+
+    /// <summary>The pages listed at the top of the navigation pane.</summary>
+    public IReadOnlyList<PageHost> MainPages => Pages.Where(p => !p.IsFooter).ToList();
+
+    /// <summary>The pages pinned to the bottom of the navigation pane (About).</summary>
+    public IReadOnlyList<PageHost> FooterPages => Pages.Where(p => p.IsFooter).ToList();
 
     /// <summary>Set by MainWindow; null in previews.</summary>
     public System.Windows.Window? Window { get; set; }
@@ -156,7 +163,12 @@ public sealed class MainViewModel : ObservableObject, IShellContext
     public PageHost? SelectedPage
     {
         get => selectedPage;
-        set => SetProperty(ref selectedPage, value);
+        set
+        {
+            // The pane lists clear their selection when the other list holds the page; there is always a page shown.
+            if (value != null)
+                SetProperty(ref selectedPage, value);
+        }
     }
 
     /// <summary>The last log message, cut to 122 characters plus an ellipsis when longer than 125.</summary>
@@ -176,6 +188,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
     public AsyncCommand ExportLogsCommand { get; }
     public ICommand OpenSetsCommand { get; }
     public ICommand OpenSupportCommand { get; }
+    public ICommand ReportBugCommand { get; }
 
     public event Action<Build>? AutoSetApplied;
     public event Action? RunFinished;
@@ -604,21 +617,35 @@ public sealed class MainViewModel : ObservableObject, IShellContext
     {
         if (busy || Preview)
             return;
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = L.T("Експорт журналів"),
+            FileName = LogExport.DefaultFileName(),
+            DefaultExt = ".zip",
+            Filter = L.T("ZIP-архів") + "|*.zip",
+            InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+        };
+        if (dialog.ShowDialog(Window) != true)
+            return;
+        string target = dialog.FileName;
         try
         {
-            var folder = lastSessionFolder ?? SessionLog.Latest();
-            if (folder == null)
-            {
-                Log(L.T("Журналів ще немає. Запусти F8, F7 або перевірку PNG."));
-                return;
-            }
-            var archive = await Task.Run(() => SessionLog.Export(folder));
-            Log(L.T("ZIP готовий: ") + archive);
-            Process.Start(new ProcessStartInfo { FileName = Path.GetDirectoryName(archive)!, UseShellExecute = true });
+            Log(L.T("Експорт журналів…"));
+            var result = await Task.Run(() => LogExport.Create(target, Catalog));
+            Log(
+                L.F(
+                    "Експортовано: {0} запусків, {1} кидків, {2} МБ → {3}",
+                    $"{result.Sessions:N0}",
+                    $"{result.Rolls:N0}",
+                    $"{result.Bytes / 1048576.0:N1}",
+                    result.Path
+                )
+            );
+            Process.Start(new ProcessStartInfo { FileName = "explorer.exe", Arguments = $"/select,\"{result.Path}\"", UseShellExecute = true });
         }
         catch (Exception e)
         {
-            Log(L.T("Не вдалося створити ZIP: ") + e.Message);
+            Log(L.T("Не вдалося експортувати журнали: ") + e.Message);
         }
     }
 }
