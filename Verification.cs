@@ -165,13 +165,11 @@ public static class Verification
             File.ReadAllText(Path.Combine(session.Folder, "rolls.jsonl")).Contains("offer"),
             "raw roll history retained separately from screenshot limits"
         );
-        var archive = SessionLog.Export(session.Folder);
-        using (var zip = System.IO.Compression.ZipFile.OpenRead(archive))
-            Check(
-                zip.Entries.Any(e => e.FullName == "events.jsonl")
-                    && zip.Entries.Any(e => e.FullName.StartsWith("screenshots/")),
-                "ZIP contains logs and PNGs"
-            );
+        Check(
+            File.Exists(Path.Combine(session.Folder, "events.jsonl"))
+                && Directory.EnumerateFiles(Path.Combine(session.Folder, "screenshots")).Any(),
+            "session folder keeps the event log and PNGs"
+        );
         using var tiny = new Bitmap(64, 64);
         using (var g = Graphics.FromImage(tiny))
             g.Clear(Color.Gold);

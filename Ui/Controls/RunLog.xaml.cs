@@ -17,6 +17,15 @@ public partial class RunLog : UserControl
     public const int MinFontSize = 9,
         MaxFontSize = 18;
 
+    /// <summary>
+    /// Lines kept on screen. An eight-hour run writes tens of thousands of lines; an unbounded FlowDocument makes every
+    /// append re-layout more text and keeps growing memory next to the game. session.log keeps the full log.
+    /// </summary>
+    public const int MaxLines = 2000;
+
+    /// <summary>Oldest lines are dropped in batches of this size, so trimming happens once per batch, not on every append.</summary>
+    public const int TrimBatch = 250;
+
     static readonly Brush Timestamp = Frozen(Color.FromRgb(124, 137, 156));
     static readonly Brush DoneBrush = Frozen(Color.FromRgb(134, 218, 164));
     static readonly Brush StopBrush = Frozen(Color.FromRgb(255, 159, 139));
@@ -88,6 +97,10 @@ public partial class RunLog : UserControl
         paragraph.Inlines.Add(category);
         paragraph.Inlines.Add(body);
         bool hadSelection = !Events.Selection.IsEmpty;
+        // Never trims under an active selection, so text being copied does not vanish; it trims on the next append.
+        if (Document.Blocks.Count >= MaxLines + TrimBatch && !hadSelection)
+            for (int i = 0; i < TrimBatch && Document.Blocks.FirstBlock is { } oldest; i++)
+                Document.Blocks.Remove(oldest);
         Document.Blocks.Add(paragraph);
         if (FollowLog && !hadSelection)
             Events.ScrollToEnd();

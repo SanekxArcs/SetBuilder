@@ -16,11 +16,11 @@ public sealed record LogLine(DateTime At, string Text);
 public sealed class MainViewModel : ObservableObject, IShellContext
 {
     bool busy;
+    bool exporting;
     bool paused;
     bool runActive;
     CancellationTokenSource? active;
     SessionLog? recording;
-    string? lastSessionFolder;
     RunProgress? lastProgress;
     GameWindow? game;
     PageHost? selectedPage;
@@ -44,15 +44,16 @@ public sealed class MainViewModel : ObservableObject, IShellContext
             Profile.Language = L.Language;
         if (preview)
             Toasts.Enabled = false;
-        StartCommand = new RelayCommand(() => Arm(true), () => !IsBusy);
-        StopCommand = new RelayCommand(Cancel, () => IsBusy);
+        StartCommand = new RelayCommand(() => Arm(true), () => CanStart);
+        StopCommand = new RelayCommand(Cancel, () => CanStop);
         PauseCommand = new RelayCommand(TogglePause, () => CanPause);
-        OpenLogsCommand = new RelayCommand(OpenLogs);
-        ExportLogsCommand = new AsyncCommand(ExportLogs, () => !IsBusy);
+        exportLogsCommand = new AsyncCommand(ExportLogs, () => !IsBusy);
         OpenSetsCommand = new RelayCommand(() => OpenSite(Links.Sets));
         OpenSupportCommand = new RelayCommand(() => OpenSite(Links.Support));
         ReportBugCommand = new RelayCommand(() => OpenSite(Links.Issues));
         Pages = PageRegistry.Create(this);
+        MainPages = Pages.Where(p => !p.IsFooter).ToList();
+        FooterPages = Pages.Where(p => p.IsFooter).ToList();
         foreach (var page in Pages)
             page.ViewModel?.Refresh();
         selectedPage = Pages.FirstOrDefault();
@@ -66,10 +67,10 @@ public sealed class MainViewModel : ObservableObject, IShellContext
     public IReadOnlyList<PageHost> Pages { get; }
 
     /// <summary>The pages listed at the top of the navigation pane.</summary>
-    public IReadOnlyList<PageHost> MainPages => Pages.Where(p => !p.IsFooter).ToList();
+    public IReadOnlyList<PageHost> MainPages { get; }
 
     /// <summary>The pages pinned to the bottom of the navigation pane (About).</summary>
-    public IReadOnlyList<PageHost> FooterPages => Pages.Where(p => p.IsFooter).ToList();
+    public IReadOnlyList<PageHost> FooterPages { get; }
 
     /// <summary>Set by MainWindow; null in previews.</summary>
     public System.Windows.Window? Window { get; set; }
@@ -77,28 +78,42 @@ public sealed class MainViewModel : ObservableObject, IShellContext
     /// <summary>Whether F10 registered as a global hotkey (set by HotkeyService). A run refuses to start without it, except in preview.</summary>
     public bool StopAvailable { get; set; }
 
+    /// <summary>A run, a read, a PNG check or a log export is in progress: settings, F8/F7 and export are locked.</summary>
     public bool IsBusy
     {
-        get => busy;
+        get => busy || exporting;
         private set
         {
             if (busy == value)
                 return;
             busy = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(CanStart));
-            OnPropertyChanged(nameof(CanStop));
-            OnPropertyChanged(nameof(CanExport));
-            StartCommand.RaiseCanExecuteChanged();
-            StopCommand.RaiseCanExecuteChanged();
-            ExportLogsCommand.RaiseCanExecuteChanged();
-            RefreshPages();
+            BusyChanged();
         }
     }
 
-    public bool CanStart => !busy;
+    void SetExporting(bool value)
+    {
+        if (exporting == value)
+            return;
+        exporting = value;
+        BusyChanged();
+    }
+
+    void BusyChanged()
+    {
+        OnPropertyChanged(nameof(IsBusy));
+        OnPropertyChanged(nameof(CanStart));
+        OnPropertyChanged(nameof(CanStop));
+        StartCommand.RaiseCanExecuteChanged();
+        StopCommand.RaiseCanExecuteChanged();
+        exportLogsCommand.RaiseCanExecuteChanged();
+        RefreshPages();
+    }
+
+    public bool CanStart => !IsBusy;
+
+    /// <summary>F10 stops a run, a read or a PNG check; an export finishes on its own.</summary>
     public bool CanStop => busy;
-    public bool CanExport => !busy;
 
     /// <summary>A manual pause is possible only while an automation run (F8) is in progress, not during a read.</summary>
     public bool CanPause => busy && runActive;
@@ -184,8 +199,10 @@ public sealed class MainViewModel : ObservableObject, IShellContext
     public RelayCommand StartCommand { get; }
     public RelayCommand StopCommand { get; }
     public RelayCommand PauseCommand { get; }
-    public RelayCommand OpenLogsCommand { get; }
-    public AsyncCommand ExportLogsCommand { get; }
+    readonly AsyncCommand exportLogsCommand;
+
+    /// <summary>The single export command; the Logs and About pages bind to this one, so only one export can run.</summary>
+    public ICommand ExportLogsCommand => exportLogsCommand;
     public ICommand OpenSetsCommand { get; }
     public ICommand OpenSupportCommand { get; }
     public ICommand ReportBugCommand { get; }
@@ -212,6 +229,9 @@ public sealed class MainViewModel : ObservableObject, IShellContext
     public void AppendLog(string text)
     {
         var line = new LogLine(DateTime.Now, text);
+        // Only the recent tail is replayed when the window attaches; the full text is in session.log.
+        if (Lines.Count >= RunLog.MaxLines + RunLog.TrimBatch)
+            Lines.RemoveRange(0, RunLog.TrimBatch);
         Lines.Add(line);
         LineAppended?.Invoke(line);
         LogAppended?.Invoke(text);
@@ -252,6 +272,11 @@ public sealed class MainViewModel : ObservableObject, IShellContext
         if (busy)
         {
             Cancel();
+            return;
+        }
+        if (exporting)
+        {
+            Log(L.T("Зачекай, поки завершиться експорт журналів."));
             return;
         }
         if (run && !StopAvailable && !Preview)
@@ -454,7 +479,6 @@ public sealed class MainViewModel : ObservableObject, IShellContext
                     handle = window.Handle.ToInt64(),
                 }
         );
-        lastSessionFolder = recording.Folder;
         Log(L.T("Запис діагностики: ") + recording.Folder);
     }
 
@@ -480,7 +504,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
 
     public async Task InspectFile(string path)
     {
-        if (busy)
+        if (IsBusy)
             return;
         var session = new CancellationTokenSource();
         active = session;
@@ -615,23 +639,29 @@ public sealed class MainViewModel : ObservableObject, IShellContext
 
     public async Task ExportLogs()
     {
-        if (busy || Preview)
+        if (IsBusy || Preview)
             return;
-        var dialog = new Microsoft.Win32.SaveFileDialog
+        if (!LogExport.HasSessions())
         {
-            Title = L.T("Експорт журналів"),
-            FileName = LogExport.DefaultFileName(),
-            DefaultExt = ".zip",
-            Filter = L.T("ZIP-архів") + "|*.zip",
-            InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-        };
-        if (dialog.ShowDialog(Window) != true)
+            Log(L.T("Журналів ще немає. Запусти F8, F7 або перевірку PNG."));
             return;
-        string target = dialog.FileName;
+        }
+        // Busy from the dialog on: F8/F7 hotkeys and the second export button stay locked until the archive is written.
+        SetExporting(true);
         try
         {
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = L.T("Експорт журналів"),
+                FileName = LogExport.DefaultFileName(),
+                DefaultExt = ".zip",
+                Filter = L.T("ZIP-архів") + "|*.zip",
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+            };
+            if (dialog.ShowDialog(Window) != true)
+                return;
             Log(L.T("Експорт журналів…"));
-            var result = await Task.Run(() => LogExport.Create(target, Catalog));
+            var result = await LogExport.CreateInBackground(dialog.FileName, Catalog);
             Log(
                 L.F(
                     "Експортовано: {0} запусків, {1} кидків, {2} МБ → {3}",
@@ -643,9 +673,17 @@ public sealed class MainViewModel : ObservableObject, IShellContext
             );
             Process.Start(new ProcessStartInfo { FileName = "explorer.exe", Arguments = $"/select,\"{result.Path}\"", UseShellExecute = true });
         }
+        catch (LogExport.NothingToExportException)
+        {
+            Log(L.T("Журналів ще немає. Запусти F8, F7 або перевірку PNG."));
+        }
         catch (Exception e)
         {
             Log(L.T("Не вдалося експортувати журнали: ") + e.Message);
+        }
+        finally
+        {
+            SetExporting(false);
         }
     }
 }

@@ -8,13 +8,10 @@ public sealed class LogsViewModel : PageViewModel
     public const int MinMb = 1,
         MaxMb = 2048;
 
-    readonly AsyncCommand exportLogs;
-
     public LogsViewModel(IShellContext shell)
         : base(shell)
     {
         OpenLogsCommand = new RelayCommand(Shell.OpenLogs);
-        exportLogs = new AsyncCommand(Shell.ExportLogs, () => CanEdit);
     }
 
     public bool DiagnosticsEnabled
@@ -60,8 +57,8 @@ public sealed class LogsViewModel : PageViewModel
     /// <summary>Always available, also during a run.</summary>
     public ICommand OpenLogsCommand { get; }
 
-    /// <summary>Exports every session into one shareable ZIP; disabled while a run is in progress.</summary>
-    public ICommand ExportLogsCommand => exportLogs;
+    /// <summary>The shell's single export command; disabled while a run or another export is in progress.</summary>
+    public ICommand ExportLogsCommand => Shell.ExportLogsCommand;
 
     public override void Refresh()
     {
@@ -70,7 +67,6 @@ public sealed class LogsViewModel : PageViewModel
         OnPropertyChanged(nameof(DiagnosticScreenshots));
         OnPropertyChanged(nameof(DiagnosticMaxMb));
         OnPropertyChanged(nameof(FolderPath));
-        exportLogs.RaiseCanExecuteChanged();
     }
 
     public override void SmokeChecks(ICollection<string> passed)
@@ -104,5 +100,24 @@ public sealed class LogsViewModel : PageViewModel
         if (!OpenLogsCommand.CanExecute(null))
             throw new InvalidOperationException("Open Logs must always be available");
         passed.Add("PASS logs page: folder path shows SessionLog.Root, open button always enabled");
+
+        if (Shell is PreviewShell preview)
+        {
+            if (!ReferenceEquals(ExportLogsCommand, Shell.ExportLogsCommand))
+                throw new InvalidOperationException("Logs page must bind the shell's single export command");
+            if (!ExportLogsCommand.CanExecute(null))
+                throw new InvalidOperationException("Export must be available while idle");
+            preview.IsBusy = true;
+            try
+            {
+                if (ExportLogsCommand.CanExecute(null))
+                    throw new InvalidOperationException("Export must be disabled while busy");
+            }
+            finally
+            {
+                preview.IsBusy = false;
+            }
+            passed.Add("PASS logs page: export uses the shell's one command, enabled while idle, disabled while busy");
+        }
     }
 }

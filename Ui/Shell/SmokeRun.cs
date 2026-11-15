@@ -133,6 +133,19 @@ public static class SmokeRun
         Expect(log.FollowLog, "follow toggle is on by default");
         passed.Add("PASS run log: categories, timestamped lines, status line truncation, three seeded lines");
 
+        // Long runs: the on-screen log and the replay buffer stay bounded (session.log keeps everything).
+        bool priorFollow = log.FollowLog;
+        log.FollowLog = false;
+        for (int i = 0; i < RunLog.MaxLines + RunLog.TrimBatch + 10; i++)
+            shell.AppendLog("bulk " + i);
+        Expect(log.LineCount <= RunLog.MaxLines + RunLog.TrimBatch && log.LineCount >= RunLog.MaxLines,
+            "run log trimmed to its cap, got " + log.LineCount);
+        Expect(shell.Lines.Count <= RunLog.MaxLines + RunLog.TrimBatch && shell.Lines[^1].Text.StartsWith("bulk "),
+            "replay buffer trimmed to its cap, newest line kept");
+        log.Clear();
+        log.FollowLog = priorFollow;
+        passed.Add("PASS run log: on-screen lines and replay buffer stay bounded during long runs");
+
         // Log font size and panel height persist within bounds.
         int priorSize = shell.Profile.LogFontSize;
         log.Step(1);
@@ -169,7 +182,7 @@ public static class SmokeRun
         passed.Add("PASS tray and hotkey services construct; toasts off in preview");
 
         // Command bar and start/stop follow the busy state; a run without a game window only logs.
-        Expect(shell.CanStart && !shell.CanStop && shell.CanExport, "idle: start and export enabled, stop disabled");
+        Expect(shell.CanStart && !shell.CanStop && shell.ExportLogsCommand.CanExecute(null), "idle: start and export enabled, stop disabled");
         Expect(shell.StartCommand.CanExecute(null) && !shell.StopCommand.CanExecute(null), "commands follow busy state");
         // The build page selects a running game automatically, so the smoke run clears it first and then proves that a
         // preview shell refuses to run even with a window selected (it must never press a key in a real game).

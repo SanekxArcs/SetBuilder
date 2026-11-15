@@ -28,12 +28,9 @@ public sealed class AboutViewModel : PageViewModel
     public const int AuthorSeconds = 8 * 3600 + 21 * 60 + 27,
         AuthorSecondsPerPart = 76;
 
-    readonly AsyncCommand exportLogs;
-
     public AboutViewModel(IShellContext shell)
         : base(shell)
     {
-        exportLogs = new AsyncCommand(Shell.ExportLogs, () => CanEdit);
         OpenGitHubCommand = new RelayCommand(() => Shell.OpenSite(Links.GitHub));
         OpenSupportCommand = new RelayCommand(() => Shell.OpenSite(Links.Support));
         OpenFeedbackCommand = new RelayCommand(() => Shell.OpenSite(Links.Feedback));
@@ -71,19 +68,14 @@ public sealed class AboutViewModel : PageViewModel
             ItemAnalytics.Duration(AuthorSecondsPerPart)
         );
 
-    public ICommand ExportLogsCommand => exportLogs;
+    /// <summary>The shell's single export command, shared with the Logs page.</summary>
+    public ICommand ExportLogsCommand => Shell.ExportLogsCommand;
     public ICommand OpenGitHubCommand { get; }
     public ICommand OpenSupportCommand { get; }
     public ICommand OpenFeedbackCommand { get; }
     public ICommand OpenDiscordCommand { get; }
     public ICommand ReportBugCommand { get; }
     public ICommand OpenSiteCommand { get; }
-
-    public override void Refresh()
-    {
-        base.Refresh();
-        exportLogs.RaiseCanExecuteChanged();
-    }
 
     public override void SmokeChecks(ICollection<string> passed)
     {
@@ -113,8 +105,8 @@ public sealed class AboutViewModel : PageViewModel
                     throw new InvalidOperationException($"About: {name} button opened {preview.LastSite} instead of {url}");
             }
         }
-        if (!ExportLogsCommand.CanExecute(null))
-            throw new InvalidOperationException("About: export must be available while idle");
+        if (!ReferenceEquals(ExportLogsCommand, Shell.ExportLogsCommand) || !ExportLogsCommand.CanExecute(null))
+            throw new InvalidOperationException("About: export must be the shell's command and available while idle");
         passed.Add("PASS about page: author totals match their averages; GitHub, support, feedback, Discord, issues and site links; export enabled while idle");
     }
 }

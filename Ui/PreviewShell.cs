@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel;
+using System.Windows.Input;
+using TunerFest.Ui.ViewModels;
 
 namespace TunerFest.Ui;
 
@@ -9,7 +11,11 @@ public sealed class PreviewShell : IShellContext
     {
         Catalog = catalog ?? Catalog.Load();
         Profile = profile ?? new Profile();
+        exportLogsCommand = new AsyncCommand(ExportLogs, () => !IsBusy);
     }
+
+    readonly AsyncCommand exportLogsCommand;
+    public ICommand ExportLogsCommand => exportLogsCommand;
 
     public Catalog Catalog { get; }
     public Profile Profile { get; }
@@ -22,6 +28,7 @@ public sealed class PreviewShell : IShellContext
         {
             busy = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsBusy)));
+            exportLogsCommand.RaiseCanExecuteChanged();
         }
     }
     public GameWindow? Game { get; set; }

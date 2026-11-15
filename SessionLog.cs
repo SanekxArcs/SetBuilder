@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Drawing.Imaging;
-using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -487,25 +486,5 @@ public sealed class SessionLog
         {
             WriteError = e.Message;
         }
-    }
-
-    public static string? Latest() =>
-        Directory.Exists(Root)
-            ? Directory
-                .GetDirectories(Root)
-                .OrderByDescending(Path.GetFileName, StringComparer.Ordinal)
-                .FirstOrDefault(d => File.Exists(Path.Combine(d, "session.json")))
-            : null;
-
-    public static string Export(string session)
-    {
-        var destination = Path.Combine(Root, "Archives");
-        Directory.CreateDirectory(destination);
-        var path = Path.Combine(
-            destination,
-            Path.GetFileName(session) + "_" + DateTime.Now.ToString("HHmmssfff") + ".zip"
-        );
-        ZipFile.CreateFromDirectory(session, path, CompressionLevel.Fastest, false);
-        return path;
     }
 }

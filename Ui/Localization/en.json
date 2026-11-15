@@ -549,5 +549,6 @@
   "ZIP-архів": "ZIP archive",
   "Експорт журналів…": "Exporting logs…",
   "Експортовано: {0} запусків, {1} кидків, {2} МБ → {3}": "Exported: {0} sessions, {1} rolls, {2} MB → {3}",
-  "Не вдалося експортувати журнали: ": "Could not export logs: "
+  "Не вдалося експортувати журнали: ": "Could not export logs: ",
+  "Зачекай, поки завершиться експорт журналів.": "Wait for the log export to finish."
 }

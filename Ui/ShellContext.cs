@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Windows.Input;
 using TunerFest.Ui.ViewModels;
 
 namespace TunerFest.Ui;
@@ -35,7 +36,7 @@ public interface IShellContext : INotifyPropertyChanged
     /// <summary>Preview or smoke mode: never save the profile, never touch the game, never open dialogs or play sounds.</summary>
     bool Preview { get; }
 
-    /// <summary>A run, a read-only screen read or a PNG check is in progress. Raises PropertyChanged("IsBusy").</summary>
+    /// <summary>A run, a read-only screen read, a PNG check or a log export is in progress. Raises PropertyChanged("IsBusy").</summary>
     bool IsBusy { get; }
 
     /// <summary>The selected game window. The build page owns the selector and sets this.</summary>
@@ -65,6 +66,12 @@ public interface IShellContext : INotifyPropertyChanged
 
     /// <summary>Asks where to save and packs every session into one shareable ZIP (LogExport). No-op in preview.</summary>
     Task ExportLogs();
+
+    /// <summary>
+    /// The one command every export button binds to. Disabled while IsBusy, and IsBusy stays true for the whole export,
+    /// so a second export, F8 or F7 cannot start until the archive is written.
+    /// </summary>
+    ICommand ExportLogsCommand { get; }
     void PlayNotification(bool enabled, string code, bool preview = false);
 
     /// <summary>The run (or a read-only read) detected the set automatically; pages refresh their selections from Profile.</summary>

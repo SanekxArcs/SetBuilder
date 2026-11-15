@@ -198,6 +198,87 @@ public static class AnalyticsVerification
             ranking.Count == catalog.Affixes.Count && ranking.Sum(r => r.Count) == 3,
             "every catalog perk shown, only recognized new offers counted"
         );
+
+        // Log export: the scrubber covers long and 8.3 profile paths, the user, folder and computer names.
+        var scrubber = Scrubber.ForProfile(@"C:\Users\Jane Doe", "jdoe", "DESKTOP-42", @"C:\Users\JANEDO~1");
+        string scrubbed = scrubber.Apply(
+            @"a C:\Users\Jane Doe\x b {""p"":""C:\\Users\\Jane Doe\\y""} c c:/users/jane doe/z d C:\Users\JANEDO~1\AppData "
+                + @"e \\DESKTOP-42\share f JDOE g Jane Doe h jdoe2 i Jane Doer"
+        );
+        Check(
+            !scrubbed.Contains("JANEDO~1", StringComparison.OrdinalIgnoreCase)
+                && !scrubbed.Contains("DESKTOP-42", StringComparison.OrdinalIgnoreCase)
+                && scrubbed.Contains(@"a %USERPROFILE%\x b")
+                && scrubbed.Contains(@"""p"":""%USERPROFILE%\\y""")
+                && scrubbed.Contains("c %USERPROFILE%/z d")
+                && scrubbed.Contains(@"d %USERPROFILE%\AppData")
+                && scrubbed.Contains(@"e \\%COMPUTERNAME%\share")
+                && scrubbed.EndsWith("f %USERNAME% g %USERNAME% h jdoe2 i Jane Doer"),
+            "export scrubber removes long and short profile paths, user, folder and computer names, keeps longer words: " + scrubbed
+        );
+
+        string exportDir = Path.Combine(root, "_export");
+        Directory.CreateDirectory(exportDir);
+        File.AppendAllText(Path.Combine(modern, "session.log"), @"saved C:\Users\JANEDO~1\Desktop\a.png" + "\r\nlast line without newline");
+        string archivePath = Path.Combine(exportDir, "logs.zip");
+        var exported = LogExport.Create(archivePath, catalog, root, scrubber);
+        using (var zip = System.IO.Compression.ZipFile.OpenRead(archivePath))
+        {
+            var sessionFolders = zip.Entries
+                .Where(e => e.FullName.StartsWith("sessions/"))
+                .Select(e => e.FullName.Split('/')[1])
+                .Distinct()
+                .ToList();
+            using var statistics = JsonDocument.Parse(zip.GetEntry("statistics.json")!.Open());
+            string readme = new StreamReader(zip.GetEntry("README.txt")!.Open()).ReadToEnd();
+            string log = new StreamReader(zip.GetEntry("sessions/MODERN/session.log")!.Open()).ReadToEnd();
+            Check(
+                exported.Sessions == data.Sessions.Count
+                    && sessionFolders.Count == exported.Sessions
+                    && !sessionFolders.Contains("INTERNAL-TEST")
+                    && statistics.RootElement.GetProperty("Sessions").GetInt32() == exported.Sessions
+                    && readme.Contains("Sessions: " + exported.Sessions),
+                "export packs exactly the sessions the statistics count; internal tests left out"
+            );
+            Check(
+                log == "MODERN message\nRich знайдено у слоті 2\n" + @"saved %USERPROFILE%\Desktop\a.png" + "\r\nlast line without newline",
+                "export streams session.log with line endings kept and short profile paths scrubbed: " + log
+            );
+        }
+        Check(!File.Exists(archivePath + ".partial"), "no partial file after a successful export");
+
+        string blocked = Path.Combine(exportDir, "blocked.zip");
+        Directory.CreateDirectory(blocked); // a folder in the way makes the final move fail
+        bool failed = false;
+        try
+        {
+            LogExport.Create(blocked, catalog, root, scrubber);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            failed = true;
+        }
+        Check(failed && !File.Exists(blocked + ".partial"), "a failed export removes its partial file");
+
+        string emptyRoot = Path.Combine(exportDir, "empty");
+        Directory.CreateDirectory(emptyRoot);
+        bool nothing = false;
+        try
+        {
+            LogExport.Create(Path.Combine(exportDir, "empty.zip"), catalog, emptyRoot, scrubber);
+        }
+        catch (LogExport.NothingToExportException)
+        {
+            nothing = true;
+        }
+        Check(
+            nothing
+                && !LogExport.HasSessions(emptyRoot)
+                && LogExport.HasSessions(root)
+                && !File.Exists(Path.Combine(exportDir, "empty.zip"))
+                && !File.Exists(Path.Combine(exportDir, "empty.zip.partial")),
+            "no sessions: export refuses and writes nothing"
+        );
         Check(
             Math.Abs(ranking.Single(r => r.Name == "Rich").Percentage - 100.0 / 3) < .0001,
             "frequency denominator excludes missing offers and resumed menus"
