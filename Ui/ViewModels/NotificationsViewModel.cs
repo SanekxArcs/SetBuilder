@@ -6,11 +6,36 @@ namespace TunerFest.Ui.ViewModels;
 /// <summary>Page "Сповіщення": toasts, the two sound signals and the window theme. Every change is saved at once.</summary>
 public sealed class NotificationsViewModel : PageViewModel
 {
+    public static readonly IReadOnlyList<Option<string>> LanguageOptions =
+    [
+        new("en", "English"),
+        new("uk", "Українська"),
+    ];
+
+    public string Language
+    {
+        get => L.Normalize(Shell.Profile.Language);
+        set
+        {
+            var next = L.Normalize(value);
+            if (Language == next)
+                return;
+            Shell.Profile.Language = next;
+            Shell.SaveProfile();
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(LanguageDescription));
+        }
+    }
+
+    public string LanguageDescription => L.T(Language == L.Language
+        ? "Мова застосовується після перезапуску."
+        : "Перезапустіть застосунок, щоб змінити мову.");
+
     public static readonly IReadOnlyList<Option<string>> ThemeOptions =
     [
-        new("system", "Системна"),
-        new("dark", "Темна"),
-        new("light", "Світла"),
+        new("system", L.T("Системна")),
+        new("dark", L.T("Темна")),
+        new("light", L.T("Світла")),
     ];
 
     public NotificationsViewModel(IShellContext shell)
@@ -149,12 +174,24 @@ public sealed class NotificationsViewModel : PageViewModel
         OnPropertyChanged(nameof(CompletionSound));
         OnPropertyChanged(nameof(StopSound));
         OnPropertyChanged(nameof(Theme));
+        OnPropertyChanged(nameof(Language));
+        OnPropertyChanged(nameof(LanguageDescription));
         OnPropertyChanged(nameof(OverlayEnabled));
     }
 
     public override void SmokeChecks(ICollection<string> passed)
     {
         var profile = Shell.Profile;
+
+        var priorLanguage = profile.Language;
+        Language = L.IsUkrainian ? "en" : "uk";
+        if (profile.Language == L.Language || !LanguageDescription.Contains(L.T("Перезапустіть застосунок, щоб змінити мову.")))
+            throw new InvalidOperationException("Language selector did not update the profile or restart hint");
+        var savedProfile = JsonSerializer.Deserialize<Profile>(JsonSerializer.Serialize(profile))!;
+        if (savedProfile.Language != Language)
+            throw new InvalidOperationException("Language preference did not survive serialization");
+        Language = priorLanguage;
+        passed.Add("PASS language selector persists English / Ukrainian and shows the restart hint");
 
         foreach (var tone in NotificationAudio.Tones)
         {

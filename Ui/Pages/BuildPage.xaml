@@ -65,8 +65,8 @@
 
   <ScrollViewer Style="{StaticResource PageScroll}">
     <StackPanel Style="{StaticResource PageBody}">
-      <TextBlock Text="Збірка" Style="{StaticResource PageTitle}" />
-      <TextBlock Text="Два перки · сім деталей · один готовий сет" Style="{StaticResource CardDescription}" />
+      <TextBlock Text="{DynamicResource Loc0175}" Style="{StaticResource PageTitle}" />
+      <TextBlock Text="{DynamicResource Loc0109}" Style="{StaticResource CardDescription}" />
 
       <Grid>
         <Grid.ColumnDefinitions>
@@ -77,7 +77,7 @@
 
         <!-- Left column: the profile from the site, then the set and the perks. -->
         <StackPanel Grid.Column="0">
-          <TextBlock Text="Профіль із TunerFest" Style="{StaticResource SectionHeader}" />
+          <TextBlock Text="{DynamicResource CombinationsHeading}" Style="{StaticResource SectionHeader}" />
 
           <Border Style="{StaticResource SettingsPanel}">
             <Grid>
@@ -92,38 +92,39 @@
               <StackPanel Grid.Column="1" VerticalAlignment="Center">
                 <ComboBox Style="{StaticResource GoalCombo}" ItemsSource="{Binding Builds}"
                           SelectedItem="{Binding SelectedBuild, Mode=TwoWay}" IsEnabled="{Binding CanEditTargets}"
-                          AutomationProperties.Name="Збірка з TunerFest" />
+                          AutomationProperties.Name="{DynamicResource Loc0176}" />
                 <TextBlock Text="{Binding BuildDescription}" Style="{StaticResource GoalDescription}"
                            Visibility="{Binding BuildDescription, Converter={StaticResource NullToVisibility}}" />
               </StackPanel>
             </Grid>
           </Border>
 
+
           <StackPanel Orientation="Horizontal" Margin="0,4,0,8">
-            <ui:Button Content="Сети та інструкції на сайті ↗" Icon="{ui:SymbolIcon Open24}" Command="{Binding OpenSetsCommand}" />
-            <ui:Button Content="Підтримка ↗" Icon="{ui:SymbolIcon ChatHelp24}" Command="{Binding OpenSupportCommand}" Margin="8,0,0,0" />
+            <ui:Button Content="{DynamicResource Loc0438}" Icon="{ui:SymbolIcon Open24}" Command="{Binding OpenSetsCommand}" />
+            <ui:Button Content="{DynamicResource Loc0365}" Icon="{ui:SymbolIcon ChatHelp24}" Command="{Binding OpenSupportCommand}" Margin="8,0,0,0" />
           </StackPanel>
 
           <ui:CardControl Icon="{ui:SymbolIcon ScreenSearch24}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
             <ui:CardControl.Header>
               <StackPanel>
-                <TextBlock Text="Автоматично визначати сет і пару перків" Style="{StaticResource CardTitle}" />
+                <TextBlock Text="{DynamicResource Loc0055}" Style="{StaticResource CardTitle}" />
               </StackPanel>
             </ui:CardControl.Header>
-            <ui:ToggleSwitch IsChecked="{Binding AutoSet, Mode=TwoWay}" AutomationProperties.Name="Автоматично визначати сет і пару перків" />
+            <ui:ToggleSwitch IsChecked="{Binding AutoSet, Mode=TwoWay}" AutomationProperties.Name="{DynamicResource Loc0055}" />
           </ui:CardControl>
 
-          <TextBlock Text="Сет і перки" Style="{StaticResource SectionHeader}" />
+          <TextBlock Text="{DynamicResource Loc0436}" Style="{StaticResource SectionHeader}" />
 
           <!-- Set -->
           <Border Style="{StaticResource SettingsPanel}">
             <StackPanel>
               <Grid Margin="0,0,0,10">
-                <TextBlock Text="Сет деталі" Style="{StaticResource CardTitle}" VerticalAlignment="Center" />
-                <ui:ToggleSwitch Content="Не зважати на сет" HorizontalAlignment="Right" IsEnabled="{Binding CanEdit}"
+                <TextBlock Text="{DynamicResource Loc0435}" Style="{StaticResource CardTitle}" VerticalAlignment="Center" />
+                <ui:ToggleSwitch Content="{DynamicResource Loc0283}" HorizontalAlignment="Right" IsEnabled="{Binding CanEdit}"
                                  IsChecked="{Binding IgnoreSet, Mode=TwoWay}"
-                                 ToolTip="Деталь будь-якого сету крутиться на перки; сет не перевіряється. В авторежимі сет першої деталі й далі обирає пресет перків."
-                                 AutomationProperties.Name="Не зважати на сет" />
+                                 ToolTip="{DynamicResource Loc0119}"
+                                 AutomationProperties.Name="{DynamicResource Loc0283}" />
               </Grid>
               <Grid>
                 <Grid.ColumnDefinitions>
@@ -134,7 +135,7 @@
                 <StackPanel Grid.Column="1">
                   <ComboBox Style="{StaticResource GoalCombo}" ItemsSource="{Binding Sets}"
                             SelectedItem="{Binding Set, Mode=TwoWay}" IsEnabled="{Binding CanEditTargets}"
-                            AutomationProperties.Name="Сет деталі" />
+                            AutomationProperties.Name="{DynamicResource Loc0435}" />
                   <TextBlock Text="{Binding SetDescription}" Style="{StaticResource GoalDescription}"
                              Visibility="{Binding SetDescription, Converter={StaticResource NullToVisibility}}" />
                 </StackPanel>
@@ -146,9 +147,9 @@
           <Border Style="{StaticResource SettingsPanel}">
             <StackPanel>
               <Grid Margin="0,0,0,10">
-                <TextBlock Text="Перший перк" Style="{StaticResource CardTitle}" VerticalAlignment="Center" />
-                <ui:ToggleSwitch Content="Необов'язковий" HorizontalAlignment="Right" IsEnabled="{Binding CanEdit}"
-                                 IsChecked="{Binding FirstOptional, Mode=TwoWay}" AutomationProperties.Name="Необов'язковий перк" />
+                <TextBlock Text="{DynamicResource Loc0356}" Style="{StaticResource CardTitle}" VerticalAlignment="Center" />
+                <ui:ToggleSwitch Content="{DynamicResource Loc0301}" HorizontalAlignment="Right" IsEnabled="{Binding CanEdit}"
+                                 IsChecked="{Binding FirstOptional, Mode=TwoWay}" AutomationProperties.Name="{DynamicResource Loc0302}" />
               </Grid>
               <Grid>
                 <Grid.ColumnDefinitions>
@@ -165,14 +166,14 @@
                 <Image Grid.Row="0" Grid.Column="1" Style="{StaticResource GoalIcon}" Source="{Binding FirstIcon}" />
                 <ComboBox Grid.Row="0" Grid.Column="2" Style="{StaticResource GoalCombo}" ItemsSource="{Binding Affixes}"
                           SelectedItem="{Binding First, Mode=TwoWay}" IsEnabled="{Binding CanEditTargets}"
-                          AutomationProperties.Name="Перший перк" />
+                          AutomationProperties.Name="{DynamicResource Loc0356}" />
                 <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding FirstDescription}" Style="{StaticResource GoalDescription}"
                            Visibility="{Binding FirstDescription, Converter={StaticResource NullToVisibility}}" />
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="або" Style="{StaticResource OrLabel}" Margin="0,10,12,0" />
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="{DynamicResource Loc0054}" Style="{StaticResource OrLabel}" Margin="0,10,12,0" />
                 <Image Grid.Row="2" Grid.Column="1" Style="{StaticResource GoalIcon}" Margin="0,10,12,0" Source="{Binding FirstAlternativeIcon}" />
                 <ComboBox Grid.Row="2" Grid.Column="2" Style="{StaticResource GoalCombo}" Margin="0,10,0,0" ItemsSource="{Binding Alternatives}"
                           SelectedItem="{Binding FirstAlternative, Mode=TwoWay}" IsEnabled="{Binding CanEditTargets}"
-                          AutomationProperties.Name="Альтернатива першого перка" />
+                          AutomationProperties.Name="{DynamicResource Loc0060}" />
                 <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding FirstAlternativeDescription}" Style="{StaticResource GoalDescription}"
                            Visibility="{Binding FirstAlternativeDescription, Converter={StaticResource NullToVisibility}}" />
               </Grid>
@@ -183,15 +184,15 @@
           <Border Style="{StaticResource SettingsPanel}">
             <StackPanel>
               <Grid Margin="0,0,0,10">
-                <TextBlock Text="Другий перк" Style="{StaticResource CardTitle}" VerticalAlignment="Center" />
+                <TextBlock Text="{DynamicResource Loc0134}" Style="{StaticResource CardTitle}" VerticalAlignment="Center" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                  <ui:ToggleSwitch Content="Вручну в авторежимі" IsEnabled="{Binding CanEdit}" Margin="0,0,16,0"
+                  <ui:ToggleSwitch Content="{DynamicResource Loc0096}" IsEnabled="{Binding CanEdit}" Margin="0,0,16,0"
                                    Visibility="{Binding AutoSet, Converter={StaticResource BoolToVisibility}}"
                                    IsChecked="{Binding AutoSecondManual, Mode=TwoWay}"
-                                   ToolTip="Автосет обирає сет і перший перк; другий перк і його альтернатива лишаються такими, як обрано тут."
-                                   AutomationProperties.Name="Другий перк вручну в авторежимі" />
-                  <ui:ToggleSwitch Content="Необов'язковий" IsEnabled="{Binding CanEdit}"
-                                   IsChecked="{Binding SecondOptional, Mode=TwoWay}" AutomationProperties.Name="Необов'язковий перк" />
+                                   ToolTip="{DynamicResource Loc0056}"
+                                   AutomationProperties.Name="{DynamicResource Loc0135}" />
+                  <ui:ToggleSwitch Content="{DynamicResource Loc0301}" IsEnabled="{Binding CanEdit}"
+                                   IsChecked="{Binding SecondOptional, Mode=TwoWay}" AutomationProperties.Name="{DynamicResource Loc0302}" />
                 </StackPanel>
               </Grid>
               <Grid>
@@ -209,14 +210,14 @@
                 <Image Grid.Row="0" Grid.Column="1" Style="{StaticResource GoalIcon}" Source="{Binding SecondIcon}" />
                 <ComboBox Grid.Row="0" Grid.Column="2" Style="{StaticResource GoalCombo}" ItemsSource="{Binding Affixes}"
                           SelectedItem="{Binding Second, Mode=TwoWay}" IsEnabled="{Binding CanEditSecond}"
-                          AutomationProperties.Name="Другий перк" />
+                          AutomationProperties.Name="{DynamicResource Loc0134}" />
                 <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding SecondDescription}" Style="{StaticResource GoalDescription}"
                            Visibility="{Binding SecondDescription, Converter={StaticResource NullToVisibility}}" />
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="або" Style="{StaticResource OrLabel}" Margin="0,10,12,0" />
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="{DynamicResource Loc0054}" Style="{StaticResource OrLabel}" Margin="0,10,12,0" />
                 <Image Grid.Row="2" Grid.Column="1" Style="{StaticResource GoalIcon}" Margin="0,10,12,0" Source="{Binding SecondAlternativeIcon}" />
                 <ComboBox Grid.Row="2" Grid.Column="2" Style="{StaticResource GoalCombo}" Margin="0,10,0,0" ItemsSource="{Binding Alternatives}"
                           SelectedItem="{Binding SecondAlternative, Mode=TwoWay}" IsEnabled="{Binding CanEditSecond}"
-                          AutomationProperties.Name="Альтернатива другого перка" />
+                          AutomationProperties.Name="{DynamicResource Loc0059}" />
                 <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding SecondAlternativeDescription}" Style="{StaticResource GoalDescription}"
                            Visibility="{Binding SecondAlternativeDescription, Converter={StaticResource NullToVisibility}}" />
               </Grid>
@@ -224,12 +225,12 @@
           </Border>
 
           <TextBlock Style="{StaticResource CardDescription}" Margin="2,6,0,0"
-                     Text="Будь-який порядок слотів. «або» — беремо той із двох, що випав першим, і доводимо до максимуму. Необов'язковий не шукається й не покращується. «Не зважати на сет» крутить деталь будь-якого сету; «Вручну в авторежимі» лишає другий перк за вами, а сет і перший перк бере з пресету." />
+                     Text="{DynamicResource Loc0064}" />
         </StackPanel>
 
         <!-- Right column: the game window, the part count and the pre-start checks. -->
         <StackPanel Grid.Column="2">
-          <TextBlock Text="Вікно гри" Style="{StaticResource SectionHeader}" />
+          <TextBlock Text="{DynamicResource Loc0089}" Style="{StaticResource SectionHeader}" />
           <Border Style="{StaticResource SettingsPanel}">
             <Grid>
               <Grid.ColumnDefinitions>
@@ -238,13 +239,13 @@
               </Grid.ColumnDefinitions>
               <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding GameWindows}" DisplayMemberPath="Title"
                         SelectedItem="{Binding SelectedWindow, Mode=TwoWay}" IsEnabled="{Binding CanEdit}"
-                        AutomationProperties.Name="Вікно гри" />
-              <ui:Button Grid.Column="1" Margin="8,0,0,0" Icon="{ui:SymbolIcon ArrowSync24}" ToolTip="Оновити список вікон"
-                         AutomationProperties.Name="Оновити список вікон" Command="{Binding RefreshWindowsCommand}" IsEnabled="{Binding CanEdit}" />
+                        AutomationProperties.Name="{DynamicResource Loc0089}" />
+              <ui:Button Grid.Column="1" Margin="8,0,0,0" Icon="{ui:SymbolIcon ArrowSync24}" ToolTip="{DynamicResource Loc0318}"
+                         AutomationProperties.Name="{DynamicResource Loc0318}" Command="{Binding RefreshWindowsCommand}" IsEnabled="{Binding CanEdit}" />
             </Grid>
           </Border>
 
-          <TextBlock Text="Деталей за запуск" Style="{StaticResource SectionHeader}" />
+          <TextBlock Text="{DynamicResource Loc0110}" Style="{StaticResource SectionHeader}" />
           <Border Style="{StaticResource SettingsPanel}">
             <ItemsControl ItemsSource="{Binding PartOptions}" IsEnabled="{Binding CanEdit}" HorizontalAlignment="Stretch">
               <ItemsControl.ItemsPanel>
@@ -263,17 +264,33 @@
             </ItemsControl>
           </Border>
 
-          <TextBlock Text="Перевірка перед стартом" Style="{StaticResource SectionHeader}" />
+          <TextBlock Text="{DynamicResource Loc0351}" Style="{StaticResource SectionHeader}" />
           <Border Style="{StaticResource SettingsPanel}">
             <StackPanel>
               <TextBlock Style="{StaticResource HintText}"
-                         Text="Відкрий екран семи деталей або перків.&#10;Перевір зони й поверни фокус у гру.&#10;F8 — запуск · F7 — зчитати · F10 — стоп." />
-              <ui:Button Content="Зчитати екран без натискань" Icon="{ui:SymbolIcon Eye24}" Margin="0,14,0,0"
+                         Text="{DynamicResource Loc0081}" />
+              <ui:Button Content="{DynamicResource Loc0206}" Icon="{ui:SymbolIcon Eye24}" Margin="0,14,0,0"
                          HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
                          Command="{Binding ReadScreenCommand}" IsEnabled="{Binding CanEdit}" />
-              <ui:Button Content="Перевірити PNG зі скріншота" Icon="{ui:SymbolIcon Image24}" Margin="0,8,0,0"
+              <ui:Button Content="{DynamicResource Loc0349}" Icon="{ui:SymbolIcon Image24}" Margin="0,8,0,0"
                          HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
                          Command="{Binding InspectPngCommand}" IsEnabled="{Binding CanEdit}" />
+            </StackPanel>
+          </Border>
+
+          <Border Style="{StaticResource SettingsPanel}" IsEnabled="{Binding CanEditTargets}">
+            <StackPanel>
+              <TextBlock Text="{DynamicResource CombinationName}" Style="{StaticResource CardTitle}" />
+              <TextBlock Text="{DynamicResource CombinationHint}" Style="{StaticResource CardDescription}" Margin="0,4,0,10" />
+              <ui:TextBox Text="{Binding CombinationName, UpdateSourceTrigger=PropertyChanged}" MaxLength="80"
+                          PlaceholderText="{DynamicResource CombinationPlaceholder}" AutomationProperties.Name="{DynamicResource CombinationName}" />
+              <WrapPanel Margin="0,10,0,0">
+                <ui:Button Content="{DynamicResource CombinationSave}" Icon="{ui:SymbolIcon Save24}" Command="{Binding SaveCombinationCommand}" Margin="0,0,6,6" />
+                <ui:Button Content="{DynamicResource CombinationUpdate}" Command="{Binding UpdateCombinationCommand}" Margin="0,0,6,6" />
+                <ui:Button Content="{DynamicResource CombinationDelete}" Icon="{ui:SymbolIcon Delete24}" Command="{Binding DeleteCombinationCommand}" Margin="0,0,0,6" />
+              </WrapPanel>
+              <TextBlock Text="{Binding CombinationFeedback}" Style="{StaticResource CardDescription}" Margin="0,4,0,0"
+                         Visibility="{Binding CombinationFeedback, Converter={StaticResource NullToVisibility}}" />
             </StackPanel>
           </Border>
         </StackPanel>

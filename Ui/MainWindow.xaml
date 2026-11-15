@@ -103,23 +103,23 @@
     <controls:StatusCard Grid.Row="1" Grid.ColumnSpan="2" Margin="24,8,24,0" DataContext="{Binding Status}">
       <controls:StatusCard.Actions>
         <StackPanel Orientation="Horizontal" DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}">
-          <ui:Button Content="Почати · F8" Icon="{ui:SymbolIcon Play24}" Appearance="Primary" Padding="14,6" MinWidth="150"
+          <ui:Button Content="{DynamicResource Loc0386}" Icon="{ui:SymbolIcon Play24}" Appearance="Primary" Padding="14,6" MinWidth="150"
                      Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}" Margin="0,0,8,0"
-                     AutomationProperties.Name="Почати · F8" />
+                     AutomationProperties.Name="{DynamicResource Loc0386}" />
           <ui:Button Content="{Binding PauseLabel}" Appearance="Secondary" Padding="14,6" MinWidth="130" Margin="0,0,8,0"
                      Command="{Binding PauseCommand}" IsEnabled="{Binding CanPause}"
-                     ToolTip="Зупинити натискання перед наступним читанням екрана; «Продовжити» відновлює запуск"
-                     AutomationProperties.Name="Пауза">
+                     ToolTip="{DynamicResource Loc0203}"
+                     AutomationProperties.Name="{DynamicResource Loc0341}">
             <ui:Button.Icon>
               <ui:SymbolIcon Symbol="{Binding PauseIcon}" />
             </ui:Button.Icon>
           </ui:Button>
-          <ui:Button Content="Зупинити · F10" Icon="{ui:SymbolIcon Stop24}" Appearance="Secondary" Padding="14,6" MinWidth="150"
+          <ui:Button Content="{DynamicResource Loc0202}" Icon="{ui:SymbolIcon Stop24}" Appearance="Secondary" Padding="14,6" MinWidth="150"
                      Command="{Binding StopCommand}" IsEnabled="{Binding CanStop}" Margin="0,0,8,0"
-                     AutomationProperties.Name="Зупинити · F10" />
-          <ui:ToggleSwitch IsChecked="{Binding OverlayEnabled, Mode=TwoWay}" Content="Накладка" VerticalAlignment="Center" Margin="4,0,0,0"
-                           ToolTip="Панель поверх гри: стан, Почати · Пауза · Зупинити, останній рядок журналу"
-                           AutomationProperties.Name="Накладка поверх гри" />
+                     AutomationProperties.Name="{DynamicResource Loc0202}" />
+          <ui:ToggleSwitch IsChecked="{Binding OverlayEnabled, Mode=TwoWay}" Content="{DynamicResource Loc0263}" VerticalAlignment="Center" Margin="4,0,0,0"
+                           ToolTip="{DynamicResource Loc0338}"
+                           AutomationProperties.Name="{DynamicResource Loc0265}" />
         </StackPanel>
       </controls:StatusCard.Actions>
     </controls:StatusCard>
@@ -129,11 +129,11 @@
       <DockPanel>
         <ui:Button DockPanel.Dock="Top" Appearance="Transparent" Padding="0" Width="40" Height="36" Margin="4,0,0,4"
                    HorizontalAlignment="Left" Icon="{ui:SymbolIcon LineHorizontal320}" Click="OnTogglePane"
-                   ToolTip="Згорнути або розгорнути панель" AutomationProperties.Name="Панель навігації" />
+                   ToolTip="{DynamicResource Loc0179}" AutomationProperties.Name="{DynamicResource Loc0337}" />
         <ListBox x:Name="Nav" ItemsSource="{Binding Pages}" SelectedItem="{Binding SelectedPage, Mode=TwoWay}"
                  ItemContainerStyle="{StaticResource NavItem}" Background="Transparent" BorderThickness="0" Padding="0" Margin="4,0,8,0"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled" KeyboardNavigation.DirectionalNavigation="Cycle"
-                 AutomationProperties.Name="Сторінки">
+                 AutomationProperties.Name="{DynamicResource Loc0465}">
           <ListBox.Template>
             <ControlTemplate TargetType="ListBox">
               <ItemsPresenter />
@@ -161,13 +161,13 @@
 
     <!-- 4. Command bar and status line. -->
     <StackPanel Grid.Row="5" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="24,12,24,0">
-      <ui:Button Style="{StaticResource CommandButton}" Content="Відкрити Logs" Icon="{ui:SymbolIcon FolderOpen24}" Command="{Binding OpenLogsCommand}" />
-      <ui:Button Style="{StaticResource CommandButton}" Content="ZIP останнього запуску" Icon="{ui:SymbolIcon FolderZip24}"
+      <ui:Button Style="{StaticResource CommandButton}" Content="{DynamicResource Loc0083}" Icon="{ui:SymbolIcon FolderOpen24}" Command="{Binding OpenLogsCommand}" />
+      <ui:Button Style="{StaticResource CommandButton}" Content="{DynamicResource Loc0053}" Icon="{ui:SymbolIcon FolderZip24}"
                  Command="{Binding ExportLogsCommand}" IsEnabled="{Binding CanExport}" />
       <ui:Button Style="{StaticResource CommandButton}" Content="tunerfest.app/sets ↗" Icon="{ui:SymbolIcon Open24}" Command="{Binding OpenSetsCommand}" />
-      <ui:Button Style="{StaticResource CommandButton}" Content="Підтримка ↗" Icon="{ui:SymbolIcon QuestionCircle24}" Command="{Binding OpenSupportCommand}" />
+      <ui:Button Style="{StaticResource CommandButton}" Content="{DynamicResource Loc0365}" Icon="{ui:SymbolIcon QuestionCircle24}" Command="{Binding OpenSupportCommand}" />
     </StackPanel>
     <TextBlock Grid.Row="6" Grid.ColumnSpan="2" Margin="26,6,24,12" FontSize="12" Text="{Binding StatusLine}" TextTrimming="CharacterEllipsis"
-               Foreground="{DynamicResource TextFillColorSecondaryBrush}" AutomationProperties.Name="Стан" />
+               Foreground="{DynamicResource TextFillColorSecondaryBrush}" AutomationProperties.Name="{DynamicResource Loc0454}" />
   </Grid>
 </ui:FluentWindow>

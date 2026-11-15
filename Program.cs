@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using TunerFest.Ui;
 
 namespace TunerFest;
@@ -73,6 +73,8 @@ internal static class Program
             if (
                 args.Length > 0
                 && !args.Contains("--ui-smoke")
+                && !args.Contains("--ui-smoke-en")
+                && !args.Contains("--ui-smoke-uk")
                 && !args[0].StartsWith("-ToastActivated", StringComparison.OrdinalIgnoreCase)
             )
             {
@@ -83,8 +85,11 @@ internal static class Program
                 );
                 return 2;
             }
-            if (args.Contains("--ui-smoke"))
+            if (args.Contains("--ui-smoke") || args.Contains("--ui-smoke-en") || args.Contains("--ui-smoke-uk"))
+            {
+                L.Configure(args.Contains("--ui-smoke-uk") ? "uk" : "en");
                 return Ui.Shell.SmokeRun.Execute();
+            }
             // Normal launch (also when a toast is clicked): one instance only, friendly crash dialog.
             using var instance = new Mutex(true, @"Local\TunerFestSetBuilder", out bool firstInstance);
             if (!firstInstance)
@@ -93,12 +98,14 @@ internal static class Program
                 return 0;
             }
             var app = new App();
+            try { L.Configure(Profile.Load().Language); }
+            catch { L.Configure("en"); }
             app.InitializeComponent();
             app.DispatcherUnhandledException += (_, e) =>
             {
                 WriteCrash(e.Exception.ToString());
                 MessageBox.Show(
-                    "Сталася неочікувана помилка. Звіт збережено у папці Logs поруч із програмою.\n\n"
+                    L.T("Сталася неочікувана помилка. Звіт збережено у папці Logs поруч із програмою.\n\n")
                         + e.Exception.Message,
                     CrashTitle,
                     MessageBoxButton.OK,

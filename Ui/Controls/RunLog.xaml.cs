@@ -62,11 +62,11 @@ public partial class RunLog : UserControl
     public void SetDarkTheme(bool isDark) => dark = isDark;
 
     public static string Categorize(string text) =>
-        text.StartsWith('✓') || text.StartsWith("Готово") ? "ГОТОВО"
-        : text.Contains("Зупинено") || text.Contains("Помилка") ? "ЗУПИНКА"
-        : text.StartsWith("Кидок") ? "КИДОК"
-        : text.StartsWith("Збережено:") ? "РЕЗУЛЬТАТ"
-        : text.Contains("знайдено у слоті") ? "ПЕРК"
+        text.StartsWith('✓') || text.StartsWith("Готово") || text.StartsWith("Done") ? "ГОТОВО"
+        : text.Contains("Зупинено") || text.Contains("Помилка") || text.Contains("Stopped") || text.Contains("Error") ? "ЗУПИНКА"
+        : text.StartsWith("Кидок") || text.StartsWith("Roll") ? "КИДОК"
+        : text.StartsWith("Збережено:") || text.StartsWith("Kept:") ? "РЕЗУЛЬТАТ"
+        : text.Contains("знайдено у слоті") || text.Contains("found in slot") ? "ПЕРК"
         : "ПОДІЯ";
 
     public void Append(string text) => Append(text, DateTime.Now);
@@ -81,8 +81,8 @@ public partial class RunLog : UserControl
         string kind = Categorize(text);
         var paragraph = new Paragraph { KeepTogether = true };
         paragraph.Inlines.Add(new Run($"{at:HH:mm:ss}   ") { Foreground = dark ? Timestamp : TimestampLight });
-        var category = new Run(kind + "  ·  ") { FontWeight = FontWeights.Bold };
-        var body = new Run(text);
+        var category = new Run(L.T(kind) + "  ·  ") { FontWeight = FontWeights.Bold };
+        var body = new Run(L.Display(text));
         Colour(category, kind);
         Colour(body, kind);
         paragraph.Inlines.Add(category);
@@ -146,7 +146,7 @@ public partial class RunLog : UserControl
         IsCollapsed = collapsed;
         Events.Visibility = collapsed ? Visibility.Collapsed : Visibility.Visible;
         CollapseButton.Icon = new SymbolIcon(collapsed ? SymbolRegular.ChevronUp24 : SymbolRegular.ChevronDown24);
-        CollapseButton.ToolTip = collapsed ? "Розгорнути журнал" : "Згорнути журнал";
+        CollapseButton.ToolTip = L.T(collapsed ? "Розгорнути журнал" : "Згорнути журнал");
         CollapsedChanged?.Invoke(collapsed);
     }
 

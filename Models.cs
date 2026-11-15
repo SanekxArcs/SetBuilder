@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -72,6 +72,8 @@ public sealed class Catalog
 
 public sealed class Profile
 {
+    public List<SavedCombination> CustomCombinations { get; set; } = [];
+    public string SelectedCombinationId { get; set; } = "";
     public bool AutoSet { get; set; } = false;
     public string Set { get; set; } = "NITRO CHEMIST";
     public string First { get; set; } = "Pure";
@@ -135,6 +137,9 @@ public sealed class Profile
     // Window look: "system" follows Windows, or "dark" / "light".
     public string Theme { get; set; } = "system";
 
+    // English on first launch; "uk" is the standard Ukrainian language code.
+    public string Language { get; set; } = "en";
+
     // Small always-on-top panel in the top-left corner of the game window: status, start / pause / stop, last log line.
     public bool OverlayEnabled { get; set; } = true;
 
@@ -182,6 +187,7 @@ public sealed class Profile
             : new Profile();
         foreach (var (key, zone) in Defaults())
             result.Zones.TryAdd(key, zone);
+        result.CustomCombinations ??= [];
         return result;
     }
 

@@ -17,8 +17,8 @@ public enum StatusMode
 /// <summary>Run state shown in the header card: phase, detail text and a pause-aware elapsed clock (ported from the WinForms StatusCard).</summary>
 public sealed class StatusCardViewModel : ObservableObject
 {
-    public const string IdleTitle = "Очікування";
-    public const string IdleDetail = "Вибери сет, два перки й вікно гри · F8 — запуск";
+    public static readonly string IdleTitle = L.T("Очікування");
+    public static readonly string IdleDetail = L.T("Вибери сет, два перки й вікно гри · F8 — запуск");
 
     readonly DispatcherTimer clock = new() { Interval = TimeSpan.FromMilliseconds(500) };
     DateTime? started;
@@ -77,8 +77,8 @@ public sealed class StatusCardViewModel : ObservableObject
         else
             clock.Start();
         Current = next;
-        Title = heading;
-        Detail = text;
+        Title = L.Display(heading);
+        Detail = L.Display(text);
         OnPropertyChanged(nameof(Current));
         OnPropertyChanged(nameof(Title));
         OnPropertyChanged(nameof(Detail));

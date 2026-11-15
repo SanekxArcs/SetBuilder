@@ -30,6 +30,7 @@ public partial class MainWindow
         DataContext = viewModel;
         viewModel.Window = this;
         Title = AppInfo.Title;
+        L.ApplyResources();
         InitializeComponent();
         Log.LogFontSize = viewModel.Profile.LogFontSize;
         Log.SetDarkTheme(viewModel.Theme.IsDark);
@@ -86,7 +87,7 @@ public partial class MainWindow
         }
         catch (Exception error)
         {
-            shell.Log("OCR Windows недоступний: " + error.Message);
+            shell.Log(L.T("OCR Windows недоступний: ") + error.Message);
         }
         RestoreLogLayout();
     }
@@ -106,7 +107,7 @@ public partial class MainWindow
         {
             shell.Cancel();
             e.Cancel = true;
-            shell.Log("Зупиняю дію. Закрийте вікно ще раз після зупинки.");
+            shell.Log(L.T("Зупиняю дію. Закрийте вікно ще раз після зупинки."));
             return;
         }
         if (!shell.Preview)

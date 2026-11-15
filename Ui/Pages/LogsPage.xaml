@@ -9,17 +9,17 @@
              mc:Ignorable="d">
   <ScrollViewer Style="{StaticResource PageScroll}">
     <StackPanel Style="{StaticResource PageBody}">
-      <TextBlock Text="Журнали" Style="{StaticResource PageTitle}" />
-      <TextBlock Text="Журнали, статистика кидків і витрати зберігаються поруч із програмою. Кожен кидок записується один раз; записи кидків не обмежені лімітом скрінів."
+      <TextBlock Text="{DynamicResource Loc0148}" Style="{StaticResource PageTitle}" />
+      <TextBlock Text="{DynamicResource Loc0149}"
                  Style="{StaticResource CardDescription}" />
 
-      <TextBlock Text="Запис" Style="{StaticResource SectionHeader}" />
+      <TextBlock Text="{DynamicResource Loc0160}" Style="{StaticResource SectionHeader}" />
 
       <ui:CardControl Icon="{ui:SymbolIcon DocumentBulletList24}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
         <ui:CardControl.Header>
           <StackPanel>
-            <TextBlock Text="Зберігати журнал кожного запуску" Style="{StaticResource CardTitle}" />
-            <TextBlock Text="Текстовий журнал, сирий OCR і статистика кидків. Застосовується при старті." Style="{StaticResource CardDescription}" />
+            <TextBlock Text="{DynamicResource Loc0172}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource Loc0473}" Style="{StaticResource CardDescription}" />
           </StackPanel>
         </ui:CardControl.Header>
         <ui:ToggleSwitch IsChecked="{Binding DiagnosticsEnabled, Mode=TwoWay}" />
@@ -28,8 +28,8 @@
       <ui:CardControl Icon="{ui:SymbolIcon Screenshot24}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
         <ui:CardControl.Header>
           <StackPanel>
-            <TextBlock Text="Зберігати скріни гри та проблемних зон" Style="{StaticResource CardTitle}" />
-            <TextBlock Text="Кадри з часовими мітками та вирізки зон, де розпізнавання не впевнене." Style="{StaticResource CardDescription}" />
+            <TextBlock Text="{DynamicResource Loc0173}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource Loc0213}" Style="{StaticResource CardDescription}" />
           </StackPanel>
         </ui:CardControl.Header>
         <ui:ToggleSwitch IsChecked="{Binding DiagnosticScreenshots, Mode=TwoWay}" />
@@ -38,8 +38,8 @@
       <ui:CardControl Icon="{ui:SymbolIcon Storage24}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
         <ui:CardControl.Header>
           <StackPanel>
-            <TextBlock Text="Ліміт скрінів за один запуск, МБ" Style="{StaticResource CardTitle}" />
-            <TextBlock Text="Звичайні скріни: до 400 кадрів у межах ліміту. Останній безпечний кадр при помилці зберігається додатково. Текстовий журнал продовжується після вичерпання ліміту."
+            <TextBlock Text="{DynamicResource Loc0244}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource Loc0177}"
                        Style="{StaticResource CardDescription}" />
           </StackPanel>
         </ui:CardControl.Header>
@@ -47,7 +47,7 @@
                       Value="{Binding DiagnosticMaxMb, Mode=TwoWay}" />
       </ui:CardControl>
 
-      <TextBlock Text="Папка журналів" Style="{StaticResource SectionHeader}" />
+      <TextBlock Text="{DynamicResource Loc0339}" Style="{StaticResource SectionHeader}" />
 
       <Border Style="{StaticResource SettingsPanel}">
         <Grid>
@@ -63,20 +63,20 @@
           <ui:SymbolIcon Symbol="FolderOpen24" FontSize="20" Margin="0,2,16,0" VerticalAlignment="Top"
                          Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
           <StackPanel Grid.Column="1">
-            <TextBlock Text="Папка журналів" Style="{StaticResource CardTitle}" />
-            <TextBlock Text="Кожен запуск отримує власну підпапку; ZIP-архіви лягають у Logs\Archives." Style="{StaticResource CardDescription}" />
+            <TextBlock Text="{DynamicResource Loc0339}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource Loc0229}" Style="{StaticResource CardDescription}" />
           </StackPanel>
           <ui:TextBox Grid.Row="1" Grid.Column="1" Margin="0,12,0,0" IsReadOnly="True" TextWrapping="Wrap" TextAlignment="Left"
-                      Text="{Binding FolderPath, Mode=OneWay}" ToolTip="Шлях можна виділити й скопіювати" />
+                      Text="{Binding FolderPath, Mode=OneWay}" ToolTip="{DynamicResource Loc0515}" />
           <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="0,12,0,0">
-            <ui:Button Content="Відкрити папку Logs" Icon="{ui:SymbolIcon FolderOpen24}" Command="{Binding OpenLogsCommand}" />
-            <ui:Button Content="Створити ZIP останнього запуску" Icon="{ui:SymbolIcon FolderZip24}" Margin="8,0,0,0"
+            <ui:Button Content="{DynamicResource Loc0084}" Icon="{ui:SymbolIcon FolderOpen24}" Command="{Binding OpenLogsCommand}" />
+            <ui:Button Content="{DynamicResource Loc0458}" Icon="{ui:SymbolIcon FolderZip24}" Margin="8,0,0,0"
                        Command="{Binding ExportLogsCommand}" />
           </StackPanel>
         </Grid>
       </Border>
 
-      <TextBlock Text="Записуються: версія і налаштування, кадри з часовими мітками, сирий OCR і повторні спроби, розпізнані відсотки, вибір варіанта, натискання та причина зупинки. Текст зберігається одразу; PNG — у фоні."
+      <TextBlock Text="{DynamicResource Loc0162}"
                  Style="{StaticResource CardDescription}" Margin="2,12,0,0" />
     </StackPanel>
   </ScrollViewer>

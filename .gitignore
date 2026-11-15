@@ -6,5 +6,6 @@ Logs/
 .vs/
 *.user
 latest-build.txt
+*.lnk
 *.mp4
 .claude/

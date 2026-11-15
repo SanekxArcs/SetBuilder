@@ -9,23 +9,23 @@
              mc:Ignorable="d">
   <ScrollViewer Style="{StaticResource PageScroll}">
     <StackPanel Style="{StaticResource PageBody}">
-      <TextBlock Text="Зони екрана" Style="{StaticResource PageTitle}" />
-      <TextBlock Text="Базові зони відповідають скрінам 3440×1440. Для іншого HUD виділи їх вручну: «Приклад» показує, де зона має бути." Style="{StaticResource CardTitle}" Margin="2,4,0,0" />
-      <TextBlock Text="Основний екран: 2 перки, назва сету та заголовок деталі. Меню кидка: верхній і середній блоки для кожного слота. Нижній збігається з основним перком." Style="{StaticResource CardDescription}" Margin="2,2,0,0" />
+      <TextBlock Text="{DynamicResource Loc0189}" Style="{StaticResource PageTitle}" />
+      <TextBlock Text="{DynamicResource Loc0062}" Style="{StaticResource CardTitle}" Margin="2,4,0,0" />
+      <TextBlock Text="{DynamicResource Loc0322}" Style="{StaticResource CardDescription}" Margin="2,2,0,0" />
 
       <ui:CardControl Icon="{ui:SymbolIcon ScreenSearch24}" Margin="0,8,0,4">
         <ui:CardControl.Header>
           <StackPanel>
-            <TextBlock Text="Підібрати зони автоматично" Style="{StaticResource CardTitle}" />
-            <TextBlock Text="Відкрий у грі деталь (RECALIBER), меню кидка або UPGRADE із сімома деталями й натисни. Програма один раз зчитає екран без натискань, знайде область інтерфейсу гри (16:9 між чорними смугами), розставить у ній зони зі скріншотів і перевірить їх читанням: шлях меню, перки, сет, деталь або ряд деталей. Зони зберігаються лише тоді, коли все прочиталося; кадр і звіт — у Logs\Calibration."
+            <TextBlock Text="{DynamicResource Loc0361}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource Loc0082}"
                        Style="{StaticResource CardDescription}" MaxWidth="720" HorizontalAlignment="Left" />
           </StackPanel>
         </ui:CardControl.Header>
-        <ui:Button Content="Підібрати зони" Icon="{ui:SymbolIcon ScreenSearch24}" Appearance="Primary" Command="{Binding CalibrateCommand}"
-                   IsEnabled="{Binding CanCalibrate}" MinWidth="150" AutomationProperties.Name="Підібрати зони автоматично" />
+        <ui:Button Content="{DynamicResource Loc0360}" Icon="{ui:SymbolIcon ScreenSearch24}" Appearance="Primary" Command="{Binding CalibrateCommand}"
+                   IsEnabled="{Binding CanCalibrate}" MinWidth="150" AutomationProperties.Name="{DynamicResource Loc0361}" />
       </ui:CardControl>
 
-      <TextBlock Text="Зони" Style="{StaticResource SectionHeader}" />
+      <TextBlock Text="{DynamicResource Loc0188}" Style="{StaticResource SectionHeader}" />
 
       <ItemsControl ItemsSource="{Binding Zones}" Focusable="False">
         <ItemsControl.ItemTemplate>
@@ -43,8 +43,8 @@
                   </StackPanel>
                 </ui:CardControl.Header>
                 <StackPanel Orientation="Horizontal">
-                  <ui:Button Content="Приклад" Icon="{ui:SymbolIcon Image24}" Command="{Binding ExampleCommand}" MinWidth="110" Margin="0,0,8,0"
-                             ToolTip="Показати скріншот екрана з цією зоною" AutomationProperties.Name="{Binding Label, StringFormat=Приклад: {0}}">
+                  <ui:Button Content="{DynamicResource Loc0401}" Icon="{ui:SymbolIcon Image24}" Command="{Binding ExampleCommand}" MinWidth="110" Margin="0,0,8,0"
+                             ToolTip="{DynamicResource Loc0379}" AutomationProperties.Name="{Binding Label, StringFormat=Приклад: {0}}">
                     <ui:Button.Style>
                       <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
                         <Style.Triggers>
@@ -55,7 +55,7 @@
                       </Style>
                     </ui:Button.Style>
                   </ui:Button>
-                  <ui:Button Content="Виділити" Icon="{ui:SymbolIcon SelectObject24}" Command="{Binding PickCommand}" MinWidth="120"
+                  <ui:Button Content="{DynamicResource Loc0072}" Icon="{ui:SymbolIcon SelectObject24}" Command="{Binding PickCommand}" MinWidth="120"
                              IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
                 </StackPanel>
               </ui:CardControl>
@@ -64,19 +64,19 @@
               <Grid Visibility="{Binding IsExample, Converter={StaticResource BoolToVisibility}}">
               <Border Style="{StaticResource SettingsPanel}" Margin="0,0,0,8"
                       DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                      AutomationProperties.Name="Приклад зони">
+                      AutomationProperties.Name="{DynamicResource Loc0402}">
                 <StackPanel>
                   <Grid>
                     <StackPanel Margin="0,0,120,0">
                       <TextBlock Text="{Binding ExampleScreen}" Style="{StaticResource CardTitle}" />
                       <TextBlock Text="{Binding ExampleWhere}" Style="{StaticResource CardDescription}" />
                     </StackPanel>
-                    <ui:Button Content="Сховати" Icon="{ui:SymbolIcon Dismiss24}" Command="{Binding HideExampleCommand}"
-                               HorizontalAlignment="Right" VerticalAlignment="Top" AutomationProperties.Name="Сховати приклад" />
+                    <ui:Button Content="{DynamicResource Loc0468}" Icon="{ui:SymbolIcon Dismiss24}" Command="{Binding HideExampleCommand}"
+                               HorizontalAlignment="Right" VerticalAlignment="Top" AutomationProperties.Name="{DynamicResource Loc0471}" />
                   </Grid>
                   <TextBlock Text="{Binding ExampleHint}" Style="{StaticResource CardDescription}" Margin="0,8,0,10"
                              Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
-                  <TextBlock Text="Зразок не знайдено: немає файлу в Assets\reference поруч із програмою." Style="{StaticResource CardDescription}"
+                  <TextBlock Text="{DynamicResource Loc0192}" Style="{StaticResource CardDescription}"
                              Visibility="{Binding ExampleMissing, Converter={StaticResource BoolToVisibility}}" />
                   <Viewbox Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left"
                            Visibility="{Binding ExampleImage, Converter={StaticResource NullToVisibility}}">
@@ -99,10 +99,10 @@
                   </Viewbox>
                   <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <Rectangle Width="18" Height="10" Stroke="#FFD400" StrokeThickness="3" VerticalAlignment="Center" />
-                    <TextBlock Text="зона зі скріншотів 3440×1440" Style="{StaticResource CardDescription}" Margin="6,0,18,0" VerticalAlignment="Center" />
+                    <TextBlock Text="{DynamicResource Loc0186}" Style="{StaticResource CardDescription}" Margin="6,0,18,0" VerticalAlignment="Center" />
                     <StackPanel Orientation="Horizontal" Visibility="{Binding ShowCurrent, Converter={StaticResource BoolToVisibility}}">
                       <Rectangle Width="18" Height="10" Stroke="{DynamicResource AccentFillColorDefaultBrush}" StrokeThickness="3" StrokeDashArray="3,2" VerticalAlignment="Center" />
-                      <TextBlock Text="твоя поточна зона" Style="{StaticResource CardDescription}" Margin="6,0,0,0" VerticalAlignment="Center" />
+                      <TextBlock Text="{DynamicResource Loc0472}" Style="{StaticResource CardDescription}" Margin="6,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                   </StackPanel>
                 </StackPanel>
@@ -113,9 +113,9 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
 
-      <ui:Button Content="Відновити зони зі скріншотів" Icon="{ui:SymbolIcon ArrowReset24}" Command="{Binding RestoreDefaultsCommand}"
+      <ui:Button Content="{DynamicResource Loc0085}" Icon="{ui:SymbolIcon ArrowReset24}" Command="{Binding RestoreDefaultsCommand}"
                  IsEnabled="{Binding CanEdit}" HorizontalAlignment="Left" Margin="0,12,0,0" />
-      <TextBlock Text="Виділяй блок разом із верхньою рамкою, іконкою, назвою та описом із [мін%–макс%]. Ціну знизу не включай. Зони зберігаються відносно вікна гри."
+      <TextBlock Text="{DynamicResource Loc0073}"
                  Style="{StaticResource CardDescription}" Margin="2,12,0,0" />
     </StackPanel>
   </ScrollViewer>

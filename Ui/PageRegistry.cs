@@ -31,12 +31,12 @@ public static class PageRegistry
 {
     public static readonly IReadOnlyList<PageEntry> Entries =
     [
-        new("Збірка", "Build", SymbolRegular.Wrench24),
-        new("Зони екрана", "Zones", SymbolRegular.ScreenSearch24),
-        new("Керування", "Controls", SymbolRegular.Keyboard24),
-        new("Журнали", "Logs", SymbolRegular.DocumentBulletList24),
-        new("Сповіщення", "Notifications", SymbolRegular.Alert24),
-        new("Аналітика", "Analytics", SymbolRegular.DataBarVertical24),
+        new(L.T("Збірка"), "Build", SymbolRegular.Wrench24),
+        new(L.T("Зони екрана"), "Zones", SymbolRegular.ScreenSearch24),
+        new(L.T("Керування"), "Controls", SymbolRegular.Keyboard24),
+        new(L.T("Журнали"), "Logs", SymbolRegular.DocumentBulletList24),
+        new(L.T("Сповіщення"), "Notifications", SymbolRegular.Alert24),
+        new(L.T("Аналітика"), "Analytics", SymbolRegular.DataBarVertical24),
     ];
 
     public static List<PageHost> Create(IShellContext shell)
@@ -49,7 +49,7 @@ public static class PageRegistry
             var pageType = assembly.GetType("TunerFest.Ui.Pages." + entry.Name + "Page");
             if (vmType == null || pageType == null)
             {
-                hosts.Add(new PageHost { Entry = entry, View = Placeholder(entry.Title, "Сторінка готується") });
+                hosts.Add(new PageHost { Entry = entry, View = Placeholder(entry.Title, L.T("Сторінка готується")) });
                 continue;
             }
             try
@@ -61,12 +61,12 @@ public static class PageRegistry
             catch (Exception e)
             {
                 var error = e is System.Reflection.TargetInvocationException { InnerException: { } inner } ? inner : e;
-                shell.Log($"Сторінка «{entry.Title}» не завантажилась: {error.Message}");
+                shell.Log(L.F("Сторінка «{0}» не завантажилась: {1}", $"{entry.Title}", $"{error.Message}"));
                 hosts.Add(
                     new PageHost
                     {
                         Entry = entry,
-                        View = Placeholder(entry.Title, "Сторінка не завантажилась: " + error.Message),
+                        View = Placeholder(entry.Title, L.T("Сторінка не завантажилась: ") + error.Message),
                         Error = error.ToString(),
                     }
                 );

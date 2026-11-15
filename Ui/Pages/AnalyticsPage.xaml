@@ -108,17 +108,17 @@
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
 
-    <TextBlock Grid.Row="0" Text="Аналітика" Style="{StaticResource PageTitle}" />
+    <TextBlock Grid.Row="0" Text="{DynamicResource Loc0061}" Style="{StaticResource PageTitle}" />
     <TextBlock Grid.Row="1" Style="{StaticResource CardDescription}"
-               Text="Частоти перків, усі текстові журнали та завершені деталі з журналів усіх версій програми." />
+               Text="{DynamicResource Loc0497}" />
 
     <!-- Toolbar -->
     <WrapPanel Grid.Row="2" Margin="0,14,0,0">
-      <ui:Button Content="Оновити" Icon="{ui:SymbolIcon ArrowSync24}" Appearance="Primary"
+      <ui:Button Content="{DynamicResource Loc0317}" Icon="{ui:SymbolIcon ArrowSync24}" Appearance="Primary"
                  Command="{Binding ReloadCommand}" Margin="0,0,8,8" />
-      <ui:Button Content="Зберегти TXT + CSV + JSON" Icon="{ui:SymbolIcon Save24}"
+      <ui:Button Content="{DynamicResource Loc0168}" Icon="{ui:SymbolIcon Save24}"
                  Command="{Binding ExportCommand}" Margin="0,0,8,8" />
-      <ui:Button Content="Додати папку Logs" Icon="{ui:SymbolIcon FolderAdd24}"
+      <ui:Button Content="{DynamicResource Loc0129}" Icon="{ui:SymbolIcon FolderAdd24}"
                  Command="{Binding AddFolderCommand}" Margin="0,0,8,8" />
     </WrapPanel>
 
@@ -141,13 +141,13 @@
 
     <!-- Inner tab strip -->
     <StackPanel Grid.Row="7" Orientation="Horizontal" Margin="0,16,0,8">
-      <ui:Button Content="Рейтинг перків" Icon="{ui:SymbolIcon Trophy24}" Style="{StaticResource TabButton}"
+      <ui:Button Content="{DynamicResource Loc0420}" Icon="{ui:SymbolIcon Trophy24}" Style="{StaticResource TabButton}"
                  Command="{Binding SelectTabCommand}" CommandParameter="0"
                  Appearance="{Binding InnerTab, Converter={StaticResource TabAppearance}, ConverterParameter=0}" />
-      <ui:Button Content="Усі текстові журнали" Icon="{ui:SymbolIcon DocumentText24}" Style="{StaticResource TabButton}"
+      <ui:Button Content="{DynamicResource Loc0487}" Icon="{ui:SymbolIcon DocumentText24}" Style="{StaticResource TabButton}"
                  Command="{Binding SelectTabCommand}" CommandParameter="1"
                  Appearance="{Binding InnerTab, Converter={StaticResource TabAppearance}, ConverterParameter=1}" />
-      <ui:Button Content="Завершені деталі" Icon="{ui:SymbolIcon CheckmarkCircle24}" Style="{StaticResource TabButton}"
+      <ui:Button Content="{DynamicResource Loc0153}" Icon="{ui:SymbolIcon CheckmarkCircle24}" Style="{StaticResource TabButton}"
                  Command="{Binding SelectTabCommand}" CommandParameter="2"
                  Appearance="{Binding InnerTab, Converter={StaticResource TabAppearance}, ConverterParameter=2}" />
     </StackPanel>
@@ -162,12 +162,12 @@
                      Visibility="{Binding ShowRanking, Converter={StaticResource BoolToVisibility}}">
           <ui:DataGrid.Columns>
             <DataGridTextColumn Header="№" Binding="{Binding Rank}" Width="35*" />
-            <DataGridTextColumn Header="Перк" Binding="{Binding Perk}" Width="180*" />
-            <DataGridTextColumn Header="Появ" Binding="{Binding Count}" Width="65*" />
-            <DataGridTextColumn Header="Частка, %" Binding="{Binding Chance, StringFormat=0.00}" Width="90*" />
-            <DataGridTextColumn Header="З % зчитано" Binding="{Binding Numeric}" Width="85*" />
-            <DataGridTextColumn Header="На максимумі" Binding="{Binding Max}" Width="85*" />
-            <DataGridTextColumn Header="Макс., %" Binding="{Binding MaxChance, StringFormat=0.00, TargetNullValue=—}" Width="80*" />
+            <DataGridTextColumn Header="{DynamicResource Loc0352}" Binding="{Binding Perk}" Width="180*" />
+            <DataGridTextColumn Header="{DynamicResource Loc0392}" Binding="{Binding Count}" Width="65*" />
+            <DataGridTextColumn Header="{DynamicResource Loc0496}" Binding="{Binding Chance, StringFormat=0.00}" Width="90*" />
+            <DataGridTextColumn Header="{DynamicResource Loc0151}" Binding="{Binding Numeric}" Width="85*" />
+            <DataGridTextColumn Header="{DynamicResource Loc0259}" Binding="{Binding Max}" Width="85*" />
+            <DataGridTextColumn Header="{DynamicResource Loc0245}" Binding="{Binding MaxChance, StringFormat=0.00, TargetNullValue=—}" Width="80*" />
           </ui:DataGrid.Columns>
         </ui:DataGrid>
 
@@ -179,7 +179,7 @@
             <RowDefinition Height="Auto" />
           </Grid.RowDefinitions>
           <ui:TextBox Grid.Row="0" Margin="12,12,12,8" Icon="{ui:SymbolIcon Search24}" ClearButtonEnabled="True"
-                      PlaceholderText="Пошук у всіх текстових журналах…"
+                      PlaceholderText="{DynamicResource Loc0389}"
                       Text="{Binding Search, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
           <TextBox Grid.Row="1" Margin="12,0,12,0" IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap"
                    FontFamily="Cascadia Mono, Consolas" FontSize="12"
@@ -200,18 +200,18 @@
                      ItemsSource="{Binding Items}"
                      Visibility="{Binding ShowItems, Converter={StaticResource BoolToVisibility}}">
           <ui:DataGrid.Columns>
-            <DataGridTextColumn Header="Завершено" Binding="{Binding Time}" SortMemberPath="TimeValue" Width="110*" />
-            <DataGridTextColumn Header="Деталь" Binding="{Binding Part}" Width="155*" />
-            <DataGridTextColumn Header="Сет" Binding="{Binding Set}" Width="125*" />
-            <DataGridTextColumn Header="Час¹" Binding="{Binding Duration}" SortMemberPath="DurationSeconds" Width="90*" />
-            <DataGridTextColumn Header="Кидків¹" Binding="{Binding Rolls, StringFormat=N0, TargetNullValue=—}" Width="65*" />
+            <DataGridTextColumn Header="{DynamicResource Loc0154}" Binding="{Binding Time}" SortMemberPath="TimeValue" Width="110*" />
+            <DataGridTextColumn Header="{DynamicResource Loc0112}" Binding="{Binding Part}" Width="155*" />
+            <DataGridTextColumn Header="{DynamicResource Loc0433}" Binding="{Binding Set}" Width="125*" />
+            <DataGridTextColumn Header="{DynamicResource Loc0494}" Binding="{Binding Duration}" SortMemberPath="DurationSeconds" Width="90*" />
+            <DataGridTextColumn Header="{DynamicResource Loc0220}" Binding="{Binding Rolls, StringFormat=N0, TargetNullValue=—}" Width="65*" />
             <DataGridTextColumn Header="Bucks¹" Binding="{Binding Bucks, StringFormat=N0, TargetNullValue=—}" Width="85*" />
-            <DataGridTextColumn Header="Запчастин¹" Binding="{Binding Spares, StringFormat=N0, TargetNullValue=—}" Width="85*" />
-            <DataGridTextColumn Header="Запуск" Binding="{Binding Session}" Width="135*" />
+            <DataGridTextColumn Header="{DynamicResource Loc0166}" Binding="{Binding Spares, StringFormat=N0, TargetNullValue=—}" Width="85*" />
+            <DataGridTextColumn Header="{DynamicResource Loc0163}" Binding="{Binding Session}" Width="135*" />
           </ui:DataGrid.Columns>
         </ui:DataGrid>
         <TextBlock Style="{StaticResource CardDescription}" HorizontalAlignment="Center" VerticalAlignment="Center"
-                   Text="Завершених деталей за цими фільтрами ще немає." IsHitTestVisible="False">
+                   Text="{DynamicResource Loc0152}" IsHitTestVisible="False">
           <TextBlock.Visibility>
             <MultiBinding Converter="{StaticResource EmptyItemsVisibility}">
               <Binding Path="ShowItems" />

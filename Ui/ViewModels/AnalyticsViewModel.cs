@@ -12,14 +12,14 @@ namespace TunerFest.Ui.ViewModels;
 public sealed class AnalyticsViewModel : PageViewModel
 {
     const int PageSize = 500;
-    const string InitialNote = "Відкрий вкладку або натисни «Оновити», щоб прочитати журнали всіх версій.";
+static readonly string InitialNote = L.T("Відкрий вкладку або натисни «Оновити», щоб прочитати журнали всіх версій.");
 
     static readonly AnalyticsChoice[] PhaseItems =
     [
-        new("", "Усі фази"),
-        new("Search", "Пошук"),
-        new("Maximize", "Прокачування"),
-        new("Unknown", "Фаза невідома"),
+        new("", L.T("Усі фази")),
+        new("Search", L.T("Пошук")),
+        new("Maximize", L.T("Прокачування")),
+        new("Unknown", L.T("Фаза невідома")),
     ];
 
     readonly DispatcherTimer searchDelay = new() { Interval = TimeSpan.FromMilliseconds(250) };
@@ -34,10 +34,10 @@ public sealed class AnalyticsViewModel : PageViewModel
     string[] textLines = [];
     List<AnalyticsSession> selectedSessions = [];
     List<AnalyticsRoll> selectedRolls = [];
-    IReadOnlyList<AnalyticsChoice> setChoices = [new AnalyticsChoice("", "Усі сети")],
-        versionChoices = [new AnalyticsChoice("", "Усі версії")],
-        otherChoices = [new AnalyticsChoice("", "Інший перк: усі")],
-        sessionChoices = [new AnalyticsChoice("", "Усі запуски")];
+    IReadOnlyList<AnalyticsChoice> setChoices = [new AnalyticsChoice("", L.T("Усі сети"))],
+        versionChoices = [new AnalyticsChoice("", L.T("Усі версії"))],
+        otherChoices = [new AnalyticsChoice("", L.T("Інший перк: усі"))],
+        sessionChoices = [new AnalyticsChoice("", L.T("Усі запуски"))];
     AnalyticsChoice? selectedSet,
         selectedPhase = PhaseItems[0],
         selectedVersion,
@@ -263,10 +263,10 @@ public sealed class AnalyticsViewModel : PageViewModel
     static string Status(string value) =>
         value switch
         {
-            "completed" => "успіх",
-            "cancelled" => "скасовано",
-            "error" => "помилка",
-            "running" => "у роботі",
+            "completed" => L.T("успіх"),
+            "cancelled" => L.T("скасовано"),
+            "error" => L.T("помилка"),
+            "running" => L.T("у роботі"),
             _ => value,
         };
 
@@ -275,7 +275,7 @@ public sealed class AnalyticsViewModel : PageViewModel
         if (loading)
             return;
         IsLoading = true;
-        Note = "Збираю журнали…";
+        Note = L.T("Збираю журнали…");
         try
         {
             var progress = new Progress<string>(s => Note = s);
@@ -289,7 +289,7 @@ public sealed class AnalyticsViewModel : PageViewModel
         }
         catch (Exception e)
         {
-            Note = "Не вдалося прочитати аналітику: " + e.Message;
+            Note = L.T("Не вдалося прочитати аналітику: ") + e.Message;
         }
         finally
         {
@@ -303,29 +303,29 @@ public sealed class AnalyticsViewModel : PageViewModel
         updating = true;
         try
         {
-            SetChoices = new[] { new AnalyticsChoice("", "Усі сети") }
+            SetChoices = new[] { new AnalyticsChoice("", L.T("Усі сети")) }
                 .Concat(
                     source.Sessions.Select(s => s.Set).Where(s => s != "").Distinct().Order().Select(s => new AnalyticsChoice(s, s))
                 )
                 .ToList();
             SelectedSet = Keep(SetChoices, selectedSet);
-            VersionChoices = new[] { new AnalyticsChoice("", "Усі версії") }
+            VersionChoices = new[] { new AnalyticsChoice("", L.T("Усі версії")) }
                 .Concat(source.Sessions.Select(s => s.Version).Distinct().Order().Select(s => new AnalyticsChoice(s, s)))
                 .ToList();
             SelectedVersion = Keep(VersionChoices, selectedVersion);
             OtherChoices = new[]
             {
-                new AnalyticsChoice("", "Інший перк: усі"),
-                new AnalyticsChoice("__unknown", "Інший перк: не записано"),
+                new AnalyticsChoice("", L.T("Інший перк: усі")),
+                new AnalyticsChoice("__unknown", L.T("Інший перк: не записано")),
             }
-                .Concat(Shell.Catalog.Affixes.Select(a => new AnalyticsChoice(a.Title, "Інший: " + a.Title)))
+                .Concat(Shell.Catalog.Affixes.Select(a => new AnalyticsChoice(a.Title, L.T("Інший: ") + a.Title)))
                 .ToList();
             SelectedOther = Keep(OtherChoices, selectedOther);
-            SessionChoices = new[] { new AnalyticsChoice("", "Усі запуски") }
+            SessionChoices = new[] { new AnalyticsChoice("", L.T("Усі запуски")) }
                 .Concat(
                     source.Sessions.Select(s => new AnalyticsChoice(
                         s.Id,
-                        $"{s.Started.ToLocalTime():dd.MM HH:mm:ss} · {s.Set} · {s.Version} · {Status(s.Outcome)} · {s.CompletedParts} детал. · {s.Rolls.Count(r => r.Paid)} кидків"
+                        L.F("{0} · {1} · {2} · {3} · {4} детал. · {5} кидків", $"{s.Started.ToLocalTime():dd.MM HH:mm:ss}", $"{s.Set}", $"{s.Version}", $"{Status(s.Outcome)}", $"{s.CompletedParts}", $"{s.Rolls.Count(r => r.Paid)}")
                     ))
                 )
                 .ToList();
@@ -364,10 +364,10 @@ public sealed class AnalyticsViewModel : PageViewModel
         int known = leaderboard.Sum(p => p.Count),
             unknown = paid.Count - known;
         Totals =
-            $"Запусків: {selectedSessions.Count:N0} · Кидків: {paid.Count:N0} · Bucks: {paid.Sum(r => r.Bucks):N0} · Запчастин: {paid.Sum(r => r.SpareParts):N0}\nНових пропозицій розпізнано: {known:N0} · Без назви/пропозиції: {unknown:N0} · Непідтверджених натискань: {selectedRolls.Count(r => r.Requested && !r.Paid && !r.NotSent):N0}";
+            L.F("Запусків: {0} · Кидків: {1} · Bucks: {2} · Запчастин: {3}\nНових пропозицій розпізнано: {4} · Без назви/пропозиції: {5} · Непідтверджених натискань: {6}", $"{selectedSessions.Count:N0}", $"{paid.Count:N0}", $"{paid.Sum(r => r.Bucks):N0}", $"{paid.Sum(r => r.SpareParts):N0}", $"{known:N0}", $"{unknown:N0}", $"{selectedRolls.Count(r => r.Requested && !r.Paid && !r.NotSent):N0}");
         string text =
-            $"Частоти: нові верхні пропозиції; вибірка {known:N0}. Це спостереження, а не точні шанси гри."
-            + (data.Warnings.Count > 0 ? $" Проблемних журналів: {data.Warnings.Count}." : "");
+            L.F("Частоти: нові верхні пропозиції; вибірка {0}. Це спостереження, а не точні шанси гри.", $"{known:N0}")
+            + (data.Warnings.Count > 0 ? L.F(" Проблемних журналів: {0}.", $"{data.Warnings.Count}") : "");
         Ranking = leaderboard
             .Select(row => new AnalyticsPerkRow(
                 row.Rank,
@@ -382,12 +382,12 @@ public sealed class AnalyticsViewModel : PageViewModel
         var itemSummary = ItemAnalytics.Summary(selectedSessions);
         static string Avg(double? n) => n?.ToString("N1", CultureInfo.CurrentCulture) ?? "—";
         string summary =
-            $"Завершено деталей: {itemSummary.CompletedItems:N0}\nСереднє на готову деталь: {Avg(itemSummary.AverageRolls)} кидків · {Avg(itemSummary.AverageBucks)} Bucks · {Avg(itemSummary.AverageSpareParts)} запчастин\nЧас запусків: {ItemAnalytics.Duration(itemSummary.TotalDurationSeconds)} · середнє на деталь: {ItemAnalytics.Duration(itemSummary.AverageDurationSeconds)}";
+            L.F("Завершено деталей: {0}\nСереднє на готову деталь: {1} кидків · {2} Bucks · {3} запчастин\nЧас запусків: {4} · середнє на деталь: {5}", $"{itemSummary.CompletedItems:N0}", $"{Avg(itemSummary.AverageRolls)}", $"{Avg(itemSummary.AverageBucks)}", $"{Avg(itemSummary.AverageSpareParts)}", $"{ItemAnalytics.Duration(itemSummary.TotalDurationSeconds)}", $"{ItemAnalytics.Duration(itemSummary.AverageDurationSeconds)}");
         if (itemSummary.UntimedSessions > 0)
-            summary += $" · без часу: {itemSummary.UntimedSessions} запусків";
+            summary += L.F(" · без часу: {0} запусків", $"{itemSummary.UntimedSessions}");
         ItemTotals = summary;
         text +=
-            "\nСередні: усі витрати й час / готові деталі, включно з перерваними спробами; за фільтрами запусків.\n¹ Деталь — лише в межах її запуску. Загальний час без проміжків між запусками. — немає даних.";
+            L.T("\nСередні: усі витрати й час / готові деталі, включно з перерваними спробами; за фільтрами запусків.\n¹ Деталь — лише в межах її запуску. Загальний час без проміжків між запусками. — немає даних.");
         Note = text;
         Items = selectedSessions
             .SelectMany(ItemAnalytics.Completed)
@@ -425,7 +425,7 @@ public sealed class AnalyticsViewModel : PageViewModel
         int count = Math.Max(1, (textLines.Length + PageSize - 1) / PageSize);
         LogsText = string.Join(Environment.NewLine, textLines.Skip(page * PageSize).Take(PageSize));
         PageLabel =
-            $"Сторінка {page + 1}/{count} · рядків {textLines.Length:N0} · усі рядки доступні через сторінки або TXT";
+            L.F("Сторінка {0}/{1} · рядків {2} · усі рядки доступні через сторінки або TXT", $"{page + 1}", $"{count}", $"{textLines.Length:N0}");
         PreviousPageCommand.RaiseCanExecuteChanged();
         NextPageCommand.RaiseCanExecuteChanged();
     }
@@ -443,7 +443,7 @@ public sealed class AnalyticsViewModel : PageViewModel
             var runs = selectedSessions.ToArray();
             var rows = selectedRolls.ToArray();
             string path = await Task.Run(() => AnalyticsStore.Export(snapshot, catalog, runs, rows));
-            Note = "Збережено: " + path;
+            Note = L.T("Збережено: ") + path;
         }
         catch (Exception e)
         {
@@ -460,12 +460,12 @@ public sealed class AnalyticsViewModel : PageViewModel
     {
         if (Shell.Window == null)
         {
-            Shell.Log("Додати папку Logs: у режимі перегляду діалог не відкривається.");
+            Shell.Log(L.T("Додати папку Logs: у режимі перегляду діалог не відкривається."));
             return;
         }
         var dialog = new Microsoft.Win32.OpenFolderDialog
         {
-            Title = "Вибери папку Logs або папку старої версії програми",
+            Title = L.T("Вибери папку Logs або папку старої версії програми"),
             Multiselect = false,
         };
         if (dialog.ShowDialog(Shell.Window) != true)
@@ -489,13 +489,13 @@ public sealed class AnalyticsViewModel : PageViewModel
         updating = true;
         try
         {
-            SetChoices = [new AnalyticsChoice("", "Усі сети")];
+            SetChoices = [new AnalyticsChoice("", L.T("Усі сети"))];
             SelectedSet = SetChoices[0];
-            VersionChoices = [new AnalyticsChoice("", "Усі версії")];
+            VersionChoices = [new AnalyticsChoice("", L.T("Усі версії"))];
             SelectedVersion = VersionChoices[0];
-            OtherChoices = [new AnalyticsChoice("", "Інший перк: усі")];
+            OtherChoices = [new AnalyticsChoice("", L.T("Інший перк: усі"))];
             SelectedOther = OtherChoices[0];
-            SessionChoices = [new AnalyticsChoice("", "Усі запуски")];
+            SessionChoices = [new AnalyticsChoice("", L.T("Усі запуски"))];
             SelectedSession = SessionChoices[0];
             SelectedPhase = PhaseItems[0];
         }
@@ -510,7 +510,7 @@ public sealed class AnalyticsViewModel : PageViewModel
     public override void SmokeChecks(ICollection<string> passed)
     {
         LoadPreview();
-        if (!Totals.StartsWith("Запусків:", StringComparison.Ordinal))
+        if (!Totals.StartsWith(L.T("Запусків:"), StringComparison.Ordinal))
             throw new InvalidOperationException("Analytics totals did not render: " + Totals);
         if (string.IsNullOrWhiteSpace(Note))
             throw new InvalidOperationException("Analytics note is empty after the preview load");
@@ -518,7 +518,7 @@ public sealed class AnalyticsViewModel : PageViewModel
             throw new InvalidOperationException("Analytics preview filters must hold only the «Усі…» entries");
         passed.Add("PASS analytics preview load renders totals, note and the «Усі…» filters");
         InnerTab = 1;
-        if (!ShowLogs || ShowRanking || !PageLabel.StartsWith("Сторінка 1/", StringComparison.Ordinal))
+        if (!ShowLogs || ShowRanking || !PageLabel.StartsWith(L.T("Сторінка 1/"), StringComparison.Ordinal))
             throw new InvalidOperationException("Analytics text tab or page label is wrong: " + PageLabel);
         InnerTab = 2;
         if (!ShowItems || ShowLogs)

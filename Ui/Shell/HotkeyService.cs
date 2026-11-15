@@ -43,7 +43,7 @@ public sealed class HotkeyService : IDisposable
         AllRegistered = all;
         shell.StopAvailable = stop;
         if (!all)
-            shell.Log("Частина гарячих клавіш зайнята іншою програмою. Кнопки працюють; запуск має 5 секунд відліку.");
+            shell.Log(L.T("Частина гарячих клавіш зайнята іншою програмою. Кнопки працюють; запуск має 5 секунд відліку."));
     }
 
     IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)

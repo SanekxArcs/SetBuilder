@@ -11,14 +11,14 @@ namespace TunerFest.Ui.ViewModels;
 public sealed class ControlsViewModel(IShellContext shell) : PageViewModel(shell)
 {
     public static IReadOnlyList<Option<bool>> BackendOptions { get; } =
-        [new(false, "Клавіатура"), new(true, "Віртуальний Xbox · ViGEmBus")];
+        [new(false, L.T("Клавіатура")), new(true, L.T("Віртуальний Xbox · ViGEmBus"))];
 
     public static IReadOnlyList<PadChoice> RouteOptions { get; } =
-        [new("classic", "Класичний · через сім деталей"), new("quick", "Швидкий · через список деталей")];
+        [new("classic", L.T("Класичний · через сім деталей")), new("quick", L.T("Швидкий · через список деталей"))];
 
     public static IReadOnlyList<PadChoice> XboxCraftingOptions { get; } =
         [
-            new("KeyboardF9", "F9 клавіатури (разом із Xbox)"),
+            new("KeyboardF9", L.T("F9 клавіатури (разом із Xbox)")),
             new("X", "X"),
             new("Y", "Y"),
             new("Start", "Menu / Start"),

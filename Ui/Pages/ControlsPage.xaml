@@ -10,20 +10,20 @@
              mc:Ignorable="d">
   <ScrollViewer Style="{StaticResource PageScroll}">
     <StackPanel Style="{StaticResource PageBody}">
-      <TextBlock Text="Керування" Style="{StaticResource PageTitle}" />
-      <TextBlock Text="Спосіб натискань і паузи між ними, маршрут між деталями, надійність зчитування та клавіші гри."
+      <TextBlock Text="{DynamicResource Loc0215}" Style="{StaticResource PageTitle}" />
+      <TextBlock Text="{DynamicResource Loc0450}"
                  Style="{StaticResource CardDescription}" />
 
       <!-- Натискання та швидкість -->
-      <TextBlock Text="Натискання та швидкість" Style="{StaticResource SectionHeader}" />
+      <TextBlock Text="{DynamicResource Loc0268}" Style="{StaticResource SectionHeader}" />
 
       <ui:CardControl Icon="{ui:SymbolIcon Games24}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
         <ui:CardControl.Header>
           <StackPanel>
-            <TextBlock Text="Спосіб натискань" Style="{StaticResource CardTitle}" />
-            <TextBlock Text="Xbox надсилає A / B / D-pad. Потрібен ViGEmBus; драйвер автоматично не встановлюється. Фізичний геймпад можна використовувати в обох режимах."
+            <TextBlock Text="{DynamicResource Loc0449}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource Loc0050}"
                        Style="{StaticResource CardDescription}" />
-            <TextBlock Text="Кожен кидок: 1 500 Bucks + 150 запчастин. Підсумок і всі пропозиції зберігаються у Logs."
+            <TextBlock Text="{DynamicResource Loc0230}"
                        Style="{StaticResource CardDescription}" />
           </StackPanel>
         </ui:CardControl.Header>
@@ -33,7 +33,7 @@
 
       <ui:CardControl Icon="{ui:SymbolIcon ScanType24}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
         <ui:CardControl.Header>
-          <TextBlock Text="Швидкі назви з навчених шаблонів і кеш OCR" Style="{StaticResource CardTitle}" />
+          <TextBlock Text="{DynamicResource Loc0512}" Style="{StaticResource CardTitle}" />
         </ui:CardControl.Header>
         <ui:ToggleSwitch IsChecked="{Binding FastRecognition, Mode=TwoWay}" />
       </ui:CardControl>
@@ -41,8 +41,8 @@
       <ui:CardControl Icon="{ui:SymbolIcon ArrowExit20}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
         <ui:CardControl.Header>
           <StackPanel>
-            <TextBlock Text="Додаткова пауза після кожного Esc / B, мс" Style="{StaticResource CardTitle}" />
-            <TextBlock Text="Для виходу Esc ×2 або ×3. Додається до звичайної паузи; 0 — без додаткового очікування."
+            <TextBlock Text="{DynamicResource Loc0132}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource Loc0125}"
                        Style="{StaticResource CardDescription}" />
           </StackPanel>
         </ui:CardControl.Header>
@@ -60,8 +60,8 @@
           <ui:SymbolIcon Symbol="Timer24" FontSize="22" VerticalAlignment="Top" Margin="0,2,16,0"
                          Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
           <StackPanel Grid.Column="1">
-            <TextBlock Text="Паузи між натисканнями" Style="{StaticResource CardTitle}" />
-            <TextBlock Text="Діапазон 50–500 мс увімкнений спочатку. Для кожного натискання вибирається нова пауза; тривалість утримання кнопки — 65 мс. Перевірки екрана можуть додати час очікування."
+            <TextBlock Text="{DynamicResource Loc0348}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource Loc0122}"
                        Style="{StaticResource CardDescription}" />
 
             <Grid Margin="0,14,0,0">
@@ -75,23 +75,23 @@
                 <RowDefinition Height="44" />
               </Grid.RowDefinitions>
 
-              <TextBlock Text="Випадкова пауза в діапазоні" Style="{StaticResource FieldLabel}" />
+              <TextBlock Text="{DynamicResource Loc0076}" Style="{StaticResource FieldLabel}" />
               <ui:ToggleSwitch Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center"
                                IsChecked="{Binding RandomPause, Mode=TwoWay}" />
 
-              <TextBlock Grid.Row="1" Text="Діапазон випадкової паузи" Style="{StaticResource FieldLabel}"
+              <TextBlock Grid.Row="1" Text="{DynamicResource Loc0123}" Style="{StaticResource FieldLabel}"
                          IsEnabled="{Binding RangeEnabled}" />
               <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"
                           IsEnabled="{Binding RangeEnabled}">
-                <TextBlock Text="Від, мс" Style="{StaticResource FieldLabel}" Margin="0,0,8,0" />
+                <TextBlock Text="{DynamicResource Loc0078}" Style="{StaticResource FieldLabel}" Margin="0,0,8,0" />
                 <ui:NumberBox Width="150" Minimum="50" Maximum="5000" SmallChange="10" LargeChange="50" MaxDecimalPlaces="0"
                               ClearButtonEnabled="False" Value="{Binding PauseMinMs, Mode=TwoWay}" />
-                <TextBlock Text="До, мс" Style="{StaticResource FieldLabel}" Margin="16,0,8,0" />
+                <TextBlock Text="{DynamicResource Loc0127}" Style="{StaticResource FieldLabel}" Margin="16,0,8,0" />
                 <ui:NumberBox Width="150" Minimum="50" Maximum="5000" SmallChange="10" LargeChange="50" MaxDecimalPlaces="0"
                               ClearButtonEnabled="False" Value="{Binding PauseMaxMs, Mode=TwoWay}" />
               </StackPanel>
 
-              <TextBlock Grid.Row="2" Text="Фіксована пауза, мс (якщо випадкову вимкнено)" Style="{StaticResource FieldLabel}"
+              <TextBlock Grid.Row="2" Text="{DynamicResource Loc0492}" Style="{StaticResource FieldLabel}"
                          IsEnabled="{Binding FixedEnabled}" />
               <ui:NumberBox Grid.Row="2" Grid.Column="1" Width="160" HorizontalAlignment="Right" VerticalAlignment="Center"
                             Minimum="50" Maximum="5000" SmallChange="50" LargeChange="100" MaxDecimalPlaces="0"
@@ -102,13 +102,13 @@
       </Border>
 
       <!-- Надійність та навігація -->
-      <TextBlock Text="Надійність та навігація" Style="{StaticResource SectionHeader}" />
+      <TextBlock Text="{DynamicResource Loc0260}" Style="{StaticResource SectionHeader}" />
 
       <ui:CardControl Icon="{ui:SymbolIcon Directions24}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
         <ui:CardControl.Header>
           <StackPanel>
-            <TextBlock Text="Маршрут між деталями" Style="{StaticResource CardTitle}" />
-            <TextBlock Text="Швидкий: Esc ×2 → вниз → Crafting → Enter. Якщо перехід не підтвердиться, застосунок повернеться до класичного маршруту."
+            <TextBlock Text="{DynamicResource Loc0248}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource Loc0510}"
                        Style="{StaticResource CardDescription}" />
           </StackPanel>
         </ui:CardControl.Header>
@@ -119,8 +119,8 @@
       <ui:CardControl Icon="{ui:SymbolIcon TopSpeed24}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
         <ui:CardControl.Header>
           <StackPanel>
-            <TextBlock Text="Швидкі кидки: відповідь на меню за позицією" Style="{StaticResource CardTitle}" />
-            <TextBlock Text="Пошук: Enter → Up одразу під час появи меню → Enter, щойно рамка на верхньому рядку. Покращення: Enter → Enter на середньому рядку. Меню не читається; результат береться з картки слота. Якщо рамка не підтвердиться, меню читається повністю, як раніше."
+            <TextBlock Text="{DynamicResource Loc0511}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource Loc0390}"
                        Style="{StaticResource CardDescription}" />
           </StackPanel>
         </ui:CardControl.Header>
@@ -129,7 +129,7 @@
 
       <ui:CardControl Icon="{ui:SymbolIcon NumberSymbol24}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
         <ui:CardControl.Header>
-          <TextBlock Text="Ліміт кидків на весь запуск" Style="{StaticResource CardTitle}" />
+          <TextBlock Text="{DynamicResource Loc0243}" Style="{StaticResource CardTitle}" />
         </ui:CardControl.Header>
         <ui:NumberBox Width="160" Minimum="1" Maximum="10000" SmallChange="50" LargeChange="100" MaxDecimalPlaces="0"
                       ClearButtonEnabled="False" Value="{Binding MaxRolls, Mode=TwoWay}" />
@@ -137,7 +137,7 @@
 
       <ui:CardControl Icon="{ui:SymbolIcon Eye24}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
         <ui:CardControl.Header>
-          <TextBlock Text="Спроби зчитування рамки (без нових кидків)" Style="{StaticResource CardTitle}" />
+          <TextBlock Text="{DynamicResource Loc0452}" Style="{StaticResource CardTitle}" />
         </ui:CardControl.Header>
         <ui:NumberBox Width="160" Minimum="1" Maximum="100" SmallChange="1" LargeChange="5" MaxDecimalPlaces="0"
                       ClearButtonEnabled="False" Value="{Binding FocusReadAttempts, Mode=TwoWay}" />
@@ -145,7 +145,7 @@
 
       <ui:CardControl Icon="{ui:SymbolIcon ArrowRepeatAll24}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
         <ui:CardControl.Header>
-          <TextBlock Text="Пауза між повторними зчитуваннями, мс" Style="{StaticResource CardTitle}" />
+          <TextBlock Text="{DynamicResource Loc0343}" Style="{StaticResource CardTitle}" />
         </ui:CardControl.Header>
         <ui:NumberBox Width="160" Minimum="10" Maximum="1000" SmallChange="10" LargeChange="50" MaxDecimalPlaces="0"
                       ClearButtonEnabled="False" Value="{Binding FocusRetryMs, Mode=TwoWay}" />
@@ -154,8 +154,8 @@
       <ui:CardControl Icon="{ui:SymbolIcon Hourglass24}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
         <ui:CardControl.Header>
           <StackPanel>
-            <TextBlock Text="Очікування повернення фокусу гри, с" Style="{StaticResource CardTitle}" />
-            <TextBlock Text="Якщо гра втратила фокус, натискання зупиняються, а запуск чекає повернення й продовжує з перевіркою екрана. 0 — зупиняти одразу, як раніше."
+            <TextBlock Text="{DynamicResource Loc0328}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource Loc0520}"
                        Style="{StaticResource CardDescription}" />
           </StackPanel>
         </ui:CardControl.Header>
@@ -166,8 +166,8 @@
       <ui:CardControl Icon="{ui:SymbolIcon XboxController24}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
         <ui:CardControl.Header>
           <StackPanel>
-            <TextBlock Text="Xbox: відкриття CRAFTING" Style="{StaticResource CardTitle}" />
-            <TextBlock Text="Вхід: Enter → F9 → Enter. Xbox: A → обрана дія Crafting → A. Класичний вихід: Esc/B ×3 → вправо. Швидкий: Esc/B ×2 → вниз → Crafting → A/Enter."
+            <TextBlock Text="{DynamicResource Loc0051}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource Loc0097}"
                        Style="{StaticResource CardDescription}" />
           </StackPanel>
         </ui:CardControl.Header>
@@ -179,7 +179,7 @@
       <ui:CardExpander Icon="{ui:SymbolIcon Keyboard24}" Margin="0,0,0,4" IsExpanded="True" ContentPadding="54,8,16,16"
                        IsEnabled="{Binding CanEdit}">
         <ui:CardExpander.Header>
-          <TextBlock Text="Клавіші клавіатури" Style="{StaticResource CardTitle}" />
+          <TextBlock Text="{DynamicResource Loc0227}" Style="{StaticResource CardTitle}" />
         </ui:CardExpander.Header>
         <StackPanel>
           <Grid>
@@ -197,28 +197,28 @@
               <RowDefinition Height="42" />
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="Підтвердити (A)" Style="{StaticResource FieldLabel}" />
+            <TextBlock Grid.Row="0" Text="{DynamicResource Loc0364}" Style="{StaticResource FieldLabel}" />
             <controls:KeyCaptureBox Grid.Row="0" Grid.Column="1" Width="180" VerticalAlignment="Center" KeyName="{Binding Confirm, Mode=TwoWay}" />
 
             <TextBlock Grid.Row="1" Text="Crafting (F9)" Style="{StaticResource FieldLabel}" />
             <controls:KeyCaptureBox Grid.Row="1" Grid.Column="1" Width="180" VerticalAlignment="Center" KeyName="{Binding Recalibrate, Mode=TwoWay}" />
 
-            <TextBlock Grid.Row="2" Text="Назад (B)" Style="{StaticResource FieldLabel}" />
+            <TextBlock Grid.Row="2" Text="{DynamicResource Loc0261}" Style="{StaticResource FieldLabel}" />
             <controls:KeyCaptureBox Grid.Row="2" Grid.Column="1" Width="180" VerticalAlignment="Center" KeyName="{Binding Back, Mode=TwoWay}" />
 
-            <TextBlock Grid.Row="3" Text="Ліворуч" Style="{StaticResource FieldLabel}" />
+            <TextBlock Grid.Row="3" Text="{DynamicResource Loc0242}" Style="{StaticResource FieldLabel}" />
             <controls:KeyCaptureBox Grid.Row="3" Grid.Column="1" Width="180" VerticalAlignment="Center" KeyName="{Binding Left, Mode=TwoWay}" />
 
-            <TextBlock Grid.Row="4" Text="Праворуч" Style="{StaticResource FieldLabel}" />
+            <TextBlock Grid.Row="4" Text="{DynamicResource Loc0399}" Style="{StaticResource FieldLabel}" />
             <controls:KeyCaptureBox Grid.Row="4" Grid.Column="1" Width="180" VerticalAlignment="Center" KeyName="{Binding Right, Mode=TwoWay}" />
 
-            <TextBlock Grid.Row="5" Text="Угору" Style="{StaticResource FieldLabel}" />
+            <TextBlock Grid.Row="5" Text="{DynamicResource Loc0482}" Style="{StaticResource FieldLabel}" />
             <controls:KeyCaptureBox Grid.Row="5" Grid.Column="1" Width="180" VerticalAlignment="Center" KeyName="{Binding Up, Mode=TwoWay}" />
 
-            <TextBlock Grid.Row="6" Text="Униз" Style="{StaticResource FieldLabel}" />
+            <TextBlock Grid.Row="6" Text="{DynamicResource Loc0483}" Style="{StaticResource FieldLabel}" />
             <controls:KeyCaptureBox Grid.Row="6" Grid.Column="1" Width="180" VerticalAlignment="Center" KeyName="{Binding Down, Mode=TwoWay}" />
           </Grid>
-          <TextBlock Text="Пошук: завжди верхній новий перк; приймається перший із двох потрібних. Другий слот шукає решту. Потім середні кидки: максимум другого, потім першого. F7 — зчитати; F9 належить грі."
+          <TextBlock Text="{DynamicResource Loc0391}"
                      Style="{StaticResource CardDescription}" Margin="0,8,0,0" />
         </StackPanel>
       </ui:CardExpander>

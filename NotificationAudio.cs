@@ -1,4 +1,4 @@
-﻿namespace TunerFest;
+namespace TunerFest;
 
 public static class NotificationAudio
 {
@@ -9,10 +9,10 @@ public static class NotificationAudio
 
     public static readonly Tone[] Tones =
     [
-        new("Asterisk", "Мелодія завершення"),
-        new("Exclamation", "Подвійний сигнал"),
-        new("Beep", "Короткий дзвінок"),
-        new("Hand", "Низький сигнал"),
+        new("Asterisk", global::TunerFest.L.T("Мелодія завершення")),
+        new("Exclamation", global::TunerFest.L.T("Подвійний сигнал")),
+        new("Beep", global::TunerFest.L.T("Короткий дзвінок")),
+        new("Hand", global::TunerFest.L.T("Низький сигнал")),
     ];
     static readonly Dictionary<string, System.Media.SoundPlayer> players = [];
 

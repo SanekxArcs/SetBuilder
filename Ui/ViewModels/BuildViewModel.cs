@@ -8,18 +8,18 @@ namespace TunerFest.Ui.ViewModels;
 /// <summary>One of the seven "deталей за запуск" buttons.</summary>
 public sealed record PartOption(int Count, bool Selected)
 {
-    public string AccessibleName => $"Обробити {Count} деталей";
-    public string Hint => Selected ? "Обрано" : "";
+    public string AccessibleName => L.F("Обробити {0} деталей", $"{Count}");
+    public string Hint => Selected ? L.T("Обрано") : "";
 }
 
 /// <summary>
 /// The build page: catalog build, set, two perks with optional flags and alternatives, the game window and the part count.
 /// Selections are written straight into Shell.Profile; the optional toggles and the part count save at once, the rest at start.
 /// </summary>
-public sealed class BuildViewModel : PageViewModel
+public sealed partial class BuildViewModel : PageViewModel
 {
-    public static readonly Affix NoAlternative = new() { Title = "— без альтернативи —" };
-    public static readonly Build CustomBuild = new() { Title = "Власна збірка" };
+    public static readonly Affix NoAlternative = new() { Title = L.T("— без альтернативи —") };
+    public static readonly Build CustomBuild = new() { Title = L.T("Власна збірка") };
 
     readonly Catalog catalog;
     Build? selectedBuild;
@@ -28,10 +28,10 @@ public sealed class BuildViewModel : PageViewModel
         : base(shell)
     {
         catalog = shell.Catalog;
-        Builds = new List<Build> { CustomBuild }.Concat(catalog.Builds).ToList();
+        InitializeCombinations();
         Alternatives = new List<Affix> { NoAlternative }.Concat(catalog.Affixes).ToList();
         PartCounts = Enumerable.Range(1, 7).ToList();
-        selectedBuild =
+        selectedBuild = SavedBuildAtStartup() ??
             catalog.Builds.FirstOrDefault(b =>
                 b.Set == Profile.Set && b.Affixes.SequenceEqual(new[] { Profile.First, Profile.Second })
             ) ?? CustomBuild;
@@ -51,7 +51,7 @@ public sealed class BuildViewModel : PageViewModel
     Profile Profile => Shell.Profile;
 
     // Lists for the selectors.
-    public IReadOnlyList<Build> Builds { get; }
+    public ObservableCollection<Build> Builds { get; } = [];
     public IReadOnlyList<SetBonus> Sets => catalog.Sets;
     public IReadOnlyList<Affix> Affixes => catalog.Affixes;
     public IReadOnlyList<Affix> Alternatives { get; }
@@ -75,6 +75,7 @@ public sealed class BuildViewModel : PageViewModel
             OnPropertyChanged();
             OnPropertyChanged(nameof(CanEditTargets));
             OnPropertyChanged(nameof(CanEditSecond));
+            RefreshCombinationCommands();
         }
     }
 
@@ -113,19 +114,7 @@ public sealed class BuildViewModel : PageViewModel
         get => selectedBuild;
         set
         {
-            selectedBuild = value;
-            if (value is { Set: not "" } b)
-            {
-                Set = catalog.Sets.FirstOrDefault(s => s.Title == b.Set);
-                if (b.Affixes.Length == 2)
-                {
-                    First = catalog.Affixes.FirstOrDefault(a => a.Title == b.Affixes[0]);
-                    Second = catalog.Affixes.FirstOrDefault(a => a.Title == b.Affixes[1]);
-                    FirstAlternative = NoAlternative;
-                    SecondAlternative = NoAlternative;
-                }
-            }
-            RaiseBuild();
+            SelectBuild(value);
         }
     }
 
@@ -251,7 +240,7 @@ public sealed class BuildViewModel : PageViewModel
 
     // Icons and one-line descriptions that follow the selection.
     public ImageSource? BuildIcon => Icon(SelectedBuild);
-    public string BuildDescription => Describe(SelectedBuild);
+    public string BuildDescription => SelectedCombination is { } saved ? DescribeCombination(saved) : Describe(SelectedBuild);
     public ImageSource? SetIcon => Icon(Set);
     public string SetDescription => Describe(Set);
     public ImageSource? FirstIcon => Icon(First);
@@ -299,7 +288,7 @@ public sealed class BuildViewModel : PageViewModel
         catch (Exception e)
         {
             found = [];
-            Shell.Log("Не вдалося отримати список вікон: " + e.Message);
+            Shell.Log(L.T("Не вдалося отримати список вікон: ") + e.Message);
         }
         GameWindows.Clear();
         foreach (var w in found)
@@ -315,7 +304,7 @@ public sealed class BuildViewModel : PageViewModel
     {
         if (Shell.Window is null)
         {
-            Shell.Log("Перевірка PNG: у режимі перегляду діалог не відкривається.");
+            Shell.Log(L.T("Перевірка PNG: у режимі перегляду діалог не відкривається."));
             return;
         }
         var dialog = new Microsoft.Win32.OpenFileDialog { Filter = "PNG screenshots|*.png" };
@@ -333,6 +322,8 @@ public sealed class BuildViewModel : PageViewModel
         else if (set != null)
             Profile.Set = set.Title;
         selectedBuild = choice;
+        Profile.SelectedCombinationId = "";
+        CombinationName = "";
         Shell.SaveProfile();
         Refresh();
     }
@@ -344,6 +335,7 @@ public sealed class BuildViewModel : PageViewModel
             OnPropertyChanged(nameof(CanEdit));
             OnPropertyChanged(nameof(CanEditTargets));
             OnPropertyChanged(nameof(CanEditSecond));
+            RefreshCombinationCommands();
         }
         else if (e.PropertyName is nameof(IShellContext.Game))
             OnPropertyChanged(nameof(SelectedWindow));
@@ -354,6 +346,7 @@ public sealed class BuildViewModel : PageViewModel
         OnPropertyChanged(nameof(SelectedBuild));
         OnPropertyChanged(nameof(BuildIcon));
         OnPropertyChanged(nameof(BuildDescription));
+        RefreshCombinationCommands();
     }
 
     public override void Refresh()
@@ -409,13 +402,13 @@ public sealed class BuildViewModel : PageViewModel
         }
         return item switch
         {
-            Build { Set: "" } => "Сет і перки обираються нижче вручну.",
+            Build { Set: "" } => L.T("Сет і перки обираються нижче вручну."),
             Build b => Tail(
                 Clean(b.Description) is "" ? b.Set + ": " + string.Join(" + ", b.Affixes) : Clean(b.Description),
                 b.Tags
             ),
             SetBonus s => Tail(
-                $"{Clean(s.Description)} · 3 деталі: +{Num(s.BonusPercentageThreeParts)}% · повний сет: +{Num(s.BonusPercentageFull)}%",
+                L.F("{0} · 3 деталі: +{1}% · повний сет: +{2}%", $"{Clean(s.Description)}", $"{Num(s.BonusPercentageThreeParts)}", $"{Num(s.BonusPercentageFull)}"),
                 s.Tags
             ),
             Affix a when ReferenceEquals(a, NoAlternative) || a.Description == "" => "",
@@ -531,7 +524,7 @@ public sealed class BuildViewModel : PageViewModel
             BuildIcon == null
             || BuildDescription == ""
             || !BuildDescription.Contains("NITRO")
-            || !SetDescription.Contains("повний сет: +50%")
+            || !SetDescription.Contains(L.T("повний сет: +50%"))
             || !FirstDescription.Contains("3–5%")
             || !SecondDescription.Contains("speed")
         )
@@ -550,6 +543,7 @@ public sealed class BuildViewModel : PageViewModel
         if (SecondAlternativeIcon != null || SecondAlternativeDescription != "")
             throw new InvalidOperationException("Cleared alternative kept its icon or description");
         passed.Add("PASS build, set and perk icons and descriptions follow the selection, also in the open list");
+        VerifyCombinations(passed);
     }
 
     public override IReadOnlyList<PreviewVariant> PreviewVariants

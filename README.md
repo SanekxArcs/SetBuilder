@@ -37,12 +37,14 @@ Everything happens on your machine. No account, no network calls, no uploads. Th
 - **Full flight recorder.** Every run writes a session folder: readable log, ordered JSON events, roll ledger with spend in Bucks and spare parts, and optional screenshots with a size budget.
 - **Built-in analytics.** A Perk Frequency tab reads every logged run: which perks the game offers, how often, how many rolls and how much currency a part cost on average.
 - **Windows 11 look.** WPF with WPF-UI, Mica, system accent, dark and light themes, tray icon, toast notifications, sounds, and an optional overlay panel over the game.
+- **English and Ukrainian.** English is the initial app language. Choose **Notifications → Application → App language → Українська** and restart to apply it. The choice is saved locally; the game and OCR still use English.
+- **Personal combinations.** Choose a set and perks, enter a name on the Build page and click **Save as new**. Your combination appears in the same builds list with a **My combination** label and survives restarts and catalog updates. It remembers alternatives, optional perks, Ignore set and the part count. **Update selected** and **Delete** manage your saved combinations.
 
 ## Quick start
 
 1. Install the **English OCR language** in Windows (Settings, Time & Language, Language, add English and the "Basic typing" and "Optical character recognition" features).
 2. Run the game in **English** and leave it in windowed or borderless mode.
-3. Download or build the app (see below) and start `Start.cmd`. It launches the newest build listed in `latest-build.txt`.
+3. Download or build the app (see below) and open **TunerFest Set Builder**, the Windows shortcut created beside `Build.ps1`, or run `TunerFest Set Builder.exe` from the release folder. `Start.cmd` also remains available.
 4. In the game, open a car in **Upgrade**, pick the first Legendary part and stay on the seven-parts screen, the part list from Crafting, the perk screen, or an open roll.
 5. In the app, choose the set, the two perks you want, how many parts to process, and press **F8**. Return focus to the game before the five-second countdown ends.
 
@@ -82,7 +84,7 @@ The ledger counts a roll only when the paid popup is confirmed on screen, so the
 | **Zones** | OCR zones over a reference screenshot, one-click auto calibration, examples of every screen |
 | **Control** | Keyboard or gamepad, press timing, extra pause after Esc, quick navigation, fast recognition, screenshot budget |
 | **Logs** | Opens the shared `Logs` folder, zips the last run |
-| **Notifications** | Toasts, sounds, tray behavior, theme, overlay over the game |
+| **Notifications** | Toasts, sounds, app language, tray behavior, theme, overlay over the game |
 | **Analytics** | Perk frequency across all runs, text log search, completed parts with average cost |
 
 ## Build from source
@@ -95,7 +97,7 @@ Requirements: Windows 10 19041 or newer, .NET 8 SDK.
 .\Test.ps1           # offline checks only; never touches a game window
 ```
 
-The version comes from `SetBuilder.csproj` alone. `Start.cmd` reads `latest-build.txt`, so the launcher never needs editing.
+The version comes from `SetBuilder.csproj` alone. Each build updates the **TunerFest Set Builder** shortcut with the app icon and a direct link to the release executable; it opens without a command window. The release includes .NET, so no SDK or separate .NET install is needed to run it. Keep the release folder and its files together. `Start.cmd` reads `latest-build.txt` as an alternative launcher.
 
 ### Offline checks
 

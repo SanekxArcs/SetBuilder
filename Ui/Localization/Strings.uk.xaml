@@ -1,0 +1,175 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+  <sys:String x:Key="Loc0046" xml:space="preserve">Set Builder · накладка</sys:String>
+  <sys:String x:Key="Loc0050" xml:space="preserve">Xbox надсилає A / B / D-pad. Потрібен ViGEmBus; драйвер автоматично не встановлюється. Фізичний геймпад можна використовувати в обох режимах.</sys:String>
+  <sys:String x:Key="Loc0051" xml:space="preserve">Xbox: відкриття CRAFTING</sys:String>
+  <sys:String x:Key="Loc0053" xml:space="preserve">ZIP останнього запуску</sys:String>
+  <sys:String x:Key="Loc0054" xml:space="preserve">або</sys:String>
+  <sys:String x:Key="Loc0055" xml:space="preserve">Автоматично визначати сет і пару перків</sys:String>
+  <sys:String x:Key="Loc0056" xml:space="preserve">Автосет обирає сет і перший перк; другий перк і його альтернатива лишаються такими, як обрано тут.</sys:String>
+  <sys:String x:Key="Loc0059" xml:space="preserve">Альтернатива другого перка</sys:String>
+  <sys:String x:Key="Loc0060" xml:space="preserve">Альтернатива першого перка</sys:String>
+  <sys:String x:Key="Loc0061" xml:space="preserve">Аналітика</sys:String>
+  <sys:String x:Key="Loc0062" xml:space="preserve">Базові зони відповідають скрінам 3440×1440. Для іншого HUD виділи їх вручну: «Приклад» показує, де зона має бути.</sys:String>
+  <sys:String x:Key="Loc0063" xml:space="preserve">Більший шрифт журналу</sys:String>
+  <sys:String x:Key="Loc0064" xml:space="preserve">Будь-який порядок слотів. «або» — беремо той із двох, що випав першим, і доводимо до максимуму. Необов&#x27;язковий не шукається й не покращується. «Не зважати на сет» крутить деталь будь-якого сету; «Вручну в авторежимі» лишає другий перк за вами, а сет і перший перк бере з пресету.</sys:String>
+  <sys:String x:Key="Loc0072" xml:space="preserve">Виділити</sys:String>
+  <sys:String x:Key="Loc0073" xml:space="preserve">Виділяй блок разом із верхньою рамкою, іконкою, назвою та описом із [мін%–макс%]. Ціну знизу не включай. Зони зберігаються відносно вікна гри.</sys:String>
+  <sys:String x:Key="Loc0076" xml:space="preserve">Випадкова пауза в діапазоні</sys:String>
+  <sys:String x:Key="Loc0078" xml:space="preserve">Від, мс</sys:String>
+  <sys:String x:Key="Loc0081" xml:space="preserve">Відкрий екран семи деталей або перків.
+Перевір зони й поверни фокус у гру.
+F8 — запуск · F7 — зчитати · F10 — стоп.</sys:String>
+  <sys:String x:Key="Loc0082" xml:space="preserve">Відкрий у грі деталь (RECALIBER), меню кидка або UPGRADE із сімома деталями й натисни. Програма один раз зчитає екран без натискань, знайде область інтерфейсу гри (16:9 між чорними смугами), розставить у ній зони зі скріншотів і перевірить їх читанням: шлях меню, перки, сет, деталь або ряд деталей. Зони зберігаються лише тоді, коли все прочиталося; кадр і звіт — у Logs\Calibration.</sys:String>
+  <sys:String x:Key="Loc0083" xml:space="preserve">Відкрити Logs</sys:String>
+  <sys:String x:Key="Loc0084" xml:space="preserve">Відкрити папку Logs</sys:String>
+  <sys:String x:Key="Loc0085" xml:space="preserve">Відновити зони зі скріншотів</sys:String>
+  <sys:String x:Key="Loc0089" xml:space="preserve">Вікно гри</sys:String>
+  <sys:String x:Key="Loc0095" xml:space="preserve">Власні мелодії працюють незалежно від системної звукової схеми. Гучність Set Builder можна змінити у мікшері Windows. PNG та зчитування екрана — без сигналу.</sys:String>
+  <sys:String x:Key="Loc0096" xml:space="preserve">Вручну в авторежимі</sys:String>
+  <sys:String x:Key="Loc0097" xml:space="preserve">Вхід: Enter → F9 → Enter. Xbox: A → обрана дія Crafting → A. Класичний вихід: Esc/B ×3 → вправо. Швидкий: Esc/B ×2 → вниз → Crafting → A/Enter.</sys:String>
+  <sys:String x:Key="Loc0109" xml:space="preserve">Два перки · сім деталей · один готовий сет</sys:String>
+  <sys:String x:Key="Loc0110" xml:space="preserve">Деталей за запуск</sys:String>
+  <sys:String x:Key="Loc0112" xml:space="preserve">Деталь</sys:String>
+  <sys:String x:Key="Loc0119" xml:space="preserve">Деталь будь-якого сету крутиться на перки; сет не перевіряється. В авторежимі сет першої деталі й далі обирає пресет перків.</sys:String>
+  <sys:String x:Key="Loc0122" xml:space="preserve">Діапазон 50–500 мс увімкнений спочатку. Для кожного натискання вибирається нова пауза; тривалість утримання кнопки — 65 мс. Перевірки екрана можуть додати час очікування.</sys:String>
+  <sys:String x:Key="Loc0123" xml:space="preserve">Діапазон випадкової паузи</sys:String>
+  <sys:String x:Key="Loc0124" xml:space="preserve">Дізнайся, коли сет готовий, робота зупинилась або чекає на фокус гри.</sys:String>
+  <sys:String x:Key="Loc0125" xml:space="preserve">Для виходу Esc ×2 або ×3. Додається до звичайної паузи; 0 — без додаткового очікування.</sys:String>
+  <sys:String x:Key="Loc0127" xml:space="preserve">До, мс</sys:String>
+  <sys:String x:Key="Loc0129" xml:space="preserve">Додати папку Logs</sys:String>
+  <sys:String x:Key="Loc0132" xml:space="preserve">Додаткова пауза після кожного Esc / B, мс</sys:String>
+  <sys:String x:Key="Loc0134" xml:space="preserve">Другий перк</sys:String>
+  <sys:String x:Key="Loc0135" xml:space="preserve">Другий перк вручну в авторежимі</sys:String>
+  <sys:String x:Key="Loc0145" xml:space="preserve">Журнал запуску</sys:String>
+  <sys:String x:Key="Loc0146" xml:space="preserve">ЖУРНАЛ ЗАПУСКУ</sys:String>
+  <sys:String x:Key="Loc0148" xml:space="preserve">Журнали</sys:String>
+  <sys:String x:Key="Loc0149" xml:space="preserve">Журнали, статистика кидків і витрати зберігаються поруч із програмою. Кожен кидок записується один раз; записи кидків не обмежені лімітом скрінів.</sys:String>
+  <sys:String x:Key="Loc0151" xml:space="preserve">З % зчитано</sys:String>
+  <sys:String x:Key="Loc0152" xml:space="preserve">Завершених деталей за цими фільтрами ще немає.</sys:String>
+  <sys:String x:Key="Loc0153" xml:space="preserve">Завершені деталі</sys:String>
+  <sys:String x:Key="Loc0154" xml:space="preserve">Завершено</sys:String>
+  <sys:String x:Key="Loc0160" xml:space="preserve">Запис</sys:String>
+  <sys:String x:Key="Loc0162" xml:space="preserve">Записуються: версія і налаштування, кадри з часовими мітками, сирий OCR і повторні спроби, розпізнані відсотки, вибір варіанта, натискання та причина зупинки. Текст зберігається одразу; PNG — у фоні.</sys:String>
+  <sys:String x:Key="Loc0163" xml:space="preserve">Запуск</sys:String>
+  <sys:String x:Key="Loc0166" xml:space="preserve">Запчастин¹</sys:String>
+  <sys:String x:Key="Loc0167" xml:space="preserve">Застосунок</sys:String>
+  <sys:String x:Key="Loc0168" xml:space="preserve">Зберегти TXT + CSV + JSON</sys:String>
+  <sys:String x:Key="Loc0172" xml:space="preserve">Зберігати журнал кожного запуску</sys:String>
+  <sys:String x:Key="Loc0173" xml:space="preserve">Зберігати скріни гри та проблемних зон</sys:String>
+  <sys:String x:Key="Loc0175" xml:space="preserve">Збірка</sys:String>
+  <sys:String x:Key="Loc0176" xml:space="preserve">Збірка з TunerFest</sys:String>
+  <sys:String x:Key="Loc0177" xml:space="preserve">Звичайні скріни: до 400 кадрів у межах ліміту. Останній безпечний кадр при помилці зберігається додатково. Текстовий журнал продовжується після вичерпання ліміту.</sys:String>
+  <sys:String x:Key="Loc0178" xml:space="preserve">Звукові сигнали</sys:String>
+  <sys:String x:Key="Loc0179" xml:space="preserve">Згорнути або розгорнути панель</sys:String>
+  <sys:String x:Key="Loc0180" xml:space="preserve">Згорнути журнал</sys:String>
+  <sys:String x:Key="Loc0186" xml:space="preserve">зона зі скріншотів 3440×1440</sys:String>
+  <sys:String x:Key="Loc0188" xml:space="preserve">Зони</sys:String>
+  <sys:String x:Key="Loc0189" xml:space="preserve">Зони екрана</sys:String>
+  <sys:String x:Key="Loc0192" xml:space="preserve">Зразок не знайдено: немає файлу в Assets\reference поруч із програмою.</sys:String>
+  <sys:String x:Key="Loc0201" xml:space="preserve">Зупинити</sys:String>
+  <sys:String x:Key="Loc0202" xml:space="preserve">Зупинити · F10</sys:String>
+  <sys:String x:Key="Loc0203" xml:space="preserve">Зупинити натискання перед наступним читанням екрана; «Продовжити» відновлює запуск</sys:String>
+  <sys:String x:Key="Loc0206" xml:space="preserve">Зчитати екран без натискань</sys:String>
+  <sys:String x:Key="Loc0213" xml:space="preserve">Кадри з часовими мітками та вирізки зон, де розпізнавання не впевнене.</sys:String>
+  <sys:String x:Key="Loc0215" xml:space="preserve">Керування</sys:String>
+  <sys:String x:Key="Loc0220" xml:space="preserve">Кидків¹</sys:String>
+  <sys:String x:Key="Loc0227" xml:space="preserve">Клавіші клавіатури</sys:String>
+  <sys:String x:Key="Loc0229" xml:space="preserve">Кожен запуск отримує власну підпапку; ZIP-архіви лягають у Logs\Archives.</sys:String>
+  <sys:String x:Key="Loc0230" xml:space="preserve">Кожен кидок: 1 500 Bucks + 150 запчастин. Підсумок і всі пропозиції зберігаються у Logs.</sys:String>
+  <sys:String x:Key="Loc0231" xml:space="preserve">Коли всі деталі готові</sys:String>
+  <sys:String x:Key="Loc0232" xml:space="preserve">Копіювати</sys:String>
+  <sys:String x:Key="Loc0242" xml:space="preserve">Ліворуч</sys:String>
+  <sys:String x:Key="Loc0243" xml:space="preserve">Ліміт кидків на весь запуск</sys:String>
+  <sys:String x:Key="Loc0244" xml:space="preserve">Ліміт скрінів за один запуск, МБ</sys:String>
+  <sys:String x:Key="Loc0245" xml:space="preserve">Макс., %</sys:String>
+  <sys:String x:Key="Loc0247" xml:space="preserve">Маленька панель у лівому верхньому куті вікна гри: стан, Почати · Пауза · Зупинити й останній рядок журналу. Не забирає фокус у гри, не потрапляє у зони зчитування й у знімки екрана.</sys:String>
+  <sys:String x:Key="Loc0248" xml:space="preserve">Маршрут між деталями</sys:String>
+  <sys:String x:Key="Loc0250" xml:space="preserve">Менший шрифт журналу</sys:String>
+  <sys:String x:Key="Loc0259" xml:space="preserve">На максимумі</sys:String>
+  <sys:String x:Key="Loc0260" xml:space="preserve">Надійність та навігація</sys:String>
+  <sys:String x:Key="Loc0261" xml:space="preserve">Назад (B)</sys:String>
+  <sys:String x:Key="Loc0263" xml:space="preserve">Накладка</sys:String>
+  <sys:String x:Key="Loc0264" xml:space="preserve">Накладка Set Builder</sys:String>
+  <sys:String x:Key="Loc0265" xml:space="preserve">Накладка поверх гри</sys:String>
+  <sys:String x:Key="Loc0268" xml:space="preserve">Натискання та швидкість</sys:String>
+  <sys:String x:Key="Loc0283" xml:space="preserve">Не зважати на сет</sys:String>
+  <sys:String x:Key="Loc0301" xml:space="preserve">Необов&#x27;язковий</sys:String>
+  <sys:String x:Key="Loc0302" xml:space="preserve">Необов&#x27;язковий перк</sys:String>
+  <sys:String x:Key="Loc0317" xml:space="preserve">Оновити</sys:String>
+  <sys:String x:Key="Loc0318" xml:space="preserve">Оновити список вікон</sys:String>
+  <sys:String x:Key="Loc0322" xml:space="preserve">Основний екран: 2 перки, назва сету та заголовок деталі. Меню кидка: верхній і середній блоки для кожного слота. Нижній збігається з основним перком.</sys:String>
+  <sys:String x:Key="Loc0323" xml:space="preserve">Останній рядок журналу</sys:String>
+  <sys:String x:Key="Loc0326" xml:space="preserve">Очистити екран</sys:String>
+  <sys:String x:Key="Loc0328" xml:space="preserve">Очікування повернення фокусу гри, с</sys:String>
+  <sys:String x:Key="Loc0337" xml:space="preserve">Панель навігації</sys:String>
+  <sys:String x:Key="Loc0338" xml:space="preserve">Панель поверх гри: стан, Почати · Пауза · Зупинити, останній рядок журналу</sys:String>
+  <sys:String x:Key="Loc0339" xml:space="preserve">Папка журналів</sys:String>
+  <sys:String x:Key="Loc0341" xml:space="preserve">Пауза</sys:String>
+  <sys:String x:Key="Loc0343" xml:space="preserve">Пауза між повторними зчитуваннями, мс</sys:String>
+  <sys:String x:Key="Loc0348" xml:space="preserve">Паузи між натисканнями</sys:String>
+  <sys:String x:Key="Loc0349" xml:space="preserve">Перевірити PNG зі скріншота</sys:String>
+  <sys:String x:Key="Loc0351" xml:space="preserve">Перевірка перед стартом</sys:String>
+  <sys:String x:Key="Loc0352" xml:space="preserve">Перк</sys:String>
+  <sys:String x:Key="Loc0356" xml:space="preserve">Перший перк</sys:String>
+  <sys:String x:Key="Loc0360" xml:space="preserve">Підібрати зони</sys:String>
+  <sys:String x:Key="Loc0361" xml:space="preserve">Підібрати зони автоматично</sys:String>
+  <sys:String x:Key="Loc0364" xml:space="preserve">Підтвердити (A)</sys:String>
+  <sys:String x:Key="Loc0365" xml:space="preserve">Підтримка ↗</sys:String>
+  <sys:String x:Key="Loc0379" xml:space="preserve">Показати скріншот екрана з цією зоною</sys:String>
+  <sys:String x:Key="Loc0385" xml:space="preserve">Почати</sys:String>
+  <sys:String x:Key="Loc0386" xml:space="preserve">Почати · F8</sys:String>
+  <sys:String x:Key="Loc0389" xml:space="preserve">Пошук у всіх текстових журналах…</sys:String>
+  <sys:String x:Key="Loc0390" xml:space="preserve">Пошук: Enter → Up одразу під час появи меню → Enter, щойно рамка на верхньому рядку. Покращення: Enter → Enter на середньому рядку. Меню не читається; результат береться з картки слота. Якщо рамка не підтвердиться, меню читається повністю, як раніше.</sys:String>
+  <sys:String x:Key="Loc0391" xml:space="preserve">Пошук: завжди верхній новий перк; приймається перший із двох потрібних. Другий слот шукає решту. Потім середні кидки: максимум другого, потім першого. F7 — зчитати; F9 належить грі.</sys:String>
+  <sys:String x:Key="Loc0392" xml:space="preserve">Появ</sys:String>
+  <sys:String x:Key="Loc0399" xml:space="preserve">Праворуч</sys:String>
+  <sys:String x:Key="Loc0400" xml:space="preserve">При зупинці або помилці</sys:String>
+  <sys:String x:Key="Loc0401" xml:space="preserve">Приклад</sys:String>
+  <sys:String x:Key="Loc0402" xml:space="preserve">Приклад зони</sys:String>
+  <sys:String x:Key="Loc0410" xml:space="preserve">Прослухати</sys:String>
+  <sys:String x:Key="Loc0411" xml:space="preserve">Профіль із TunerFest</sys:String>
+  <sys:String x:Key="Loc0420" xml:space="preserve">Рейтинг перків</sys:String>
+  <sys:String x:Key="Loc0433" xml:space="preserve">Сет</sys:String>
+  <sys:String x:Key="Loc0435" xml:space="preserve">Сет деталі</sys:String>
+  <sys:String x:Key="Loc0436" xml:space="preserve">Сет і перки</sys:String>
+  <sys:String x:Key="Loc0438" xml:space="preserve">Сети та інструкції на сайті ↗</sys:String>
+  <sys:String x:Key="Loc0439" xml:space="preserve">Сигнал після того, як усі деталі сету зібрані.</sys:String>
+  <sys:String x:Key="Loc0440" xml:space="preserve">Сигнал, коли робота зупинилась сама, через F10 або через помилку.</sys:String>
+  <sys:String x:Key="Loc0442" xml:space="preserve">Системна — як у Windows; темна або світла — завжди.</sys:String>
+  <sys:String x:Key="Loc0447" xml:space="preserve">Сповіщення</sys:String>
+  <sys:String x:Key="Loc0448" xml:space="preserve">Сповіщення Windows у кутку екрана: готово, зупинка, пауза</sys:String>
+  <sys:String x:Key="Loc0449" xml:space="preserve">Спосіб натискань</sys:String>
+  <sys:String x:Key="Loc0450" xml:space="preserve">Спосіб натискань і паузи між ними, маршрут між деталями, надійність зчитування та клавіші гри.</sys:String>
+  <sys:String x:Key="Loc0452" xml:space="preserve">Спроби зчитування рамки (без нових кидків)</sys:String>
+  <sys:String x:Key="Loc0454" xml:space="preserve">Стан</sys:String>
+  <sys:String x:Key="Loc0458" xml:space="preserve">Створити ZIP останнього запуску</sys:String>
+  <sys:String x:Key="Loc0459" xml:space="preserve">Стежити</sys:String>
+  <sys:String x:Key="Loc0465" xml:space="preserve">Сторінки</sys:String>
+  <sys:String x:Key="Loc0468" xml:space="preserve">Сховати</sys:String>
+  <sys:String x:Key="Loc0469" xml:space="preserve">Сховати накладку</sys:String>
+  <sys:String x:Key="Loc0470" xml:space="preserve">Сховати накладку (Сповіщення → Накладка поверх гри)</sys:String>
+  <sys:String x:Key="Loc0471" xml:space="preserve">Сховати приклад</sys:String>
+  <sys:String x:Key="Loc0472" xml:space="preserve">твоя поточна зона</sys:String>
+  <sys:String x:Key="Loc0473" xml:space="preserve">Текстовий журнал, сирий OCR і статистика кидків. Застосовується при старті.</sys:String>
+  <sys:String x:Key="Loc0474" xml:space="preserve">Тема вікна</sys:String>
+  <sys:String x:Key="Loc0482" xml:space="preserve">Угору</sys:String>
+  <sys:String x:Key="Loc0483" xml:space="preserve">Униз</sys:String>
+  <sys:String x:Key="Loc0487" xml:space="preserve">Усі текстові журнали</sys:String>
+  <sys:String x:Key="Loc0492" xml:space="preserve">Фіксована пауза, мс (якщо випадкову вимкнено)</sys:String>
+  <sys:String x:Key="Loc0494" xml:space="preserve">Час¹</sys:String>
+  <sys:String x:Key="Loc0496" xml:space="preserve">Частка, %</sys:String>
+  <sys:String x:Key="Loc0497" xml:space="preserve">Частоти перків, усі текстові журнали та завершені деталі з журналів усіх версій програми.</sys:String>
+  <sys:String x:Key="Loc0510" xml:space="preserve">Швидкий: Esc ×2 → вниз → Crafting → Enter. Якщо перехід не підтвердиться, застосунок повернеться до класичного маршруту.</sys:String>
+  <sys:String x:Key="Loc0511" xml:space="preserve">Швидкі кидки: відповідь на меню за позицією</sys:String>
+  <sys:String x:Key="Loc0512" xml:space="preserve">Швидкі назви з навчених шаблонів і кеш OCR</sys:String>
+  <sys:String x:Key="Loc0515" xml:space="preserve">Шлях можна виділити й скопіювати</sys:String>
+  <sys:String x:Key="Loc0520" xml:space="preserve">Якщо гра втратила фокус, натискання зупиняються, а запуск чекає повернення й продовжує з перевіркою екрана. 0 — зупиняти одразу, як раніше.</sys:String>
+  <sys:String x:Key="Loc0521" xml:space="preserve">Мова застосунку</sys:String>
+  <sys:String x:Key="CombinationsHeading" xml:space="preserve">Збірки та мої комбінації</sys:String>
+  <sys:String x:Key="CombinationName" xml:space="preserve">Назва моєї комбінації</sys:String>
+  <sys:String x:Key="CombinationHint" xml:space="preserve">Оберіть сет і перки, назвіть комбінацію та збережіть її до списку.</sys:String>
+  <sys:String x:Key="CombinationPlaceholder" xml:space="preserve">Наприклад: Bucks + запчастини</sys:String>
+  <sys:String x:Key="CombinationSave" xml:space="preserve">Зберегти як нову</sys:String>
+  <sys:String x:Key="CombinationUpdate" xml:space="preserve">Оновити вибрану</sys:String>
+  <sys:String x:Key="CombinationDelete" xml:space="preserve">Видалити</sys:String>
+</ResourceDictionary>

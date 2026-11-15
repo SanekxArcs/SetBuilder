@@ -11,5 +11,17 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
     # Start.cmd reads this file, so the launcher never needs editing when the version changes.
     Set-Content -Path 'latest-build.txt' -Value $output -NoNewline
-    Write-Host "Ready: $output\TunerFest Set Builder.exe"
+    # A normal Windows shortcut: launches the release EXE directly, with its embedded icon and no console.
+    # Refresh it after each publish so it always points to the version just built.
+    $executable = Join-Path $PSScriptRoot "$output\TunerFest Set Builder.exe"
+    $shortcutPath = Join-Path $PSScriptRoot 'TunerFest Set Builder.lnk'
+    $windowsShell = New-Object -ComObject WScript.Shell
+    $shortcut = $windowsShell.CreateShortcut($shortcutPath)
+    $shortcut.TargetPath = $executable
+    $shortcut.WorkingDirectory = Split-Path -Parent $executable
+    $shortcut.IconLocation = "$executable,0"
+    $shortcut.Description = 'TunerFest Set Builder — The Crew Motorfest perk combinations'
+    $shortcut.Save()
+    Write-Host "Ready: $executable"
+    Write-Host "Launch: $shortcutPath"
 } finally { Pop-Location }

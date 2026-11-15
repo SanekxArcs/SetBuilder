@@ -24,7 +24,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
     RunProgress? lastProgress;
     GameWindow? game;
     PageHost? selectedPage;
-    string statusLine = "Готовий до налаштування · F8 запуск · F7 зчитати · F10 стоп";
+    string statusLine = L.T("Готовий до налаштування · F8 запуск · F7 зчитати · F10 стоп");
 
     public MainViewModel(bool preview)
     {
@@ -40,6 +40,8 @@ public sealed class MainViewModel : ObservableObject, IShellContext
             profile = new();
         }
         Profile = profile;
+        if (preview)
+            Profile.Language = L.Language;
         if (preview)
             Toasts.Enabled = false;
         StartCommand = new RelayCommand(() => Arm(true), () => !IsBusy);
@@ -107,7 +109,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
         }
     }
 
-    public string PauseLabel => paused ? "Продовжити" : "Пауза";
+    public string PauseLabel => paused ? L.T("Продовжити") : L.T("Пауза");
     public Wpf.Ui.Controls.SymbolRegular PauseIcon =>
         paused ? Wpf.Ui.Controls.SymbolRegular.Play24 : Wpf.Ui.Controls.SymbolRegular.Pause24;
 
@@ -133,7 +135,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
         if (!CanPause)
             return;
         IsPaused = !IsPaused;
-        Log(IsPaused ? "Пауза запитана: запуск зупиниться перед наступним читанням екрана." : "Продовжити запитано.");
+        Log(IsPaused ? L.T("Пауза запитана: запуск зупиниться перед наступним читанням екрана.") : L.T("Продовжити запитано."));
     }
 
     void SetRunActive(bool value)
@@ -206,6 +208,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
     {
         recording?.Message(text);
         AppendLog(text);
+        text = L.Display(text);
         StatusLine = text.Length > 125 ? text[..122] + "…" : text;
     }
 
@@ -219,7 +222,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {
-            Log("Не вдалося зберегти профіль: " + e.Message);
+            Log(L.T("Не вдалося зберегти профіль: ") + e.Message);
         }
     }
 
@@ -240,18 +243,18 @@ public sealed class MainViewModel : ObservableObject, IShellContext
         }
         if (run && !StopAvailable && !Preview)
         {
-            Log("F10 зайнята іншою програмою. Закрий старе вікно Set Builder перед запуском нової версії.");
+            Log(L.T("F10 зайнята іншою програмою. Закрий старе вікно Set Builder перед запуском нової версії."));
             return;
         }
         if (Game is not { } target)
         {
-            Log("Вибери вікно гри.");
+            Log(L.T("Вибери вікно гри."));
             return;
         }
         if (Preview)
         {
             // Previews and --ui-smoke must never press a key in or read a running game.
-            Log("Попередній перегляд: запуск не виконується.");
+            Log(L.T("Попередній перегляд: запуск не виконується."));
             return;
         }
         var session = new CancellationTokenSource();
@@ -269,33 +272,33 @@ public sealed class MainViewModel : ObservableObject, IShellContext
             if (run)
             {
                 lastProgress = null;
-                Status.Set(StatusMode.Countdown, "Старт", "Поверни фокус у гру · F10 — скасувати");
-                SetTrayText("старт");
+                Status.Set(StatusMode.Countdown, L.T("Старт"), L.T("Поверни фокус у гру · F10 — скасувати"));
+                SetTrayText(L.T("старт"));
             }
             if (Desktop.GetForegroundWindow() != target.Handle)
             {
                 for (int i = 5; i > 0; i--)
                 {
-                    Log($"Поверни фокус у гру. Старт за {i} с · F10 — скасувати");
+                    Log(L.F("Поверни фокус у гру. Старт за {0} с · F10 — скасувати", $"{i}"));
                     if (run)
-                        Status.Set(StatusMode.Countdown, $"Старт за {i} с", "Поверни фокус у гру · F10 — скасувати");
+                        Status.Set(StatusMode.Countdown, L.F("Старт за {0} с", $"{i}"), L.T("Поверни фокус у гру · F10 — скасувати"));
                     await Task.Delay(1000, session.Token);
                 }
             }
             if (!Desktop.IsGame(target.Handle))
-                throw new InvalidOperationException("Обране вікно не належить The Crew Motorfest.");
+                throw new InvalidOperationException(L.T("Обране вікно не належить The Crew Motorfest."));
             var focusWait = Stopwatch.StartNew();
             bool announced = false;
             while (Desktop.GetForegroundWindow() != target.Handle)
             {
                 if (Profile.FocusLostWaitSeconds <= 0 || focusWait.Elapsed.TotalSeconds >= Profile.FocusLostWaitSeconds)
-                    throw new FocusLostException("Зупинено: гра втратила фокус.");
+                    throw new FocusLostException(L.T("Зупинено: гра втратила фокус."));
                 if (!announced)
                 {
                     announced = true;
-                    Log($"Гра ще не у фокусі. Чекаю до {Profile.FocusLostWaitSeconds} с · F10 — скасувати");
+                    Log(L.F("Гра ще не у фокусі. Чекаю до {0} с · F10 — скасувати", $"{Profile.FocusLostWaitSeconds}"));
                     if (run)
-                        Status.Set(StatusMode.Paused, "Чекаю фокус гри", "Поверни фокус у гру · F10 — скасувати");
+                        Status.Set(StatusMode.Paused, L.T("Чекаю фокус гри"), L.T("Поверни фокус у гру · F10 — скасувати"));
                 }
                 await Task.Delay(250, session.Token);
             }
@@ -320,14 +323,14 @@ public sealed class MainViewModel : ObservableObject, IShellContext
         {
             outcome = "cancelled";
             failure = e;
-            Log("Зупинено. Поточні зміни залишилися в грі.");
+            Log(L.T("Зупинено. Поточні зміни залишилися в грі."));
         }
         catch (Exception e)
         {
             outcome = "error";
             failure = e;
             recording?.Write("error", new { error = e.ToString() });
-            Log("Зупинено: " + e.Message);
+            Log(L.T("Зупинено: ") + e.Message);
         }
         finally
         {
@@ -348,7 +351,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
     }
 
     public static string ProgressText(RunProgress r) =>
-        $"Деталь {Math.Max(1, r.Part)}/{r.Parts} · Кидків {r.Rolls} · {r.Bucks:N0} Bucks · {r.SpareParts:N0} запчастин";
+        L.F("Деталь {0}/{1} · Кидків {2} · {3} Bucks · {4} запчастин", $"{Math.Max(1, r.Part)}", $"{r.Parts}", $"{r.Rolls}", $"{r.Bucks:N0}", $"{r.SpareParts:N0}");
 
     public void OnProgress(RunProgress r)
     {
@@ -357,43 +360,43 @@ public sealed class MainViewModel : ObservableObject, IShellContext
         string detail = ProgressText(r);
         if (r.State == "paused")
         {
-            Status.Set(StatusMode.Paused, "Пауза: гра без фокусу", detail + " · поверни фокус у гру");
-            SetTrayText("пауза, гра без фокусу");
-            Toasts.Show("Set Builder на паузі", "Гра втратила фокус. Поверни фокус у гру, щоб продовжити.", "state");
+            Status.Set(StatusMode.Paused, L.T("Пауза: гра без фокусу"), detail + L.T(" · поверни фокус у гру"));
+            SetTrayText(L.T("пауза, гра без фокусу"));
+            Toasts.Show(L.T("Set Builder на паузі"), L.T("Гра втратила фокус. Поверни фокус у гру, щоб продовжити."), "state");
             return;
         }
         if (r.State == "held")
         {
-            Status.Set(StatusMode.Paused, "Пауза", detail + " · «Продовжити» відновлює запуск");
-            SetTrayText("пауза");
+            Status.Set(StatusMode.Paused, L.T("Пауза"), detail + L.T(" · «Продовжити» відновлює запуск"));
+            SetTrayText(L.T("пауза"));
             return;
         }
         if (wasPaused)
             Toasts.Remove("state");
-        Status.Set(StatusMode.Running, "Виконується", detail);
-        SetTrayText($"деталь {Math.Max(1, r.Part)}/{r.Parts}, кидків {r.Rolls}");
+        Status.Set(StatusMode.Running, L.T("Виконується"), detail);
+        SetTrayText(L.F("деталь {0}/{1}, кидків {2}", $"{Math.Max(1, r.Part)}", $"{r.Parts}", $"{r.Rolls}"));
     }
 
     public void ShowOutcome(string outcome, Exception? failure)
     {
-        string spent = lastProgress == null ? "Кидків 0" : ProgressText(lastProgress);
+        string spent = lastProgress == null ? L.T("Кидків 0") : ProgressText(lastProgress);
         Toasts.Remove("state");
         switch (outcome)
         {
             case "completed":
-                Status.Set(StatusMode.Done, "Готово: обидва перки на максимумі", spent);
-                SetTrayText("готово");
-                Toasts.Show("Сет готовий", $"{Profile.Set}: {Profile.First} + {Profile.Second}. {spent}.", "result");
+                Status.Set(StatusMode.Done, L.T("Готово: обидва перки на максимумі"), spent);
+                SetTrayText(L.T("готово"));
+                Toasts.Show(L.T("Сет готовий"), $"{Profile.Set}: {Profile.First} + {Profile.Second}. {spent}.", "result");
                 break;
             case "cancelled":
-                Status.Set(StatusMode.Stopped, "Зупинено вручну", spent);
-                SetTrayText("зупинено");
+                Status.Set(StatusMode.Stopped, L.T("Зупинено вручну"), spent);
+                SetTrayText(L.T("зупинено"));
                 break;
             default:
-                string reason = failure?.Message ?? "невідома помилка";
-                Status.Set(StatusMode.Failed, "Зупинено з помилкою", reason + " · " + spent);
-                SetTrayText("помилка");
-                Toasts.Show("Set Builder зупинено", reason, "result");
+                string reason = L.Display(failure?.Message ?? L.T("невідома помилка"));
+                Status.Set(StatusMode.Failed, L.T("Зупинено з помилкою"), reason + " · " + spent);
+                SetTrayText(L.T("помилка"));
+                Toasts.Show(L.T("Set Builder зупинено"), L.Display(reason), "result");
                 break;
         }
     }
@@ -402,9 +405,9 @@ public sealed class MainViewModel : ObservableObject, IShellContext
     {
         string? error = NotificationAudio.Play(enabled, code);
         if (error != null)
-            Log("Не вдалося відтворити звук: " + error);
+            Log(L.T("Не вдалося відтворити звук: ") + error);
         else if (preview)
-            Log("Відтворюю сигнал. Гучність регулюється для Set Builder у мікшері Windows.");
+            Log(L.T("Відтворюю сигнал. Гучність регулюється для Set Builder у мікшері Windows."));
     }
 
     /// <summary>The run or a read detected the set: the profile takes the build's set and perks, alternatives are cleared, pages refresh.</summary>
@@ -439,7 +442,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
                 }
         );
         lastSessionFolder = recording.Folder;
-        Log("Запис діагностики: " + recording.Folder);
+        Log(L.T("Запис діагностики: ") + recording.Folder);
     }
 
     async Task FinishDiagnostics(string outcome, Exception? error)
@@ -452,13 +455,13 @@ public sealed class MainViewModel : ObservableObject, IShellContext
         {
             await session.Finish(outcome, error);
             RunFinished?.Invoke();
-            AppendLog("Журнал збережено: " + session.Folder);
+            AppendLog(L.T("Журнал збережено: ") + session.Folder);
             if (session.WriteError != null)
-                Log("Не всі дані діагностики вдалося записати: " + session.WriteError);
+                Log(L.T("Не всі дані діагностики вдалося записати: ") + session.WriteError);
         }
         catch (Exception e)
         {
-            Log("Помилка збереження діагностики: " + e.Message);
+            Log(L.T("Помилка збереження діагностики: ") + e.Message);
         }
     }
 
@@ -484,7 +487,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
         {
             outcome = "cancelled";
             failure = e;
-            Log("Зчитування скасовано.");
+            Log(L.T("Зчитування скасовано."));
         }
         catch (Exception e)
         {
@@ -505,7 +508,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
     {
         recording?.Observe(frame, "inspect");
         var vision = new Vision(Catalog, Profile, recording);
-        Log($"Тільки зчитування · {frame.Width}×{frame.Height} · жодних натискань");
+        Log(L.F("Тільки зчитування · {0}×{1} · жодних натискань", $"{frame.Width}", $"{frame.Height}"));
         foreach (
             var name in new[] { "part", "set", "left", "right", "topLeft", "middleLeft", "topRight", "middleRight" }
         )
@@ -545,24 +548,24 @@ public sealed class MainViewModel : ObservableObject, IShellContext
             }
             catch (InvalidOperationException e)
             {
-                Log("Автосет: " + e.Message);
+                Log(L.T("Автосет: ") + e.Message);
             }
         }
         int popup = await vision.PopupSide(frame);
         if (popup < 0)
-            Log("Основний екран · вибраний слот: " + (vision.Focus(frame, ["left", "right"]) + 1));
+            Log(L.T("Основний екран · вибраний слот: ") + (vision.Focus(frame, ["left", "right"]) + 1));
         else
             Log(
-                "Меню кидка "
-                    + (popup == 0 ? "ліворуч" : "праворуч")
-                    + " · варіант: "
+                L.T("Меню кидка ")
+                    + (popup == 0 ? L.T("ліворуч") : L.T("праворуч"))
+                    + L.T(" · варіант: ")
                     + (
                         vision.Focus(
                             frame,
                             popup == 0 ? ["topLeft", "middleLeft", "left"] : ["topRight", "middleRight", "right"]
                         ) + 1
                     )
-                    + ". Натисни F8, щоб продовжити відкритий кидок."
+                    + L.T(". Натисни F8, щоб продовжити відкритий кидок.")
             );
     }
 
@@ -578,7 +581,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
         }
         catch (Exception e)
         {
-            Log($"Не вдалося відкрити {url}: {e.Message}");
+            Log(L.F("Не вдалося відкрити {0}: {1}", $"{url}", $"{e.Message}"));
         }
     }
 
@@ -593,7 +596,7 @@ public sealed class MainViewModel : ObservableObject, IShellContext
         }
         catch (Exception e)
         {
-            Log("Не вдалося відкрити Logs: " + e.Message);
+            Log(L.T("Не вдалося відкрити Logs: ") + e.Message);
         }
     }
 
@@ -606,16 +609,16 @@ public sealed class MainViewModel : ObservableObject, IShellContext
             var folder = lastSessionFolder ?? SessionLog.Latest();
             if (folder == null)
             {
-                Log("Журналів ще немає. Запусти F8, F7 або перевірку PNG.");
+                Log(L.T("Журналів ще немає. Запусти F8, F7 або перевірку PNG."));
                 return;
             }
             var archive = await Task.Run(() => SessionLog.Export(folder));
-            Log("ZIP готовий: " + archive);
+            Log(L.T("ZIP готовий: ") + archive);
             Process.Start(new ProcessStartInfo { FileName = Path.GetDirectoryName(archive)!, UseShellExecute = true });
         }
         catch (Exception e)
         {
-            Log("Не вдалося створити ZIP: " + e.Message);
+            Log(L.T("Не вдалося створити ZIP: ") + e.Message);
         }
     }
 }

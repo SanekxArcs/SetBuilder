@@ -34,7 +34,7 @@ public sealed record AnalyticsItemRow(
 )
 {
     public string Time => TimeValue?.ToLocalTime().ToString("dd.MM HH:mm:ss") ?? "—";
-    public string Duration => ItemAnalytics.Duration(DurationSeconds);
+    public string Duration => L.Display(ItemAnalytics.Duration(DurationSeconds));
 }
 
 /// <summary>Inner tab strip of the analytics page: the button whose index equals the selected tab is Primary, the others Secondary.</summary>

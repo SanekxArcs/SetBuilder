@@ -9,62 +9,73 @@
              mc:Ignorable="d">
   <ScrollViewer Style="{StaticResource PageScroll}">
     <StackPanel Style="{StaticResource PageBody}">
-      <TextBlock Text="Сповіщення" Style="{StaticResource PageTitle}" />
-      <TextBlock Text="Дізнайся, коли сет готовий, робота зупинилась або чекає на фокус гри." Style="{StaticResource CardDescription}" />
+      <TextBlock Text="{DynamicResource Loc0447}" Style="{StaticResource PageTitle}" />
+      <TextBlock Text="{DynamicResource Loc0124}" Style="{StaticResource CardDescription}" />
 
-      <TextBlock Text="Сповіщення" Style="{StaticResource SectionHeader}" />
+      <TextBlock Text="{DynamicResource Loc0447}" Style="{StaticResource SectionHeader}" />
 
       <ui:CardControl Icon="{ui:SymbolIcon AlertOn24}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
         <ui:CardControl.Header>
           <StackPanel>
-            <TextBlock Text="Сповіщення Windows у кутку екрана: готово, зупинка, пауза" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource Loc0448}" Style="{StaticResource CardTitle}" />
           </StackPanel>
         </ui:CardControl.Header>
         <ui:ToggleSwitch IsChecked="{Binding ToastEnabled, Mode=TwoWay}" />
       </ui:CardControl>
 
-      <TextBlock Text="Звукові сигнали" Style="{StaticResource SectionHeader}" />
+      <TextBlock Text="{DynamicResource Loc0178}" Style="{StaticResource SectionHeader}" />
 
       <ui:CardControl Icon="{ui:SymbolIcon MusicNote224}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
         <ui:CardControl.Header>
           <StackPanel>
-            <TextBlock Text="Коли всі деталі готові" Style="{StaticResource CardTitle}" />
-            <TextBlock Text="Сигнал після того, як усі деталі сету зібрані." Style="{StaticResource CardDescription}" />
+            <TextBlock Text="{DynamicResource Loc0231}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource Loc0439}" Style="{StaticResource CardDescription}" />
           </StackPanel>
         </ui:CardControl.Header>
         <StackPanel Orientation="Horizontal">
           <ui:ToggleSwitch IsChecked="{Binding CompletionSoundEnabled, Mode=TwoWay}" VerticalAlignment="Center" />
           <ComboBox Width="220" Margin="16,0,0,0" ItemsSource="{Binding Tones}" DisplayMemberPath="Title" SelectedValuePath="Code"
                     SelectedValue="{Binding CompletionSound, Mode=TwoWay}" IsEnabled="{Binding CompletionToneEnabled}" />
-          <ui:Button Content="Прослухати" Icon="{ui:SymbolIcon Speaker224}" Margin="8,0,0,0" Command="{Binding PreviewCompletionCommand}" />
+          <ui:Button Content="{DynamicResource Loc0410}" Icon="{ui:SymbolIcon Speaker224}" Margin="8,0,0,0" Command="{Binding PreviewCompletionCommand}" />
         </StackPanel>
       </ui:CardControl>
 
       <ui:CardControl Icon="{ui:SymbolIcon MusicNote224}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
         <ui:CardControl.Header>
           <StackPanel>
-            <TextBlock Text="При зупинці або помилці" Style="{StaticResource CardTitle}" />
-            <TextBlock Text="Сигнал, коли робота зупинилась сама, через F10 або через помилку." Style="{StaticResource CardDescription}" />
+            <TextBlock Text="{DynamicResource Loc0400}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource Loc0440}" Style="{StaticResource CardDescription}" />
           </StackPanel>
         </ui:CardControl.Header>
         <StackPanel Orientation="Horizontal">
           <ui:ToggleSwitch IsChecked="{Binding StopSoundEnabled, Mode=TwoWay}" VerticalAlignment="Center" />
           <ComboBox Width="220" Margin="16,0,0,0" ItemsSource="{Binding Tones}" DisplayMemberPath="Title" SelectedValuePath="Code"
                     SelectedValue="{Binding StopSound, Mode=TwoWay}" IsEnabled="{Binding StopToneEnabled}" />
-          <ui:Button Content="Прослухати" Icon="{ui:SymbolIcon Speaker224}" Margin="8,0,0,0" Command="{Binding PreviewStopCommand}" />
+          <ui:Button Content="{DynamicResource Loc0410}" Icon="{ui:SymbolIcon Speaker224}" Margin="8,0,0,0" Command="{Binding PreviewStopCommand}" />
         </StackPanel>
       </ui:CardControl>
 
-      <TextBlock Text="Власні мелодії працюють незалежно від системної звукової схеми. Гучність Set Builder можна змінити у мікшері Windows. PNG та зчитування екрана — без сигналу."
+      <TextBlock Text="{DynamicResource Loc0095}"
                  Style="{StaticResource CardDescription}" Margin="2,8,0,0" />
 
-      <TextBlock Text="Застосунок" Style="{StaticResource SectionHeader}" />
+      <TextBlock Text="{DynamicResource Loc0167}" Style="{StaticResource SectionHeader}" />
+
+      <ui:CardControl Icon="{ui:SymbolIcon Globe24}" Margin="0,0,0,4" IsEnabled="{Binding CanEdit}">
+        <ui:CardControl.Header>
+          <StackPanel>
+            <TextBlock Text="{DynamicResource Loc0521}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{Binding LanguageDescription}" Style="{StaticResource CardDescription}" />
+          </StackPanel>
+        </ui:CardControl.Header>
+        <ComboBox Width="220" ItemsSource="{x:Static vm:NotificationsViewModel.LanguageOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                  SelectedValue="{Binding Language, Mode=TwoWay}" AutomationProperties.Name="English / Українська" />
+      </ui:CardControl>
 
       <ui:CardControl Icon="{ui:SymbolIcon DarkTheme24}" Margin="0,0,0,4">
         <ui:CardControl.Header>
           <StackPanel>
-            <TextBlock Text="Тема вікна" Style="{StaticResource CardTitle}" />
-            <TextBlock Text="Системна — як у Windows; темна або світла — завжди." Style="{StaticResource CardDescription}" />
+            <TextBlock Text="{DynamicResource Loc0474}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource Loc0442}" Style="{StaticResource CardDescription}" />
           </StackPanel>
         </ui:CardControl.Header>
         <ComboBox Width="220" ItemsSource="{x:Static vm:NotificationsViewModel.ThemeOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
@@ -74,12 +85,12 @@
       <ui:CardControl Icon="{ui:SymbolIcon PictureInPicture24}" Margin="0,0,0,4">
         <ui:CardControl.Header>
           <StackPanel>
-            <TextBlock Text="Накладка поверх гри" Style="{StaticResource CardTitle}" />
-            <TextBlock Text="Маленька панель у лівому верхньому куті вікна гри: стан, Почати · Пауза · Зупинити й останній рядок журналу. Не забирає фокус у гри, не потрапляє у зони зчитування й у знімки екрана."
+            <TextBlock Text="{DynamicResource Loc0265}" Style="{StaticResource CardTitle}" />
+            <TextBlock Text="{DynamicResource Loc0247}"
                        Style="{StaticResource CardDescription}" />
           </StackPanel>
         </ui:CardControl.Header>
-        <ui:ToggleSwitch IsChecked="{Binding OverlayEnabled, Mode=TwoWay}" AutomationProperties.Name="Накладка поверх гри" />
+        <ui:ToggleSwitch IsChecked="{Binding OverlayEnabled, Mode=TwoWay}" AutomationProperties.Name="{DynamicResource Loc0265}" />
       </ui:CardControl>
 
       <TextBlock Text="{Binding VersionLine, Mode=OneWay}" Style="{StaticResource CardDescription}" Margin="2,16,0,0" />

@@ -34,7 +34,7 @@ public sealed class KeyCaptureBox : ContentControl
         MinWidth = 120;
         HorizontalContentAlignment = HorizontalAlignment.Stretch;
         VerticalContentAlignment = VerticalAlignment.Stretch;
-        ToolTip = "Натисни клавішу, щоб призначити її";
+        ToolTip = L.T("Натисни клавішу, щоб призначити її");
 
         text = new TextBlock
         {

@@ -7,13 +7,13 @@
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                  mc:Ignorable="d"
                  d:DataContext="{d:DesignInstance Type=local:MainViewModel}"
-                 Title="Set Builder · накладка"
+                 Title="{DynamicResource Loc0046}"
                  Width="300" MinWidth="180" SizeToContent="Height" MinHeight="0"
                  WindowStyle="None" ResizeMode="NoResize" WindowStartupLocation="Manual"
                  ShowInTaskbar="False" ShowActivated="False" Topmost="True" Focusable="False"
                  ExtendsContentIntoTitleBar="True" WindowBackdropType="Acrylic" WindowCornerPreference="Round"
                  FontFamily="Segoe UI Variable Text, Segoe UI"
-                 AutomationProperties.Name="Накладка Set Builder">
+                 AutomationProperties.Name="{DynamicResource Loc0264}">
   <ui:FluentWindow.Resources>
     <!-- Same dot colours as the status card. -->
     <Style x:Key="OverlayDot" TargetType="Ellipse">
@@ -90,34 +90,34 @@
         <TextBlock Grid.Column="2" Style="{StaticResource OverlayClock}" Text="{Binding Clock}" Margin="8,0,4,0"
                    FontFamily="Segoe UI Variable Display, Segoe UI" />
         <ui:Button Grid.Column="3" Appearance="Transparent" Padding="4" Width="26" Height="26" Focusable="False"
-                   Icon="{ui:SymbolIcon Dismiss24}" Click="OnHide" ToolTip="Сховати накладку (Сповіщення → Накладка поверх гри)"
-                   AutomationProperties.Name="Сховати накладку" />
+                   Icon="{ui:SymbolIcon Dismiss24}" Click="OnHide" ToolTip="{DynamicResource Loc0470}"
+                   AutomationProperties.Name="{DynamicResource Loc0469}" />
       </Grid>
       <TextBlock Grid.Row="1" Text="{Binding Status.Detail}" FontSize="11" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                  MaxHeight="32" Margin="0,1,0,0" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
 
       <!-- 2. Start · Pause · Stop. -->
       <WrapPanel Grid.Row="2" Margin="0,8,0,0">
-        <ui:Button Style="{StaticResource OverlayButton}" Content="Почати" Icon="{ui:SymbolIcon Play24}" Appearance="Primary"
-                   Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}" ToolTip="Почати · F8"
-                   AutomationProperties.Name="Почати" />
+        <ui:Button Style="{StaticResource OverlayButton}" Content="{DynamicResource Loc0385}" Icon="{ui:SymbolIcon Play24}" Appearance="Primary"
+                   Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}" ToolTip="{DynamicResource Loc0386}"
+                   AutomationProperties.Name="{DynamicResource Loc0385}" />
         <ui:Button Style="{StaticResource OverlayButton}" Content="{Binding PauseLabel}" Appearance="Secondary"
                    Command="{Binding PauseCommand}" IsEnabled="{Binding CanPause}"
-                   ToolTip="Зупинити натискання перед наступним читанням екрана; «Продовжити» відновлює запуск"
-                   AutomationProperties.Name="Пауза">
+                   ToolTip="{DynamicResource Loc0203}"
+                   AutomationProperties.Name="{DynamicResource Loc0341}">
           <ui:Button.Icon>
             <ui:SymbolIcon Symbol="{Binding PauseIcon}" />
           </ui:Button.Icon>
         </ui:Button>
-        <ui:Button Style="{StaticResource OverlayButton}" Content="Зупинити" Icon="{ui:SymbolIcon Stop24}" Appearance="Secondary"
-                   Command="{Binding StopCommand}" IsEnabled="{Binding CanStop}" ToolTip="Зупинити · F10" Margin="0"
-                   AutomationProperties.Name="Зупинити" />
+        <ui:Button Style="{StaticResource OverlayButton}" Content="{DynamicResource Loc0201}" Icon="{ui:SymbolIcon Stop24}" Appearance="Secondary"
+                   Command="{Binding StopCommand}" IsEnabled="{Binding CanStop}" ToolTip="{DynamicResource Loc0202}" Margin="0"
+                   AutomationProperties.Name="{DynamicResource Loc0201}" />
       </WrapPanel>
 
       <!-- 3. Last log line. -->
       <TextBlock Grid.Row="3" Text="{Binding StatusLine}" FontSize="11" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                  MaxHeight="32" Margin="0,8,0,0" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                 AutomationProperties.Name="Останній рядок журналу" />
+                 AutomationProperties.Name="{DynamicResource Loc0323}" />
     </Grid>
   </Grid>
 </ui:FluentWindow>

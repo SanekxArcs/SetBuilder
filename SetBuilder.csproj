@@ -10,6 +10,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>TunerFest Set Builder</AssemblyName>
+    <Title>TunerFest Set Builder</Title>
+    <Product>TunerFest Set Builder</Product>
+    <Description>Build and save perk combinations for The Crew Motorfest.</Description>
+    <Company>TunerFest</Company>
     <RootNamespace>TunerFest</RootNamespace>
     <ApplicationIcon>Assets/app.ico</ApplicationIcon>
     <!-- Program.Main stays the entry point: verification modes run before any window exists. -->
@@ -20,6 +24,7 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);.claude/**;tools/**</DefaultItemExcludes>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Ui/Localization/en.json" />
     <!-- WinForms types are opted into per file; WPF code must not see them through global usings. -->
     <Using Remove="System.Windows.Forms" />
   </ItemGroup>

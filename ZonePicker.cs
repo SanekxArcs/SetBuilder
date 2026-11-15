@@ -94,7 +94,7 @@ public sealed class ZonePicker : Form
         using var font = new Font("Segoe UI", 14, FontStyle.Bold);
         e.Graphics.FillRectangle(Brushes.Black, 16, 16, Math.Min(1000, Width - 32), 80);
         e.Graphics.DrawString(
-            Text + "\nВиділіть увесь блок разом із верхньою жовтою межею · Esc — скасувати",
+            Text + L.T("\nВиділіть увесь блок разом із верхньою жовтою межею · Esc — скасувати"),
             font,
             Brushes.White,
             30,

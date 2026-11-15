@@ -1,0 +1,175 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+  <sys:String x:Key="Loc0046" xml:space="preserve">Set Builder · overlay</sys:String>
+  <sys:String x:Key="Loc0050" xml:space="preserve">Xbox sends A / B / D-pad. ViGEmBus is required; the driver is not installed automatically. A physical gamepad can be used in either mode.</sys:String>
+  <sys:String x:Key="Loc0051" xml:space="preserve">Xbox: open CRAFTING</sys:String>
+  <sys:String x:Key="Loc0053" xml:space="preserve">ZIP latest session</sys:String>
+  <sys:String x:Key="Loc0054" xml:space="preserve">or</sys:String>
+  <sys:String x:Key="Loc0055" xml:space="preserve">Automatically detect the set and perk pair</sys:String>
+  <sys:String x:Key="Loc0056" xml:space="preserve">Auto-set chooses the set and first perk; the second perk and its alternative stay as selected here.</sys:String>
+  <sys:String x:Key="Loc0059" xml:space="preserve">Second perk alternative</sys:String>
+  <sys:String x:Key="Loc0060" xml:space="preserve">First perk alternative</sys:String>
+  <sys:String x:Key="Loc0061" xml:space="preserve">Analytics</sys:String>
+  <sys:String x:Key="Loc0062" xml:space="preserve">Default zones match 3440×1440 screenshots. For a different HUD, select them manually: Example shows where each zone belongs.</sys:String>
+  <sys:String x:Key="Loc0063" xml:space="preserve">Larger log font</sys:String>
+  <sys:String x:Key="Loc0064" xml:space="preserve">Either slot order. “or” uses whichever of the two appears first and maximizes it. Optional perks are neither searched for nor upgraded. “Ignore set” rolls perks on a part from any set. “Manual in auto mode” keeps the second perk under your control and takes the set and first perk from the preset.</sys:String>
+  <sys:String x:Key="Loc0072" xml:space="preserve">Select area</sys:String>
+  <sys:String x:Key="Loc0073" xml:space="preserve">Include the top border, icon, name and description with [min%–max%]. Exclude the price below. Zones are saved relative to the game window.</sys:String>
+  <sys:String x:Key="Loc0076" xml:space="preserve">Random pause within a range</sys:String>
+  <sys:String x:Key="Loc0078" xml:space="preserve">From, ms</sys:String>
+  <sys:String x:Key="Loc0081" xml:space="preserve">Open the seven-part or perk screen.
+Check the zones and return focus to the game.
+F8 — start · F7 — read · F10 — stop.</sys:String>
+  <sys:String x:Key="Loc0082" xml:space="preserve">Open a part (RECALIBER), a roll menu or UPGRADE with seven parts in the game, then click. The app reads the screen once without input, detects the game interface area (16:9 between black bars), places zones from reference screenshots and verifies them by reading the breadcrumb, perks, set, part or parts row. Zones are saved only when all checks pass; the frame and report go to Logs\Calibration.</sys:String>
+  <sys:String x:Key="Loc0083" xml:space="preserve">Open Logs</sys:String>
+  <sys:String x:Key="Loc0084" xml:space="preserve">Open Logs folder</sys:String>
+  <sys:String x:Key="Loc0085" xml:space="preserve">Restore zones from screenshots</sys:String>
+  <sys:String x:Key="Loc0089" xml:space="preserve">Game window</sys:String>
+  <sys:String x:Key="Loc0095" xml:space="preserve">Custom sounds work independently of the system sound scheme. Adjust Set Builder volume in the Windows volume mixer. PNG checks and screen reads are silent.</sys:String>
+  <sys:String x:Key="Loc0096" xml:space="preserve">Manual in auto mode</sys:String>
+  <sys:String x:Key="Loc0097" xml:space="preserve">Enter: Enter → F9 → Enter. Xbox: A → selected Crafting action → A. Classic exit: Esc/B ×3 → right. Quick: Esc/B ×2 → down → Crafting → A/Enter.</sys:String>
+  <sys:String x:Key="Loc0109" xml:space="preserve">Two perks · seven parts · one complete set</sys:String>
+  <sys:String x:Key="Loc0110" xml:space="preserve">Parts per session</sys:String>
+  <sys:String x:Key="Loc0112" xml:space="preserve">Part</sys:String>
+  <sys:String x:Key="Loc0119" xml:space="preserve">Roll perks on a part from any set; the set is not checked. In auto mode, the first part&#x27;s set still selects the perk preset.</sys:String>
+  <sys:String x:Key="Loc0122" xml:space="preserve">The 50–500 ms range is enabled by default. A new pause is chosen for each input; buttons are held for 65 ms. Screen checks may add waiting time.</sys:String>
+  <sys:String x:Key="Loc0123" xml:space="preserve">Random pause range</sys:String>
+  <sys:String x:Key="Loc0124" xml:space="preserve">Know when your set is ready, a run stops or the game needs focus.</sys:String>
+  <sys:String x:Key="Loc0125" xml:space="preserve">For Esc ×2 or ×3 exits. Added to the normal pause; 0 means no extra wait.</sys:String>
+  <sys:String x:Key="Loc0127" xml:space="preserve">To, ms</sys:String>
+  <sys:String x:Key="Loc0129" xml:space="preserve">Add Logs folder</sys:String>
+  <sys:String x:Key="Loc0132" xml:space="preserve">Extra pause after each Esc / B, ms</sys:String>
+  <sys:String x:Key="Loc0134" xml:space="preserve">Second perk</sys:String>
+  <sys:String x:Key="Loc0135" xml:space="preserve">Manual second perk in auto mode</sys:String>
+  <sys:String x:Key="Loc0145" xml:space="preserve">Session log</sys:String>
+  <sys:String x:Key="Loc0146" xml:space="preserve">SESSION LOG</sys:String>
+  <sys:String x:Key="Loc0148" xml:space="preserve">Logs</sys:String>
+  <sys:String x:Key="Loc0149" xml:space="preserve">Logs, roll statistics and costs are saved next to the application. Each roll is recorded once; roll records are not limited by screenshot limits.</sys:String>
+  <sys:String x:Key="Loc0151" xml:space="preserve">With % read</sys:String>
+  <sys:String x:Key="Loc0152" xml:space="preserve">No completed parts match these filters yet.</sys:String>
+  <sys:String x:Key="Loc0153" xml:space="preserve">Completed parts</sys:String>
+  <sys:String x:Key="Loc0154" xml:space="preserve">Completed</sys:String>
+  <sys:String x:Key="Loc0160" xml:space="preserve">Recording</sys:String>
+  <sys:String x:Key="Loc0162" xml:space="preserve">Records: version and settings, timestamped frames, raw OCR and retries, recognized percentages, option choices, inputs and stop reason. Text is saved immediately; PNGs in the background.</sys:String>
+  <sys:String x:Key="Loc0163" xml:space="preserve">Session</sys:String>
+  <sys:String x:Key="Loc0166" xml:space="preserve">Spare parts¹</sys:String>
+  <sys:String x:Key="Loc0167" xml:space="preserve">Application</sys:String>
+  <sys:String x:Key="Loc0168" xml:space="preserve">Save TXT + CSV + JSON</sys:String>
+  <sys:String x:Key="Loc0172" xml:space="preserve">Save a log for each session</sys:String>
+  <sys:String x:Key="Loc0173" xml:space="preserve">Save game and problem-zone screenshots</sys:String>
+  <sys:String x:Key="Loc0175" xml:space="preserve">Build</sys:String>
+  <sys:String x:Key="Loc0176" xml:space="preserve">TunerFest build</sys:String>
+  <sys:String x:Key="Loc0177" xml:space="preserve">Regular screenshots: up to 400 frames within the size limit. The last safe frame on error is saved separately. Text logging continues after the limit is reached.</sys:String>
+  <sys:String x:Key="Loc0178" xml:space="preserve">Sounds</sys:String>
+  <sys:String x:Key="Loc0179" xml:space="preserve">Collapse or expand navigation</sys:String>
+  <sys:String x:Key="Loc0180" xml:space="preserve">Collapse log</sys:String>
+  <sys:String x:Key="Loc0186" xml:space="preserve">zone from 3440×1440 screenshots</sys:String>
+  <sys:String x:Key="Loc0188" xml:space="preserve">Zones</sys:String>
+  <sys:String x:Key="Loc0189" xml:space="preserve">Screen zones</sys:String>
+  <sys:String x:Key="Loc0192" xml:space="preserve">Example not found: file missing from Assets\reference next to the application.</sys:String>
+  <sys:String x:Key="Loc0201" xml:space="preserve">Stop</sys:String>
+  <sys:String x:Key="Loc0202" xml:space="preserve">Stop · F10</sys:String>
+  <sys:String x:Key="Loc0203" xml:space="preserve">Pause input before the next screen read; Resume continues the run</sys:String>
+  <sys:String x:Key="Loc0206" xml:space="preserve">Read screen without input</sys:String>
+  <sys:String x:Key="Loc0213" xml:space="preserve">Timestamped frames and crops of zones where recognition is uncertain.</sys:String>
+  <sys:String x:Key="Loc0215" xml:space="preserve">Controls</sys:String>
+  <sys:String x:Key="Loc0220" xml:space="preserve">Rolls¹</sys:String>
+  <sys:String x:Key="Loc0227" xml:space="preserve">Keyboard keys</sys:String>
+  <sys:String x:Key="Loc0229" xml:space="preserve">Each session gets its own subfolder; ZIP archives are saved in Logs\Archives.</sys:String>
+  <sys:String x:Key="Loc0230" xml:space="preserve">Each roll: 1,500 Bucks + 150 spare parts. Summary and all offers are saved in Logs.</sys:String>
+  <sys:String x:Key="Loc0231" xml:space="preserve">When all parts are ready</sys:String>
+  <sys:String x:Key="Loc0232" xml:space="preserve">Copy</sys:String>
+  <sys:String x:Key="Loc0242" xml:space="preserve">Left</sys:String>
+  <sys:String x:Key="Loc0243" xml:space="preserve">Roll limit for the entire session</sys:String>
+  <sys:String x:Key="Loc0244" xml:space="preserve">Screenshot limit per session, MB</sys:String>
+  <sys:String x:Key="Loc0245" xml:space="preserve">Max., %</sys:String>
+  <sys:String x:Key="Loc0247" xml:space="preserve">A small panel in the top-left corner of the game window: status, Start · Pause · Stop and the latest log line. Does not take game focus or appear in reading zones or screenshots.</sys:String>
+  <sys:String x:Key="Loc0248" xml:space="preserve">Route between parts</sys:String>
+  <sys:String x:Key="Loc0250" xml:space="preserve">Smaller log font</sys:String>
+  <sys:String x:Key="Loc0259" xml:space="preserve">At maximum</sys:String>
+  <sys:String x:Key="Loc0260" xml:space="preserve">Reliability and navigation</sys:String>
+  <sys:String x:Key="Loc0261" xml:space="preserve">Back (B)</sys:String>
+  <sys:String x:Key="Loc0263" xml:space="preserve">Overlay</sys:String>
+  <sys:String x:Key="Loc0264" xml:space="preserve">Set Builder overlay</sys:String>
+  <sys:String x:Key="Loc0265" xml:space="preserve">In-game overlay</sys:String>
+  <sys:String x:Key="Loc0268" xml:space="preserve">Input and speed</sys:String>
+  <sys:String x:Key="Loc0283" xml:space="preserve">Ignore set</sys:String>
+  <sys:String x:Key="Loc0301" xml:space="preserve">Optional</sys:String>
+  <sys:String x:Key="Loc0302" xml:space="preserve">Optional perk</sys:String>
+  <sys:String x:Key="Loc0317" xml:space="preserve">Refresh</sys:String>
+  <sys:String x:Key="Loc0318" xml:space="preserve">Refresh window list</sys:String>
+  <sys:String x:Key="Loc0322" xml:space="preserve">Main screen: two perks, set name and part heading. Roll menu: top and middle blocks for each slot. The bottom block matches the main perk.</sys:String>
+  <sys:String x:Key="Loc0323" xml:space="preserve">Latest log line</sys:String>
+  <sys:String x:Key="Loc0326" xml:space="preserve">Clear display</sys:String>
+  <sys:String x:Key="Loc0328" xml:space="preserve">Wait for game focus, s</sys:String>
+  <sys:String x:Key="Loc0337" xml:space="preserve">Navigation pane</sys:String>
+  <sys:String x:Key="Loc0338" xml:space="preserve">In-game panel: status, Start · Pause · Stop and latest log line</sys:String>
+  <sys:String x:Key="Loc0339" xml:space="preserve">Logs folder</sys:String>
+  <sys:String x:Key="Loc0341" xml:space="preserve">Pause</sys:String>
+  <sys:String x:Key="Loc0343" xml:space="preserve">Pause between read retries, ms</sys:String>
+  <sys:String x:Key="Loc0348" xml:space="preserve">Pauses between inputs</sys:String>
+  <sys:String x:Key="Loc0349" xml:space="preserve">Check screenshot PNG</sys:String>
+  <sys:String x:Key="Loc0351" xml:space="preserve">Preflight check</sys:String>
+  <sys:String x:Key="Loc0352" xml:space="preserve">Perk</sys:String>
+  <sys:String x:Key="Loc0356" xml:space="preserve">First perk</sys:String>
+  <sys:String x:Key="Loc0360" xml:space="preserve">Detect zones</sys:String>
+  <sys:String x:Key="Loc0361" xml:space="preserve">Detect zones automatically</sys:String>
+  <sys:String x:Key="Loc0364" xml:space="preserve">Confirm (A)</sys:String>
+  <sys:String x:Key="Loc0365" xml:space="preserve">Support ↗</sys:String>
+  <sys:String x:Key="Loc0379" xml:space="preserve">Show a screenshot of the screen containing this zone</sys:String>
+  <sys:String x:Key="Loc0385" xml:space="preserve">Start</sys:String>
+  <sys:String x:Key="Loc0386" xml:space="preserve">Start · F8</sys:String>
+  <sys:String x:Key="Loc0389" xml:space="preserve">Search all text logs…</sys:String>
+  <sys:String x:Key="Loc0390" xml:space="preserve">Search: Enter → Up as the menu appears → Enter once the border reaches the top row. Upgrade: Enter → Enter on the middle row. The menu is not read; results come from the slot card. If the border is not confirmed, the full menu is read as before.</sys:String>
+  <sys:String x:Key="Loc0391" xml:space="preserve">Search always uses the new top perk; the first of the two targets is accepted. The second slot searches for the other. Then middle rerolls maximize the second perk, then the first. F7 — read; F9 belongs to the game.</sys:String>
+  <sys:String x:Key="Loc0392" xml:space="preserve">Occurrences</sys:String>
+  <sys:String x:Key="Loc0399" xml:space="preserve">Right</sys:String>
+  <sys:String x:Key="Loc0400" xml:space="preserve">On stop or error</sys:String>
+  <sys:String x:Key="Loc0401" xml:space="preserve">Example</sys:String>
+  <sys:String x:Key="Loc0402" xml:space="preserve">Zone example</sys:String>
+  <sys:String x:Key="Loc0410" xml:space="preserve">Listen</sys:String>
+  <sys:String x:Key="Loc0411" xml:space="preserve">TunerFest profile</sys:String>
+  <sys:String x:Key="Loc0420" xml:space="preserve">Perk ranking</sys:String>
+  <sys:String x:Key="Loc0433" xml:space="preserve">Set</sys:String>
+  <sys:String x:Key="Loc0435" xml:space="preserve">Part set</sys:String>
+  <sys:String x:Key="Loc0436" xml:space="preserve">Set and perks</sys:String>
+  <sys:String x:Key="Loc0438" xml:space="preserve">Sets and instructions on the website ↗</sys:String>
+  <sys:String x:Key="Loc0439" xml:space="preserve">Sound after all parts of the set are complete.</sys:String>
+  <sys:String x:Key="Loc0440" xml:space="preserve">Sound when a run stops automatically, through F10 or because of an error.</sys:String>
+  <sys:String x:Key="Loc0442" xml:space="preserve">System follows Windows; dark or light stays fixed.</sys:String>
+  <sys:String x:Key="Loc0447" xml:space="preserve">Notifications</sys:String>
+  <sys:String x:Key="Loc0448" xml:space="preserve">Windows corner notifications: complete, stopped, paused</sys:String>
+  <sys:String x:Key="Loc0449" xml:space="preserve">Input method</sys:String>
+  <sys:String x:Key="Loc0450" xml:space="preserve">Input method and pauses, route between parts, reading reliability and game keys.</sys:String>
+  <sys:String x:Key="Loc0452" xml:space="preserve">Border read attempts (without new rolls)</sys:String>
+  <sys:String x:Key="Loc0454" xml:space="preserve">Status</sys:String>
+  <sys:String x:Key="Loc0458" xml:space="preserve">Create ZIP of latest session</sys:String>
+  <sys:String x:Key="Loc0459" xml:space="preserve">Follow</sys:String>
+  <sys:String x:Key="Loc0465" xml:space="preserve">Pages</sys:String>
+  <sys:String x:Key="Loc0468" xml:space="preserve">Hide</sys:String>
+  <sys:String x:Key="Loc0469" xml:space="preserve">Hide overlay</sys:String>
+  <sys:String x:Key="Loc0470" xml:space="preserve">Hide overlay (Notifications → In-game overlay)</sys:String>
+  <sys:String x:Key="Loc0471" xml:space="preserve">Hide example</sys:String>
+  <sys:String x:Key="Loc0472" xml:space="preserve">your current zone</sys:String>
+  <sys:String x:Key="Loc0473" xml:space="preserve">Text log, raw OCR and roll statistics. Applied when starting.</sys:String>
+  <sys:String x:Key="Loc0474" xml:space="preserve">Window theme</sys:String>
+  <sys:String x:Key="Loc0482" xml:space="preserve">Up</sys:String>
+  <sys:String x:Key="Loc0483" xml:space="preserve">Down</sys:String>
+  <sys:String x:Key="Loc0487" xml:space="preserve">All text logs</sys:String>
+  <sys:String x:Key="Loc0492" xml:space="preserve">Fixed pause, ms (when random is off)</sys:String>
+  <sys:String x:Key="Loc0494" xml:space="preserve">Time¹</sys:String>
+  <sys:String x:Key="Loc0496" xml:space="preserve">Share, %</sys:String>
+  <sys:String x:Key="Loc0497" xml:space="preserve">Perk frequencies, all text logs and completed parts from logs across all application versions.</sys:String>
+  <sys:String x:Key="Loc0510" xml:space="preserve">Quick: Esc ×2 → down → Crafting → Enter. If navigation is not confirmed, the app falls back to the classic route.</sys:String>
+  <sys:String x:Key="Loc0511" xml:space="preserve">Quick rolls: choose by menu position</sys:String>
+  <sys:String x:Key="Loc0512" xml:space="preserve">Fast names from trained templates and OCR cache</sys:String>
+  <sys:String x:Key="Loc0515" xml:space="preserve">Select and copy the path</sys:String>
+  <sys:String x:Key="Loc0520" xml:space="preserve">When the game loses focus, input pauses and the run waits for focus to return, then verifies the screen and resumes. 0 stops immediately, as before.</sys:String>
+  <sys:String x:Key="Loc0521" xml:space="preserve">App language</sys:String>
+  <sys:String x:Key="CombinationsHeading" xml:space="preserve">Builds and my combinations</sys:String>
+  <sys:String x:Key="CombinationName" xml:space="preserve">My combination name</sys:String>
+  <sys:String x:Key="CombinationHint" xml:space="preserve">Choose the set and perks, name your combination and save it to the list.</sys:String>
+  <sys:String x:Key="CombinationPlaceholder" xml:space="preserve">For example: Bucks + spare parts</sys:String>
+  <sys:String x:Key="CombinationSave" xml:space="preserve">Save as new</sys:String>
+  <sys:String x:Key="CombinationUpdate" xml:space="preserve">Update selected</sys:String>
+  <sys:String x:Key="CombinationDelete" xml:space="preserve">Delete</sys:String>
+</ResourceDictionary>

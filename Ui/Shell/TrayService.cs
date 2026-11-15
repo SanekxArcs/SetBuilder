@@ -28,10 +28,10 @@ public sealed class TrayService : IDisposable
         };
         menu.Items.AddRange(
             [
-                MenuItem("Показати вікно", show),
-                MenuItem("Зупинити · F10", stop),
+                MenuItem(L.T("Показати вікно"), show),
+                MenuItem(L.T("Зупинити · F10"), stop),
                 new Forms.ToolStripSeparator(),
-                MenuItem("Вийти", exit),
+                MenuItem(L.T("Вийти"), exit),
             ]
         );
         menu.Opening += (_, _) => RoundCorners(menu.Handle);

@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$Configuration = 'Release',
     [switch]$SkipBuild
 )
@@ -14,7 +14,7 @@ try {
     $exe = Get-ChildItem -Path "bin\$Configuration" -Recurse -Filter 'TunerFest Set Builder.exe' | Select-Object -First 1
     if (-not $exe) { throw 'Executable not found; build first.' }
     $modes = @(
-        '--self-test', '--verify-workflow', '--verify-focus', '--verify-recovery', '--verify-analytics', '--ui-smoke',
+        '--self-test', '--verify-workflow', '--verify-focus', '--verify-recovery', '--verify-analytics', '--ui-smoke-en', '--ui-smoke-uk',
         '--verify-calibration "test-results\calibration"',
         '--verify-stuck "test-results\stuck-clean-driver.png"',
         '--verify-value-crop "test-results\extra-impact-2-percent.png" "Extra Impact 2% / 4%"',

@@ -23,28 +23,28 @@ public sealed class ZonesViewModel : PageViewModel
     {
         ["ready"] = new(
             "ready.jpg",
-            "Основний екран RECALIBER",
-            "PROFILE / VEHICLES / UPGRADE / RECALIBER: деталь відкрита, жовта рамка на одному з двох перків."
+            L.T("Основний екран RECALIBER"),
+            L.T("PROFILE / VEHICLES / UPGRADE / RECALIBER: деталь відкрита, жовта рамка на одному з двох перків.")
         ),
         ["popup-left"] = new(
             "popup-left.jpg",
-            "Меню кидка лівого слота",
-            "На екрані RECALIBER натиснуто Enter на лівому перку: над ним відкрилося меню з трьох блоків."
+            L.T("Меню кидка лівого слота"),
+            L.T("На екрані RECALIBER натиснуто Enter на лівому перку: над ним відкрилося меню з трьох блоків.")
         ),
         ["popup-right"] = new(
             "popup-right.jpg",
-            "Меню кидка правого слота",
-            "На екрані RECALIBER натиснуто Enter на правому перку: над ним відкрилося меню з трьох блоків."
+            L.T("Меню кидка правого слота"),
+            L.T("На екрані RECALIBER натиснуто Enter на правому перку: над ним відкрилося меню з трьох блоків.")
         ),
         ["parts"] = new(
             "parts.jpg",
-            "Екран UPGRADE із сімома деталями",
-            "PROFILE / VEHICLES / UPGRADE: ряд семи деталей унизу, рамка на одній із них."
+            L.T("Екран UPGRADE із сімома деталями"),
+            L.T("PROFILE / VEHICLES / UPGRADE: ряд семи деталей унизу, рамка на одній із них.")
         ),
         ["inventory"] = new(
             "inventory.jpg",
-            "Екран UPGRADE зі списком категорії",
-            "Той самий UPGRADE після відкриття категорії: заголовок (BRAKES, GEARBOX…) над рядом деталей."
+            L.T("Екран UPGRADE зі списком категорії"),
+            L.T("Той самий UPGRADE після відкриття категорії: заголовок (BRAKES, GEARBOX…) над рядом деталей.")
         ),
     };
 
@@ -53,84 +53,84 @@ public sealed class ZonesViewModel : PageViewModel
     [
         (
             "left",
-            "Лівий перк",
+            L.T("Лівий перк"),
             SymbolRegular.RectangleLandscape24,
             "ready",
-            "Ліва картка в блоці AFFIX STATS цілком: верхня рамка, іконка, назва, опис зі значенням і діапазоном [мін%–макс%]. Ціну під карткою (монети) не включай."
+            L.T("Ліва картка в блоці AFFIX STATS цілком: верхня рамка, іконка, назва, опис зі значенням і діапазоном [мін%–макс%]. Ціну під карткою (монети) не включай.")
         ),
         (
             "right",
-            "Правий перк",
+            L.T("Правий перк"),
             SymbolRegular.RectangleLandscape24,
             "ready",
-            "Права картка в блоці AFFIX STATS цілком, як і ліва: рамка, іконка, назва, опис із [мін%–макс%]. Без ціни."
+            L.T("Права картка в блоці AFFIX STATS цілком, як і ліва: рамка, іконка, назва, опис із [мін%–макс%]. Без ціни.")
         ),
         (
             "set",
-            "Назва сету",
+            L.T("Назва сету"),
             SymbolRegular.RectangleLandscape24,
             "ready",
-            "Рядок із назвою сету в блоці SET BONUS (наприклад LOOT DIGGER) разом з іконкою. Рядки 3/7 і 7/7 під ним не потрібні."
+            L.T("Рядок із назвою сету в блоці SET BONUS (наприклад LOOT DIGGER) разом з іконкою. Рядки 3/7 і 7/7 під ним не потрібні.")
         ),
         (
             "part",
-            "Заголовок деталі",
+            L.T("Заголовок деталі"),
             SymbolRegular.RectangleLandscape24,
             "ready",
-            "Напис над зображенням деталі: рідкість і назва, наприклад LEGENDARY GEARBOX. Іконки й число 960 під ним не включай."
+            L.T("Напис над зображенням деталі: рідкість і назва, наприклад LEGENDARY GEARBOX. Іконки й число 960 під ним не включай.")
         ),
         (
             "topLeft",
-            "Лівий: новий перк зверху",
+            L.T("Лівий: новий перк зверху"),
             SymbolRegular.Crop24,
             "popup-left",
-            "Верхній блок меню кидка над лівим перком: нова пропозиція з рамкою, іконкою, назвою й описом із [мін%–макс%]. Підпис Enter під блоком не потрібен."
+            L.T("Верхній блок меню кидка над лівим перком: нова пропозиція з рамкою, іконкою, назвою й описом із [мін%–макс%]. Підпис Enter під блоком не потрібен.")
         ),
         (
             "middleLeft",
-            "Лівий: повторний кидок посередині",
+            L.T("Лівий: повторний кидок посередині"),
             SymbolRegular.Crop24,
             "popup-left",
-            "Середній блок того самого меню: повторний кидок поточного перка (та сама назва, нове значення). Нижній блок збігається із зоною «Лівий перк»."
+            L.T("Середній блок того самого меню: повторний кидок поточного перка (та сама назва, нове значення). Нижній блок збігається із зоною «Лівий перк».")
         ),
         (
             "topRight",
-            "Правий: новий перк зверху",
+            L.T("Правий: новий перк зверху"),
             SymbolRegular.Crop24,
             "popup-right",
-            "Верхній блок меню кидка над правим перком: нова пропозиція з рамкою, іконкою, назвою й описом із [мін%–макс%]."
+            L.T("Верхній блок меню кидка над правим перком: нова пропозиція з рамкою, іконкою, назвою й описом із [мін%–макс%].")
         ),
         (
             "middleRight",
-            "Правий: повторний кидок посередині",
+            L.T("Правий: повторний кидок посередині"),
             SymbolRegular.Crop24,
             "popup-right",
-            "Середній блок меню над правим перком: повторний кидок поточного перка. Нижній блок збігається із зоною «Правий перк»."
+            L.T("Середній блок меню над правим перком: повторний кидок поточного перка. Нижній блок збігається із зоною «Правий перк».")
         ),
         (
             "parts",
-            "Ряд усіх семи деталей",
+            L.T("Ряд усіх семи деталей"),
             SymbolRegular.RectangleLandscape24,
             "parts",
-            "Увесь ряд семи деталей від першої до сьомої разом із рамками й числами 960. Зона ділиться на сім рівних частин, тому краї мають збігатися з першою і останньою плиткою."
+            L.T("Увесь ряд семи деталей від першої до сьомої разом із рамками й числами 960. Зона ділиться на сім рівних частин, тому краї мають збігатися з першою і останньою плиткою.")
         ),
         (
             "breadcrumb",
-            "Шлях меню вгорі",
+            L.T("Шлях меню вгорі"),
             SymbolRegular.RectangleLandscape24,
             "ready",
-            "Рядок PROFILE / VEHICLES / UPGRADE / RECALIBER у лівому верхньому куті. Залиш запас праворуч: на екрані UPGRADE рядок коротший, а назва може подовжитися."
+            L.T("Рядок PROFILE / VEHICLES / UPGRADE / RECALIBER у лівому верхньому куті. Залиш запас праворуч: на екрані UPGRADE рядок коротший, а назва може подовжитися.")
         ),
         (
             "inventoryHeader",
-            "Заголовок списку, напр. BRAKES",
+            L.T("Заголовок списку, напр. BRAKES"),
             SymbolRegular.RectangleLandscape24,
             "inventory",
-            "Заголовок категорії над рядом деталей після відкриття списку на екрані UPGRADE: BRAKES, GEARBOX тощо. За ним програма відрізняє список від ряду семи деталей."
+            L.T("Заголовок категорії над рядом деталей після відкриття списку на екрані UPGRADE: BRAKES, GEARBOX тощо. За ним програма відрізняє список від ряду семи деталей.")
         ),
     ];
 
-    public const string NotSet = "Не задано";
+    public static readonly string NotSet = L.T("Не задано");
 
     static readonly Dictionary<string, ImageSource?> images = [];
     bool calibrating;
@@ -187,14 +187,14 @@ public sealed class ZonesViewModel : PageViewModel
             return;
         if (Shell.Game is not GameWindow game)
         {
-            Shell.Log("Вибери вікно гри.");
+            Shell.Log(L.T("Вибери вікно гри."));
             return;
         }
         calibrating = true;
         OnPropertyChanged(nameof(CanCalibrate));
         try
         {
-            Shell.Log("Підбір зон: читаю екран гри без натискань…");
+            Shell.Log(L.T("Підбір зон: читаю екран гри без натискань…"));
             Bitmap frame;
             try
             {
@@ -202,7 +202,7 @@ public sealed class ZonesViewModel : PageViewModel
             }
             catch (Exception e)
             {
-                Shell.Log("Підбір зон: " + e.Message);
+                Shell.Log(L.T("Підбір зон: ") + e.Message);
                 return;
             }
             using (frame)
@@ -216,7 +216,7 @@ public sealed class ZonesViewModel : PageViewModel
                 SaveEvidence(frame, result);
                 if (!result.Success)
                 {
-                    Shell.Log("Зони не змінено: не все вдалося прочитати. Виділи зони вручну за «Прикладом» або повтори на іншому екрані.");
+                    Shell.Log(L.T("Зони не змінено: не все вдалося прочитати. Виділи зони вручну за «Прикладом» або повтори на іншому екрані."));
                     return;
                 }
                 foreach (var (key, zone) in result.Zones)
@@ -225,7 +225,7 @@ public sealed class ZonesViewModel : PageViewModel
                 RefreshRows();
                 if (exampleKey is { } shown)
                     ShowExample(shown);
-                Shell.Log($"Зони підібрано й збережено: {result.ScreenTitle}, перевірок {result.Verified.Count}.");
+                Shell.Log(L.F("Зони підібрано й збережено: {0}, перевірок {1}.", $"{result.ScreenTitle}", $"{result.Verified.Count}"));
             }
         }
         finally
@@ -251,11 +251,11 @@ public sealed class ZonesViewModel : PageViewModel
             lines.AddRange(result.Problems.Select(v => "FAIL " + v));
             lines.AddRange(result.Zones.Select(z => $"{z.Key} = {Format(z.Value)}"));
             File.WriteAllLines(Path.Combine(folder, stamp + ".txt"), lines);
-            Shell.Log("Кадр і звіт підбору: " + Path.Combine(folder, stamp + ".png"));
+            Shell.Log(L.T("Кадр і звіт підбору: ") + Path.Combine(folder, stamp + ".png"));
         }
         catch (Exception e)
         {
-            Shell.Log("Не вдалося зберегти кадр підбору: " + e.Message);
+            Shell.Log(L.T("Не вдалося зберегти кадр підбору: ") + e.Message);
         }
     }
 
@@ -415,13 +415,13 @@ public sealed class ZonesViewModel : PageViewModel
             return;
         if (Shell.Game is not GameWindow game)
         {
-            Shell.Log("Вибери вікно гри.");
+            Shell.Log(L.T("Вибери вікно гри."));
             return;
         }
         var window = Shell.Window;
         if (window == null)
         {
-            Shell.Log("Немає вікна програми — зону можна виділити лише в запущеному застосунку.");
+            Shell.Log(L.T("Немає вікна програми — зону можна виділити лише в запущеному застосунку."));
             return;
         }
         try
@@ -543,11 +543,11 @@ public sealed class ZonesViewModel : PageViewModel
         int before = preview?.Lines.Count ?? 0;
         var game = Shell.Game;
         Shell.Game = null;
-        PickAsync("left", "Лівий перк").GetAwaiter().GetResult();
-        if (preview != null && (preview.Lines.Count != before + 1 || preview.Lines[^1] != "Вибери вікно гри."))
+        PickAsync("left", L.T("Лівий перк")).GetAwaiter().GetResult();
+        if (preview != null && (preview.Lines.Count != before + 1 || preview.Lines[^1] != L.T("Вибери вікно гри.")))
             throw new InvalidOperationException("Pick without a game window must log 'Вибери вікно гри.'");
         CalibrateAsync().GetAwaiter().GetResult();
-        if (preview != null && (preview.Lines.Count != before + 2 || preview.Lines[^1] != "Вибери вікно гри." || LastCalibration != null))
+        if (preview != null && (preview.Lines.Count != before + 2 || preview.Lines[^1] != L.T("Вибери вікно гри.") || LastCalibration != null))
             throw new InvalidOperationException("Calibration without a game window must only log 'Вибери вікно гри.'");
         Shell.Game = game;
         before = preview?.Lines.Count ?? 0;
@@ -556,7 +556,7 @@ public sealed class ZonesViewModel : PageViewModel
             preview.IsBusy = true;
             try
             {
-                PickAsync("left", "Лівий перк").GetAwaiter().GetResult();
+                PickAsync("left", L.T("Лівий перк")).GetAwaiter().GetResult();
             }
             finally
             {

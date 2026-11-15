@@ -61,29 +61,41 @@ public static class SmokeRun
         var passed = new List<string>();
         var log = window.RunLog;
 
+        Expect(new Profile().Language == "en", "fresh profiles default to English");
+        Expect(System.Text.Json.JsonSerializer.Deserialize<Profile>("{}")!.Language == "en", "old profiles default to English");
+        Expect(L.Normalize("ua") == "uk" && L.Normalize("unknown") == "en", "language aliases and fallback");
+        Expect((string)app.FindResource("Loc0521") == L.T("Мова застосунку"), "localized XAML resources");
+        Expect(L.Display("Досягнуто ліміту 42 кидків. Прогрес залишився в грі.") ==
+            (L.IsUkrainian ? "Досягнуто ліміту 42 кидків. Прогрес залишився в грі." : "Reached the 42-roll limit. Progress remains in the game."),
+            "rendered diagnostic templates preserve their values");
+        Expect(L.Display("Не вдалося відкрити Logs: C:\\Logs") ==
+            (L.IsUkrainian ? "Не вдалося відкрити Logs: C:\\Logs" : "Could not open Logs: C:\\Logs"),
+            "diagnostic paths are preserved");
+        passed.Add("PASS localization: " + L.Language + ", English defaults, alias, fallback, resources and diagnostic templates");
+
         // Status card: running → paused → resumed → done → failed → cancelled → idle, then left running for the screenshots.
         shell.OnProgress(new RunProgress("running", 1, 7, 0, 0, 0));
-        Expect(shell.Status.Current == StatusMode.Running && shell.Status.Title == "Виконується", "status card: running");
+        Expect(shell.Status.Current == StatusMode.Running && shell.Status.Title == L.T("Виконується"), "status card: running");
         shell.OnProgress(new RunProgress("paused", 1, 7, 3, 4500, 450));
         Expect(
             shell.Status.Current == StatusMode.Paused && shell.Status.IsPaused && shell.Status.IsClockVisible,
             "status card: paused"
         );
-        Expect(shell.Status.Detail.EndsWith("поверни фокус у гру"), "status card: paused detail");
+        Expect(shell.Status.Detail.EndsWith(L.T("поверни фокус у гру")), "status card: paused detail");
         shell.OnProgress(new RunProgress("running", 2, 7, 5, 7500, 750));
         Expect(shell.Status.Current == StatusMode.Running && shell.Status.Clock != "", "status card: resumed");
         shell.ShowOutcome("completed", null);
         Expect(
-            shell.Status.Current == StatusMode.Done && shell.Status.Title == "Готово: обидва перки на максимумі",
+            shell.Status.Current == StatusMode.Done && shell.Status.Title == L.T("Готово: обидва перки на максимумі"),
             "status card: done"
         );
-        shell.ShowOutcome("error", new InvalidOperationException("тестова помилка"));
+        shell.ShowOutcome("error", new InvalidOperationException(L.T("тестова помилка")));
         Expect(
-            shell.Status.Current == StatusMode.Failed && shell.Status.Detail.StartsWith("тестова помилка · "),
+            shell.Status.Current == StatusMode.Failed && shell.Status.Detail.StartsWith(L.T("тестова помилка · ")),
             "status card: failed"
         );
         shell.ShowOutcome("cancelled", null);
-        Expect(shell.Status.Current == StatusMode.Stopped && shell.Status.Title == "Зупинено вручну", "status card: cancelled");
+        Expect(shell.Status.Current == StatusMode.Stopped && shell.Status.Title == L.T("Зупинено вручну"), "status card: cancelled");
         shell.Status.Reset();
         Expect(
             shell.Status.Current == StatusMode.Idle
@@ -94,7 +106,7 @@ public static class SmokeRun
             "status card: idle"
         );
         shell.OnProgress(new RunProgress("running", 3, 7, 41, 61500, 6150));
-        Expect(shell.Status.Current == StatusMode.Running && shell.Status.Detail.Contains("Кидків 41"), "status card: sample");
+        Expect(shell.Status.Current == StatusMode.Running && shell.Status.Detail.Contains(L.T("Кидків 41")), "status card: sample");
         passed.Add("PASS status card: running, paused, resumed, done, failed, cancelled");
 
         // Run log: categories, status line truncation, seeded sample lines.
@@ -108,15 +120,15 @@ public static class SmokeRun
         string longText = new string('x', 200);
         shell.Log(longText);
         Expect(shell.StatusLine.Length == 123 && shell.StatusLine.EndsWith("…"), "status line truncation");
-        shell.Log("коротко");
-        Expect(shell.StatusLine == "коротко", "status line short text");
+        shell.Log(L.T("коротко"));
+        Expect(shell.StatusLine == L.T("коротко"), "status line short text");
         log.Clear();
         Expect(log.LineCount == 0, "log clear");
-        shell.AppendLog("Шукаю пару: Rich + Legend. Порядок слотів довільний.");
-        shell.AppendLog("Знайдено Rich у слоті 2. У слоті 1 шукаю тільки Legend.");
-        shell.AppendLog("✓ Деталь 1: Legend 4% / 4% + Rich 3% / 3%");
+        shell.AppendLog(L.T("Шукаю пару: Rich + Legend. Порядок слотів довільний."));
+        shell.AppendLog(L.T("Знайдено Rich у слоті 2. У слоті 1 шукаю тільки Legend."));
+        shell.AppendLog(L.T("✓ Деталь 1: Legend 4% / 4% + Rich 3% / 3%"));
         Expect(log.LineCount == 3, "log seeded with three lines, got " + log.LineCount);
-        Expect(log.Text.Contains("ГОТОВО  ·  ✓ Деталь 1"), "log line layout: category and text");
+        Expect(log.Text.Contains(L.T("ГОТОВО  ·  ✓ Деталь 1")), "log line layout: category and text");
         Expect(log.FollowLog, "follow toggle is on by default");
         passed.Add("PASS run log: categories, timestamped lines, status line truncation, three seeded lines");
 
@@ -147,7 +159,7 @@ public static class SmokeRun
         using (var tray = new TrayService(() => { }, () => { }, () => { }))
         {
             tray.SetDarkTheme(true);
-            tray.SetText("старт");
+            tray.SetText(L.T("старт"));
             tray.SetText(new string('д', 80));
         }
         using (var hotkeys = new HotkeyService(window, shell))
@@ -163,12 +175,12 @@ public static class SmokeRun
         var priorGame = shell.Game;
         shell.Game = null;
         shell.Arm(true);
-        Expect(!shell.IsBusy && shell.StatusLine == "Вибери вікно гри.", "run without a game window is refused");
+        Expect(!shell.IsBusy && shell.StatusLine == L.T("Вибери вікно гри."), "run without a game window is refused");
         shell.Game = new GameWindow(IntPtr.Zero, "smoke", "smoke");
         shell.Arm(true);
-        Expect(!shell.IsBusy && shell.StatusLine == "Попередній перегляд: запуск не виконується.", "preview refuses to run");
+        Expect(!shell.IsBusy && shell.StatusLine == L.T("Попередній перегляд: запуск не виконується."), "preview refuses to run");
         shell.Arm(false);
-        Expect(!shell.IsBusy && shell.StatusLine == "Попередній перегляд: запуск не виконується.", "preview refuses to read");
+        Expect(!shell.IsBusy && shell.StatusLine == L.T("Попередній перегляд: запуск не виконується."), "preview refuses to read");
         shell.Game = null;
         Expect(shell.Pages.Count == 6 && shell.Pages.Select(p => p.Title).SequenceEqual(PageRegistry.Entries.Select(e => e.Title)),
             "six pages in order");
@@ -177,10 +189,10 @@ public static class SmokeRun
         // Manual pause: only during a run; the "held" progress state shows as a pause on the status card.
         Expect(!shell.CanPause && !shell.PauseCommand.CanExecute(null), "pause disabled while idle");
         shell.PauseCommand.Execute(null);
-        Expect(!shell.IsPaused && shell.PauseLabel == "Пауза", "pause ignored while idle");
+        Expect(!shell.IsPaused && shell.PauseLabel == L.T("Пауза"), "pause ignored while idle");
         shell.OnProgress(new RunProgress("held", 2, 7, 9, 13500, 1350));
-        Expect(shell.Status.Current == StatusMode.Paused && shell.Status.Title == "Пауза", "status card: held");
-        Expect(shell.Status.Detail.Contains("Кидків 9") && shell.Status.Detail.EndsWith("відновлює запуск"), "status card: held detail");
+        Expect(shell.Status.Current == StatusMode.Paused && shell.Status.Title == L.T("Пауза"), "status card: held");
+        Expect(shell.Status.Detail.Contains(L.T("Кидків 9")) && shell.Status.Detail.EndsWith(L.T("відновлює запуск")), "status card: held detail");
         shell.OnProgress(new RunProgress("running", 3, 7, 41, 61500, 6150));
         passed.Add("PASS manual pause: disabled while idle; held state shows as a pause on the status card");
 

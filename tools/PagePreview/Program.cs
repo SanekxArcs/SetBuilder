@@ -28,6 +28,8 @@ static class Program
         try
         {
             var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+            TunerFest.L.Configure(args.Length > 5 ? args[5] : "en");
+            TunerFest.L.ApplyResources();
             var theme = light ? ApplicationTheme.Light : ApplicationTheme.Dark;
             app.Resources.MergedDictionaries.Add(new ThemesDictionary { Theme = theme });
             app.Resources.MergedDictionaries.Add(new ControlsDictionary());
